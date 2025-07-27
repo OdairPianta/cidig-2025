@@ -51,7 +51,7 @@ class Tag extends Model
 
     /**
      * @param array $storeData
-     * @return \App\Tag|null
+     * @return \App\Models\Tag|null
      */
     public static function findOrCreate(array $storeData):? Tag
     {

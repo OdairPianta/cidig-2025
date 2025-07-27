@@ -585,7 +585,7 @@ class User extends Authenticatable
      */
     public static function getAdminUser()
     {
-        return \App\User::query()
+        return \App\Models\User::query()
             ->firstWhere('is_admin', '=', true);
     }
 
