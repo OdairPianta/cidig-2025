@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -578,11 +579,19 @@ Ao todo, são cinco aulas ministradas por professores e profissionais de mercado
         ],
     ];
 
-    protected $fillable = ['name', 'is_active'];
+    protected $fillable = [
+        'name',
+        'slug',
+        'description',
+        'image',
+        'background-image',
+        'background-credit',
+    ];
 
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'is_active' => 'boolean',
     ];
 
     /**
@@ -617,6 +626,11 @@ Ao todo, são cinco aulas ministradas por professores e profissionais de mercado
         return ! ($this->resources()->exists() || $this->users()->exists());
     }
 
+    public function videos()
+    {
+        return $this->hasMany(Video::class);
+    }
+
     /**
      * @param int $tagId
      * @return bool
@@ -647,5 +661,10 @@ Ao todo, são cinco aulas ministradas por professores e profissionais de mercado
         }
 
         return $seriesIds;
+    }
+
+    public function scopeIsActive(Builder $query)
+    {
+        return $query->where('is_active', '=', 1);
     }
 }

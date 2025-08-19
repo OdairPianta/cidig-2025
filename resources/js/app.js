@@ -63,6 +63,14 @@ $(document).ready(function(){
             $($(this).parent()[0]).toggle($(this).text().toLowerCase().indexOf(value) > -1)
         });
     });
+
+    $("#search-universities-table").on("keyup", function() {
+        var value = $(this).val().toLowerCase();
+        $("#universities-table-body tr td[data-search='1']").filter(function() {
+            $($(this).parent()[0]).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+        });
+    });
+
 });
 
 $('#content-directory').carousel({

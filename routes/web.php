@@ -84,7 +84,6 @@ Route::prefix('/search')->group(function(){
 
     Route::get('/subject/{subjectId}', 'App\Http\Controllers\ResourceController@searchBySubjectV2')
         ->name('v2.searchBySubject');
-
 });
 
 

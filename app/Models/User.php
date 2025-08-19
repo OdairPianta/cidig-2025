@@ -3,7 +3,10 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -12,7 +15,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
@@ -572,6 +575,16 @@ class User extends Authenticatable
         return $this->hasMany(Ticket::class, 'responsible_id');
     }
 
+    public function information()
+    {
+        return $this->hasOne(UserInformation::class);
+    }
+
+    public function videos()
+    {
+        return $this->belongsToMany(Video::class, 'video_user');
+    }
+
     /**
      * @return bool
      */
@@ -610,63 +623,42 @@ class User extends Authenticatable
         return $this->getWikiAccessToken();
     }
 
-    public static function getCoordinators(): array {
-        return [
-            self::getPersonMergedData(self::MASSIMO_DI_FELICE)
-        ];
+    public function getSlugAttribute()
+    {
+        return Str::slug($this->name, '-');
     }
 
-    public static function getResearchers(): array {
-        return [
-            self::getPersonMergedData(self::ALINE_PASCOALINO),
-            self::getPersonMergedData(self::ANDRE_DALA_POSSA),
-            self::getPersonMergedData(self::BEATRICE_BONAMI_ROSA),
-            self::getPersonMergedData(self::BRUNO_MADUREIRA_FERREIRA),
-            self::getPersonMergedData(self::CLAUDIA_LEONOR_GUEDES),
-            self::getPersonMergedData(self::ELI_BORGES_JR),
-            self::getPersonMergedData(self::ELIANE_SCHLEMMER),
-            self::getPersonMergedData(self::ELIETE_PEREIRA),
-            self::getPersonMergedData(self::ERICK_ROZA),
-            self::getPersonMergedData(self::EVANDRO_MEDEIROS_LAIA),
-            self::getPersonMergedData(self::GENIVALDO_PAULINO_MONTEIRO),
-            self::getPersonMergedData(self::IAN_DAWSEY),
-            self::getPersonMergedData(self::ISABELLA_MOURA),
-            self::getPersonMergedData(self::JANAINA_MENEZES),
-            self::getPersonMergedData(self::JULLIANA_CUTOLO_TORRES),
-            self::getPersonMergedData(self::LARA_LINHALIS_GUIMARAES),
-            self::getPersonMergedData(self::LEANDRO_KEY_HIGUCHI_YANAZA),
-            self::getPersonMergedData(self::MARCELLA_SCHNEIDER_FARIA_SANTOS),
-            self::getPersonMergedData(self::MARINA_MAGALHAES),
-            self::getPersonMergedData(self::MATHEUS_SOARES_CRUZ),
-            self::getPersonMergedData(self::MICHELLE_DIAS),
-            self::getPersonMergedData(self::RITA_MACHADO_NARDY),
-            self::getPersonMergedData(self::TATIANA_REVOREDO),
-            self::getPersonMergedData(self::TERESA_NEVES),
-            self::getPersonMergedData(self::THIAGO_CARDOSO_FRANCO),
-        ];
+    public static function scopeWithRole($query, $role)
+    {
+        return $query->whereHas('information', function ($q) use ($role) {
+            $q->whereJsonContains('roles', $role);
+        });
     }
 
-    public static function getDesigners(): array {
-        return [
-            self::getPersonMergedData([
-                'name' => self::BRUNO_MADUREIRA_FERREIRA['name'],
-                'picture_url' => url(self::BRUNO_MADUREIRA_FERREIRA['picture_url']),
-                'linkedin_url' => self::BRUNO_MADUREIRA_FERREIRA['linkedin_url'],
-                'minibio' => 'Designer gráfico, bacharel em Comunicação Social pela Faculdade Esamc de Uberlândia (2015). Mestre em Ciências da Comunicação pela Universidade de São Paulo (USP), pesquisando design digital, plataformas digitais e participação política intermediada por plataformas digitais. É membro do Centro Internacional de Pesquisa Atopos (ECA/USP) sob coordenação do Prof. Dr. Massimo Di Felice, onde desenvolve trabalhos ligados a cidadania digital e design.',
-            ]),
-        ];
+    public static function getCoordinators(): Collection
+    {
+        return User::getUsersByRole('coordinator');
     }
 
-    public static function getDevelopers(): array {
-        return [
-            self::getPersonMergedData([
-                'name' => 'Sandro Gallina',
-                'picture_url' => url('/images/team/sandro_foto.jpg'),
-                'linkedin_url' => 'https://www.linkedin.com/in/sandro-gallina/',
-                'website' => 'https://sandrogallina.com/',
-                'minibio' => 'Desenvolvedor Full-stack',
-            ]),
-        ];
+    public static function getResearchers(): Collection
+    {
+        return User::getUsersByRole('researcher');
+    }
+
+    public static function getDesigners(): Collection
+    {
+        return User::getUsersByRole('designer');
+    }
+
+    public static function getDevelopers(): Collection {
+        return User::getUsersByRole('developer');
+    }
+
+    private static function getUsersByRole(string $role): Collection {
+        return User::with('information.university')
+            ->withRole($role)
+            ->orderBy('name')
+            ->get();
     }
 
     public static function getPersonMergedData(array $person): array {
@@ -680,20 +672,8 @@ class User extends Authenticatable
         );
     }
 
-    public static function getInvitedResearchers(): array {
-        return [
-            self::getPersonMergedData(self::BARBARA_CARFAGNA),
-            self::getPersonMergedData(self::COSIMO_ACCOTO),
-            self::getPersonMergedData(self::DERRICK_DE_KERCKHOVE),
-            self::getPersonMergedData(self::ENEA_BIANCHI),
-            self::getPersonMergedData(self::ISABEL_MARIA_BABO),
-            self::getPersonMergedData(self::JOSE_ALBERTO_SANCHEZ_MARTINEZ),
-            self::getPersonMergedData(self::JOSE_AUGUSTO_BRAGANCA_MIRANDA),
-            self::getPersonMergedData(self::MARIO_PIREDDU),
-            self::getPersonMergedData(self::MICHEL_MAFFESOLI),
-            self::getPersonMergedData(self::PIERRE_LEVY),
-            self::getPersonMergedData(self::SILVIA_SURRENTI),
-        ];
+    public static function getInvitedResearchers(): Collection {
+        return User::getUsersByRole('invited');
     }
 
 
@@ -708,5 +688,10 @@ class User extends Authenticatable
         }
 
         return url(self::MAP_ID_USER[$this->id]['picture_url']);
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return true;
     }
 }

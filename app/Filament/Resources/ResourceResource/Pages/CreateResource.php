@@ -4,8 +4,8 @@ namespace App\Filament\Resources\ResourceResource\Pages;
 
 use App\Filament\Resources\ResourceResource;
 use App\Models\UploadedFile;
-use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Support\Facades\Storage;
 
 class CreateResource extends CreateRecord
 {
@@ -24,19 +24,20 @@ class CreateResource extends CreateRecord
         return $this->previousUrl ?? $this->getResource()::getUrl('index');
     }
 
-    public function afterSave(): void
+    public function afterCreate(): void
     {
-        if (isset($data['source_file'])) {
-            $uploadedFile = request()->file('source_file');
-            $fileMetadata = new UploadedFile([
-                'path'          => $data['source_file'],
-                'original_name' => $uploadedFile->getClientOriginalName(),
-                'mimeType'      => $uploadedFile->getMimeType(),
-                'size'          => $uploadedFile->getSize(),
-                'uploaded_by'   => auth()->id(),
-            ]);
-
-            $this->record->uploadedFile()->save($fileMetadata);
+        $uploadedFilePath = $this->form->getState()['uploaded_file'] ?? null;
+        if (!$uploadedFilePath) {
+            return;
         }
+
+        UploadedFile::create([
+            'path' => $uploadedFilePath,
+            'original_name' => basename($uploadedFilePath),
+            'mimeType' => Storage::disk('public')->mimeType($uploadedFilePath),
+            'size' => Storage::disk('public')->size($uploadedFilePath),
+            'uploaded_by' => auth()->id(),
+            'resource_id' => $this->record->id,
+        ]);
     }
 }
