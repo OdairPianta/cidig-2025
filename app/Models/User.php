@@ -656,10 +656,11 @@ class User extends Authenticatable implements FilamentUser
 
     private static function getUsersByRole(string $role): Collection {
         return User::with('information.university')
-            ->withRole($role)
-            ->orderBy('name')
-            ->get();
-    }
+        ->withRole($role)
+        ->where('is_active', 1)  // Add this line to filter active users only
+        ->orderBy('name')
+        ->get();
+    }   
 
     public static function getPersonMergedData(array $person): array {
         return array_merge(

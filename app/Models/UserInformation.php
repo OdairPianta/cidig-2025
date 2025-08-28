@@ -19,6 +19,7 @@ class UserInformation extends Model
         'description',
         'title',
         'website',
+        'roles',
     ];
 
     protected $casts = [

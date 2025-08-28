@@ -24,6 +24,7 @@ class SubjectResource extends FilamentResourceBase
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')->required(),
+                Forms\Components\TextInput::make('slug'),
                 Forms\Components\Checkbox::make('is_active'),
             ]);
     }
@@ -32,10 +33,27 @@ class SubjectResource extends FilamentResourceBase
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')->label('Verbete')->sortable()->searchable(),
-                Tables\Columns\TextColumn::make('created_at')->label('Criado em')->dateTime()->dateTime()->sortable(),
-                Tables\Columns\TextColumn::make('updated_at')->label('Atualizado em')->dateTime()->dateTime()->sortable(),
-                Tables\Columns\CheckboxColumn::make('is_active')->label('Ativo')->sortable(),
+                Tables\Columns\TextColumn::make('name')
+                    ->label('Verbete')
+                    ->sortable()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('slug')
+                    ->label('Slug')
+                    ->sortable()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Criado em')
+                    ->dateTime()
+                    ->dateTime()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Atualizado em')
+                    ->dateTime()
+                    ->dateTime()
+                    ->sortable(),
+                Tables\Columns\CheckboxColumn::make('is_active')
+                    ->label('Ativo')
+                    ->sortable(),
             ])
             ->filters([
                 //
