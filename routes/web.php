@@ -6,15 +6,13 @@ use App\Http\Controllers\TagController;
 use App\Http\Controllers\TicketController;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
+use App\Livewire\Auth\Register;
 
 //Route::get('/', function () {
 //    return view('welcome');
 //})->name('home');
 
-Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
-
+// ...existing code...
 Route::prefix('/v0')->group(function() {
     Route::get('/', 'App\Http\Controllers\HomeController@landingPage')->name('lp');
     Route::get('/inicio', 'App\Http\Controllers\HomeController@index')->name('index');
@@ -31,7 +29,6 @@ Route::prefix('/v0')->group(function() {
 
     Route::get('/special/{subjectSlug}', 'App\Http\Controllers\SubjectController@showSpecialPage')->name('showSpecialPage');
 });
-
 
 Route::group(['middleware' => ['auth', 'active_user']], function() {
     Route::get('/home', 'App\Http\Controllers\HomeController@home')->name('home');

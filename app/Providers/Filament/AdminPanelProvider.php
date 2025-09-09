@@ -29,15 +29,17 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->registration()  // <- Adicione esta linha
             ->passwordReset()
-            ->profile()
+            ->profile(\App\Filament\Pages\EditProfile::class)
             ->colors([
                 'primary' => Color::Rose,
             ])
+            // ...resto do código permanece igual...
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                \App\Filament\Pages\Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
@@ -45,16 +47,6 @@ class AdminPanelProvider extends PanelProvider
                 Widgets\FilamentInfoWidget::class,
             ])
             ->navigationItems([
-                NavigationItem::make('Tenho uma dúvida')
-                    ->group('Ajuda')
-                    ->url(fn() => TicketResource::getUrl('create') . '?ticket_type=2')
-                    ->icon('heroicon-s-question-mark-circle')
-                    ->sort(1),
-                NavigationItem::make('Reportar um problema')
-                    ->group('Ajuda')
-                    ->url(fn() => TicketResource::getUrl('create') . '?ticket_type=1')
-                    ->icon('heroicon-o-cog')
-                    ->sort(2),
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -70,7 +62,6 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            ->sidebarCollapsibleOnDesktop()
-            ;
+            ->sidebarCollapsibleOnDesktop();
     }
 }

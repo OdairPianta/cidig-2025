@@ -6,6 +6,7 @@ use App\Filament\Resources\UserInformationResource\Pages;
 use App\Filament\Resources\UserInformationResource\RelationManagers;
 use App\Models\UserInformation;
 use App\Models\University;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -31,19 +32,18 @@ class UserInformationResource extends Resource
     {
         return $form
             ->schema([
-                //
                 Forms\Components\Select::make('user_id')
-                            ->label('Usuário')
-                            ->placeholder('Selecione um usuário')
-                            ->options(auth()->user()->pluck('name', 'id'))
-                            ->columns()
-                            ->required(),
+                    ->label('Usuário')
+                    ->placeholder('Selecione um usuário')
+                    ->options(User::all()->pluck('name', 'id')) // Correção aqui
+                    ->required(),
+                    
                 Forms\Components\Select::make('university_id')
-                            ->label('Universidade')
-                            ->placeholder('Selecione uma universidade')
-                            ->options(University::active()->pluck('name', 'id'))
-                            ->columns()
-                            ->required(),
+                    ->label('Universidade')
+                    ->placeholder('Selecione uma universidade')
+                    ->options(University::query()->where('is_active', true)->pluck('name', 'id'))
+                    ->required(),
+                    
                 Forms\Components\FileUpload::make('picture_url')
                     ->label('Foto de perfil')
                     ->image()
@@ -52,34 +52,44 @@ class UserInformationResource extends Resource
                     ->visibility('public')
                     ->preserveFilenames()
                     ->downloadable()
-                    ->openable()
-                    ->default(fn ($record) => $record?->picture_url),
+                    ->openable(),
+                    
                 Forms\Components\Section::make('Links')
-                    ->columns()
+                    ->columns(3)
                     ->collapsible()
                     ->schema([
-                        Forms\Components\TextInput::make('kinkedin_url')
-                            ->label('Linkedin'),
+                        Forms\Components\TextInput::make('linkedin_url') // Correção: era kinkedin_url
+                            ->label('LinkedIn')
+                            ->url(),
                         Forms\Components\TextInput::make('lattes_url')
-                            ->label('Lattes'),
-                        Forms\Components\TextInput::make('lattes_url')
-                            ->label('Lattes'),
+                            ->label('Lattes')
+                            ->url(),
+                        Forms\Components\TextInput::make('orcid_url') // Correção: estava duplicado lattes_url
+                            ->label('ORCID')
+                            ->url(),
                     ]),
-                Forms\Components\TextInput::make('minibio')
-                    ->label('Mini Bio'),
+                    
+                Forms\Components\Textarea::make('minibio')
+                    ->label('Mini Bio')
+                    ->rows(3),
+                    
                 Forms\Components\Textarea::make('description')
-                    ->label('Descrição'),
+                    ->label('Descrição')
+                    ->rows(3),
+                    
                 Forms\Components\TextInput::make('title')
                     ->label('Título'),
+                    
                 Forms\Components\Select::make('roles')
-                            ->label('Funções')
-                            ->placeholder('Selecione as funções')
-                            ->multiple()
-                            ->options(self::ROLES)
-                            ->columns()
-                            ->required(),
+                    ->label('Funções')
+                    ->placeholder('Selecione as funções')
+                    ->multiple()
+                    ->options(self::ROLES)
+                    ->required(),
+                    
                 Forms\Components\TextInput::make('website')
-                    ->label('Site'),
+                    ->label('Site')
+                    ->url(),
             ]);
     }
 
@@ -130,7 +140,8 @@ class UserInformationResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                    ->hidden(fn (): bool => !auth()->user()->isAdmin()),
                 ]),
             ]);
     }
@@ -149,5 +160,10 @@ class UserInformationResource extends Resource
             'create' => Pages\CreateUserInformation::route('/create'),
             'edit' => Pages\EditUserInformation::route('/{record}/edit'),
         ];
+    }
+    
+    public static function canAccess(): bool
+    {
+        return auth()->check() && auth()->user()->isAdmin();
     }
 }

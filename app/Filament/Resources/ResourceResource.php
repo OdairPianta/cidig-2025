@@ -63,7 +63,8 @@ class ResourceResource extends FilamentResourceBase
                             ->rows(5)
                             ->required(),
                         Forms\Components\TextInput::make('source')
-                            ->label('Fonte (Link)'),
+                            ->label('Fonte (Link)')
+                            ->required(),
                         Forms\Components\FileUpload::make('uploaded_file')
                             ->label('Arquivo (em PDF)')
                             ->acceptedFileTypes(['application/pdf'])
@@ -108,7 +109,8 @@ class ResourceResource extends FilamentResourceBase
                         Forms\Components\TextInput::make('identifier')
                             ->label('Identificador'),
                         Forms\Components\TextInput::make('language')
-                            ->label('Idioma do conteúdo'),
+                            ->label('Idioma do conteúdo')
+                            ->required(),
                     ]),
             ]);
     }
@@ -155,7 +157,8 @@ class ResourceResource extends FilamentResourceBase
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                    ->hidden(fn (): bool => !auth()->user()->isAdmin()),
                 ]),
             ]);
     }

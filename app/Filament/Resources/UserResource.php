@@ -50,16 +50,16 @@ class UserResource extends Resource
                     ]),
 
                 Forms\Components\Select::make('subjects')
-                    ->label('Tema')
-                    ->placeholder('Selecione os temas relacionadas')
-                    ->relationship('subjects', 'name')
-                    ->options(Subject::query()->isActive()->orderBy('name')->pluck('name', 'id'))
-                    ->hidden(fn (User $record) => !auth()->user()->isAdmin())
-                    ->required(),
+                 ->label('Tema')
+                  ->placeholder('Selecione os temas relacionadas')
+                  ->relationship('subjects', 'name')
+                 ->options(Subject::query()->isActive()->orderBy('name')->pluck('name', 'id'))
+                 ->hidden(fn (?User $record) => !auth()->user()->isAdmin())
+                 ->required(),
                 Forms\Components\Checkbox::make('is_active')
                     ->default(false)
-                    ->hidden(fn (User $record) => !auth()->user()->isAdmin() || $record->id === auth()->id())
-                    ->label('Ativo'),
+                  ->hidden(fn (?User $record) => !auth()->user()->isAdmin() || ($record && $record->id === auth()->id()))
+                 ->label('Ativo'),
             ]);
     }
 
@@ -93,7 +93,8 @@ class UserResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                    ->hidden(fn (): bool => !auth()->user()->isAdmin()),
                 ]),
             ]);
     }
@@ -112,5 +113,10 @@ class UserResource extends Resource
             'create' => Pages\CreateUser::route('/create'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
+    }
+    
+    public static function canAccess(): bool
+    {
+        return auth()->check() && auth()->user()->isAdmin();
     }
 }

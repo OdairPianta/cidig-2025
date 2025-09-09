@@ -56,7 +56,8 @@ class UniversityResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                    ->hidden(fn (): bool => !auth()->user()->isAdmin()),
                 ]),
             ]);
     }
@@ -75,5 +76,10 @@ class UniversityResource extends Resource
             'create' => Pages\CreateUniversity::route('/create'),
             'edit' => Pages\EditUniversity::route('/{record}/edit'),
         ];
+    }
+        
+    public static function canAccess(): bool
+    {
+        return auth()->check() && auth()->user()->isAdmin();
     }
 }

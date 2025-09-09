@@ -66148,10 +66148,10 @@ if (document.getElementById('example')) {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! /Users/sandrogallina/projects/cidig-2025/resources/js/app.js */"./resources/js/app.js");
-__webpack_require__(/*! /Users/sandrogallina/projects/cidig-2025/resources/sass/app.scss */"./resources/sass/app.scss");
-__webpack_require__(/*! /Users/sandrogallina/projects/cidig-2025/resources/sass/app-2023.scss */"./resources/sass/app-2023.scss");
-module.exports = __webpack_require__(/*! /Users/sandrogallina/projects/cidig-2025/resources/sass/footer.scss */"./resources/sass/footer.scss");
+__webpack_require__(/*! /home/joao/projects/cidig-2025/resources/js/app.js */"./resources/js/app.js");
+__webpack_require__(/*! /home/joao/projects/cidig-2025/resources/sass/app.scss */"./resources/sass/app.scss");
+__webpack_require__(/*! /home/joao/projects/cidig-2025/resources/sass/app-2023.scss */"./resources/sass/app-2023.scss");
+module.exports = __webpack_require__(/*! /home/joao/projects/cidig-2025/resources/sass/footer.scss */"./resources/sass/footer.scss");
 
 
 /***/ })

@@ -2,6 +2,8 @@
     "private": true,
     "type": "module",
     "scripts": {
+        "build": "vite build",
+        "preview": "vite preview",
         "dev": "npm run development",
         "development": "cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js",
         "watch": "npm run development -- --watch",
@@ -14,6 +16,7 @@
         "@tailwindcss/vite": "^4.0.7",
         "autoprefixer": "^10.4.20",
         "axios": "^1.7.4",
+        "chart.js": "^4.5.0",
         "concurrently": "^9.0.1",
         "laravel-vite-plugin": "^1.0",
         "tailwindcss": "^4.0.7",

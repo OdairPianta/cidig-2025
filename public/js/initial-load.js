@@ -73003,7 +73003,7 @@ __webpack_require__(/*! ./components/Index */ "./resources/js/components/Index.j
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! /Users/sandrogallina/projects/cidig-2025/resources/js/initial-load.js */"./resources/js/initial-load.js");
+module.exports = __webpack_require__(/*! /home/joao/projects/cidig-2025/resources/js/initial-load.js */"./resources/js/initial-load.js");
 
 
 /***/ })

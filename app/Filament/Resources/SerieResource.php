@@ -108,7 +108,8 @@ class SerieResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                    ->hidden(fn (): bool => !auth()->user()->isAdmin()),
                 ]),
             ]);
     }
@@ -127,5 +128,10 @@ class SerieResource extends Resource
             'create' => Pages\CreateSerie::route('/create'),
             'edit' => Pages\EditSerie::route('/{record}/edit'),
         ];
+    }
+        
+    public static function canAccess(): bool
+    {
+        return auth()->check() && auth()->user()->isAdmin();
     }
 }

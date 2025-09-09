@@ -509,18 +509,21 @@ class User extends Authenticatable implements FilamentUser
         'name',
         'email',
         'password',
+        'email_verified_at',
+        'remember_token',
     ];
 
     /**
      * The attributes that should be hidden for serialization.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
+    protected $with = ['information']; // Isso carrega automaticamente as informações do usuário
     /**
      * Get the attributes that should be cast.
      *
@@ -531,18 +534,26 @@ class User extends Authenticatable implements FilamentUser
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_admin' => 'boolean',
+            'is_active' => 'boolean',
         ];
     }
 
+    protected $attributes = [
+        'is_admin' => false,
+        'is_active' => false,
+    ];
+
+    // ...existing code (mantenha todos os outros métodos como estavam)...
+    
     /**
-     * Get the user's initials
+     * Get the user's initials.
      */
     public function initials(): string
     {
-        return Str::of($this->name)
-            ->explode(' ')
+        return collect(explode(' ', $this->name))
+            ->map(fn($word) => strtoupper(substr($word, 0, 1)))
             ->take(2)
-            ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
     }
 
