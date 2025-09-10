@@ -11,6 +11,7 @@ use App\Livewire\Auth\Register;
 //Route::get('/', function () {
 //    return view('welcome');
 //})->name('home');
+Route::post('/upload-image', [App\Http\Controllers\ImageUploadController::class, 'upload'])->name('upload.image');
 
 // ...existing code...
 Route::prefix('/v0')->group(function() {
@@ -82,6 +83,7 @@ Route::prefix('/search')->group(function(){
     Route::get('/subject/{subjectId}', 'App\Http\Controllers\ResourceController@searchBySubjectV2')
         ->name('v2.searchBySubject');
 });
+
 
 
 Route::middleware(['auth'])->group(function () {

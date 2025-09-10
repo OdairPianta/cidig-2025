@@ -405,4 +405,38 @@ class ResourceController extends Controller
         return view('v2.resources.contents',
             compact('resources', 'searchBy', 'userData'));
     }
+
+    public function uploadImage(Request $request)
+    {
+        if (!auth()->check()) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        try {
+            $request->validate([
+                'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+
+            $image = $request->file('image');
+            $filename = time() . '.' . $image->getClientOriginalExtension();
+            $path = $image->storeAs('uploads/images', $filename, 'public');
+
+            $response = response()->json([
+                'success' => true,
+                'filename' => $filename,
+                'path' => Storage::url($path),
+                'message' => 'Image uploaded successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            $response = response()->json([
+                'success' => false,
+                'message' => 'Upload failed: ' . $e->getMessage()
+            ], 500);
+        }
+
+        return $response->header('Access-Control-Allow-Origin', '*')
+                       ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+                       ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    }
 }

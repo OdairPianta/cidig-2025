@@ -29,13 +29,12 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->registration()  // <- Adicione esta linha
+            ->registration()
             ->passwordReset()
             ->profile(\App\Filament\Pages\EditProfile::class)
             ->colors([
                 'primary' => Color::Rose,
             ])
-            // ...resto do código permanece igual...
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
@@ -57,11 +56,10 @@ class AdminPanelProvider extends PanelProvider
                 VerifyCsrfToken::class,
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
-                DispatchServingFilamentEvent::class,
+                DispatchServingFilamentEvent::class, // Adicione esta linha
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ])
-            ->sidebarCollapsibleOnDesktop();
+            ]);
     }
 }
