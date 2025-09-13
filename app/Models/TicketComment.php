@@ -31,7 +31,7 @@ class TicketComment extends Model
     /**
      * @return BelongsTo
      */
-    public function comments()
+    public function ticket()
     {
         return $this->belongsTo(Ticket::class, 'ticket_id');
     }

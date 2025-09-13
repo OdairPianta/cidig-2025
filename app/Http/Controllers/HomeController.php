@@ -176,7 +176,7 @@ class HomeController extends Controller
 
         $researchers = [
             'title' => 'Demais integrantes',
-            'people' => array_merge($researchers['people'], $invitedResearchers['people']),
+            'people' => $researchers['people']->merge($invitedResearchers['people']),
         ];
 
         return view('v2.pages.about', compact('researchers', 'coordinators'));
@@ -209,7 +209,7 @@ class HomeController extends Controller
         if ($newVersion) {
             $researchers = [
                 'title' => 'Professores e Pesquisadores',
-                'people' => array_merge($researchers['people'], $invitedResearchers['people']),
+                'people' => $researchers['people']->merge($invitedResearchers['people']),
             ];
 
             return view('v2.pages.team', compact('researchers', 'coordinators'));

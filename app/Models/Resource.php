@@ -94,6 +94,16 @@ class Resource extends Model
         return self::FORMAT_ICONS[$this->format_id];
     }
 
+    public function getNewFormatIcon(): string
+    {
+        return match ($this->format_id) {
+            self::FORMAT_VIDEO => 'heroicon-o-video-camera',
+            self::FORMAT_AUDIO => 'heroicon-o-speaker-wave',
+            self::FORMAT_IMAGE => 'heroicon-o-photo',
+            default => 'heroicon-o-document',
+        };
+    }
+
     /**
      * @param int $tagId
      * @return bool

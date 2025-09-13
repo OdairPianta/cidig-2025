@@ -22,7 +22,8 @@ class TagResource extends FilamentResourceBase
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')->required(),
+                Forms\Components\TextInput::make('name')
+                    ->required(),
                 Forms\Components\Checkbox::make('is_active'),
             ]);
     }
@@ -31,17 +32,26 @@ class TagResource extends FilamentResourceBase
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')->label('Nome')->searchable()->sortable(),
-                Tables\Columns\TextColumn::make('created_at')->label('Criado em')->dateTime()->dateTime()->sortable(),
-                Tables\Columns\TextColumn::make('updated_at')->label('Atualizado em')->dateTime()->dateTime()->sortable(),
-                Tables\Columns\CheckboxColumn::make('is_active')->label('Ativo')->sortable(),
+                Tables\Columns\TextColumn::make('name')
+                    ->label('Nome')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Criado em')
+                    ->dateTime()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Atualizado em')
+                    ->dateTime()
+                    ->sortable(),
+                Tables\Columns\CheckboxColumn::make('is_active')
+                    ->label('Ativo')
+                    ->sortable(),
             ])
             ->filters([
                 Tables\Filters\Filter::make('active')->query(fn (Builder $query) => $query->where('is_active', true)),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make()->label('Editar'),
-            ])
+            ->actions([])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),

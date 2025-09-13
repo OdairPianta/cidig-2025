@@ -4,15 +4,15 @@ namespace App\Filament\Resources;
 
 use App\Filament\FilamentResourceBase;
 use App\Filament\Resources\ResourceResource\Pages;
-use App\Filament\Resources\ResourceResource\RelationManagers;
-use App\Filament\Resources\SubjectResource\RelationManagers\ResourcesRelationManager;
 use App\Models\Resource as ResourceModel;
-use App\Models\Subject;
 use App\Models\Tag;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\HtmlString;
+use Storage;
 
 class ResourceResource extends FilamentResourceBase
 {
@@ -64,17 +64,19 @@ class ResourceResource extends FilamentResourceBase
                             ->required(),
                         Forms\Components\TextInput::make('source')
                             ->label('Fonte (Link)'),
-                        Forms\Components\FileUpload::make('source_file')
+                        Forms\Components\FileUpload::make('uploaded_file')
                             ->label('Arquivo (em PDF)')
                             ->acceptedFileTypes(['application/pdf'])
-                            ->storeFiles()
+                            ->disk('public')
+                            ->directory('resources')
+                            ->visibility('public')
                             ->preserveFilenames()
-                            ->afterStateHydrated(function ($component, $state) {
-                                // Optional: preload existing file names if editing
-                            })
-                            ->dehydrated(false)
-                            ->live()
-                            ->downloadable(),
+                            ->downloadable()
+                            ->openable()
+                            ->helperText(fn ($record) => $record && $record->uploadedFile
+                                ? new HtmlString('Arquivo atual: <a href="' . Storage::disk('public')->url($record->uploadedFile->path) . '" target="_blank">' . $record->uploadedFile->original_name . '</a>')
+                                : 'No file uploaded yet.'
+                            ),
                         Forms\Components\TextInput::make('coverage')
                             ->label('Cobertura (Tempo/Espacial)'),
                         Forms\Components\Checkbox::make('published_at')
@@ -115,15 +117,40 @@ class ResourceResource extends FilamentResourceBase
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('title')->label('Título')->searchable()->sortable(),
-                Tables\Columns\TextColumn::make('created_at')->label('Criado em')->dateTime()->dateTime()->sortable(),
-                Tables\Columns\TextColumn::make('published_at')->label('Publicado em')->dateTime()->dateTime()->sortable(),
+                Tables\Columns\TextColumn::make('title')
+                    ->label('Título')
+                    ->tooltip(fn (ResourceModel $record) => $record->title)
+                    ->icon(fn (ResourceModel $record) => $record->getNewFormatIcon())
+                    ->limit(50)
+                    ->searchable()
+                    ->toggleable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Criado em')
+                    ->description(fn (ResourceModel $record) => 'por ' . $record->user->name)
+                    ->dateTime()
+                    ->sortable(),
+                Tables\Columns\IconColumn::make('id')
+                    ->label('Status')
+                    ->icon(fn (ResourceModel $record) => $record->published_at ? 'heroicon-o-check-circle' : 'heroicon-o-pencil')
+                    ->color(fn (ResourceModel $record) => $record->published_at ? 'success' : 'warning')
+                    ->tooltip(fn (ResourceModel $record) => $record->published_at ? 'Publicado' : 'Rasgunho'),
             ])
             ->filters([
-                //
+                Tables\Filters\TernaryFilter::make('published_at')
+                    ->label('Publicado')
+                    ->placeholder('Todos')
+                    ->trueLabel('Sim')
+                    ->falseLabel('Não')
+                    ->nullable(),
+                Tables\Filters\SelectFilter::make('created_by')
+                    ->label('Criado por')
+                    ->placeholder('Todos')
+                    ->multiple()
+                    ->options(User::query()->orderBy('name')->pluck('name', 'id'))
+                    ->searchable(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()->label('Editar'),
                 Tables\Actions\ViewAction::make()->label('Visualizar'),
             ])
             ->bulkActions([
