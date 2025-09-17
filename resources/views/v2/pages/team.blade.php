@@ -12,7 +12,9 @@
                             <div id="coordinator-container" class="row mt-2">
                                 @foreach($coordinators['people'] as $coordinator)
                                     <div class="col-xs-12 col-sm-6">
-                                        <img src="{{ data_get($coordinator, 'information.picture_link') }}" alt="{{ $coordinator->name }}" class="mr-2">
+                                        @if(data_get($coordinator, 'information.picture_url'))
+                                            <img src="{{ Storage::url(data_get($coordinator, 'information.picture_url')) }}" alt="{{ $coordinator->name }}" class="mr-2">
+                                        @endif
                                     </div>
                                     <div class="col-xs-12 col-sm-6">
                                         <div class="media-body">
@@ -49,8 +51,10 @@
                                                     class="mr-2 rounded-circle"
                                                     style="height: 7em;width: 7em;display: block;"
                                                 >
-                                                    <img src="{{ data_get($researcher, 'information.picture_link') }}" alt="{{ $researcher->name }}"
-                                                         class="team-person-picture rounded-circle mr-2" />
+                                                    @if(data_get($researcher, 'information.picture_url'))
+                                                        <img src="{{ Storage::url(data_get($researcher, 'information.picture_url')) }}" alt="{{ $researcher->name }}"
+         class="team-person-picture rounded-circle mr-2" />
+                                                    @endif
                                                 </a>
                                             </div>
 

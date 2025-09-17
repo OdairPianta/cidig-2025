@@ -3,7 +3,7 @@
         <!-- content section -->
         <x-filament::section>
             <x-slot name="heading">Seus conteúdos recentes</x-slot>
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
                 <table class="w-full text-left divide-y table-auto">
                     <thead>
                         <tr class="bg-gray-50 dark:bg-gray-800">
@@ -37,7 +37,7 @@
         <x-filament::section>
             <x-slot name="heading">Criar conteúdo</x-slot>
             <div>
-                <p class="mab-4 text-gray-700 dark:text-gray-300">Qual conteúdo você deseja criar hoje?</p>
+                <p class="mb-4">Qual conteúdo você deseja criar hoje?</p>
                 
                 <div class="grid grid-cols-2 gap-4">
                     <a href="{{ route('filament.admin.resources.resources.create') }}" class="p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center space-x-3">
@@ -53,6 +53,13 @@
                         </span>
                         <span class="text-gray-900 dark:text-gray-100">Nova websérie</span>
                     </a>
+
+                    <a href="{{ route('filament.admin.resources.posts.create') }}?format_id=2" class="p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center space-x-3">
+                        <span class="text-primary-500">
+                            <x-heroicon-o-chat-bubble-left class="w-6 h-6" />
+                        </span>
+                        <span class="text-gray-900 dark:text-gray-100">Nova postagem</span>
+                    </a>
                 </div>
             </div>
         </x-filament::section>
@@ -60,21 +67,21 @@
 
     
     <x-filament::section>
-        <x-slot name="heading">Tickets</x-slot>
-        <div class="overflow-x-auto">
-            <table class="w-full text-left divide-y table-auto">
-                <thead>
-                    <tr class="bg-gray-50 dark:bg-gray-800">
-                        <th class="p-2 text-gray-900 dark:text-gray-100">Título</th>
-                        <th class="p-2 text-gray-900 dark:text-gray-100">Criador</th>
-                        <th class="p-2 text-gray-900 dark:text-gray-100">Responsável</th>
-                        <th class="p-2 text-gray-900 dark:text-gray-100">Data</th>
-                        <th class="p-2 text-gray-900 dark:text-gray-100">Status</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                    @foreach(\App\Models\Ticket::where('created_by', auth()->id())->orWhere('responsible_id', auth()->id())->latest()->limit(7)->get() as $ticket)
-                    <tr class="bg-white dark:bg-gray-800">
+    <x-slot name="heading">Tickets</x-slot>
+    <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+        <table class="w-full text-left divide-y table-auto">
+            <thead>
+                <tr class="bg-gray-50 dark:bg-gray-800">
+                    <th class="p-2 text-gray-900 dark:text-gray-100">Título</th>
+                    <th class="p-2 text-gray-900 dark:text-gray-100">Criador</th>
+                    <th class="p-2 text-gray-900 dark:text-gray-100">Responsável</th>
+                    <th class="p-2 text-gray-900 dark:text-gray-100">Data</th>
+                    <th class="p-2 text-gray-900 dark:text-gray-100">Status</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                @foreach(\App\Models\Ticket::where('created_by', auth()->id())->orWhere('responsible_id', auth()->id())->latest()->limit(7)->get() as $ticket)
+                <tr class="bg-white dark:bg-gray-800">
                         <td class="p-2">
                             <a href="{{ route('filament.admin.resources.tickets.show', $ticket) }}" class="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300">
                                 {{ $ticket->title }}
@@ -102,9 +109,9 @@
                             </span>
                         </td>
                     </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    </x-filament::section>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+</x-filament::section>
 </x-filament::page>

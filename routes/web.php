@@ -4,6 +4,7 @@ use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\TicketController;
+use App\Http\Controllers\PostController;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 use App\Livewire\Auth\Register;
@@ -11,7 +12,6 @@ use App\Livewire\Auth\Register;
 //Route::get('/', function () {
 //    return view('welcome');
 //})->name('home');
-Route::post('/upload-image', [App\Http\Controllers\ImageUploadController::class, 'upload'])->name('upload.image');
 
 // ...existing code...
 Route::prefix('/v0')->group(function() {
@@ -84,7 +84,9 @@ Route::prefix('/search')->group(function(){
         ->name('v2.searchBySubject');
 });
 
-
+Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
+Route::get('/{userSlug}/posts', [PostController::class, 'showUserPosts'])->name('user.posts');
+Route::get('/{userSlug}/{postSlug}', [PostController::class, 'show'])->name('post.show');
 
 Route::middleware(['auth'])->group(function () {
     Route::redirect('settings', 'settings/profile');

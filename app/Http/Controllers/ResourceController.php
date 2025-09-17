@@ -379,31 +379,25 @@ class ResourceController extends Controller
 
     public function showByUserV2(string $userSlug)
     {
-        $userId = null;
-        $userData = null;
-        foreach (User::MAP_ID_USER as $id => $user) {
-            if ($userSlug === User::getSlugFrom($user['name'])) {
-                $userId = $id;
-                $userData = $user;
-                $userData['slug'] = $userSlug;
-                break;
-            }
-        }
+    $user = User::whereRaw("LOWER(REPLACE(name, ' ', '-')) = ?", [$userSlug])->first();
 
-        $user = User::find($userId);
-        $resources = collect([]);
-        if ($user) {
-            $resources = $user
-                ->resources()
-                ->published()
-                ->orderBy('created_at', 'desc')
-                ->paginate(20);
-        }
+    $resources = collect([]);
+    $userData = null;
+    if ($user) {
+        $resources = $user
+            ->resources()
+            ->published()
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
 
-        $searchBy = $user ? $user->name : $userSlug;
+        $userData = $user->getFullProfile();
+        $userData['slug'] = $userSlug;
+    }
 
-        return view('v2.resources.contents',
-            compact('resources', 'searchBy', 'userData'));
+    $searchBy = $user ? $user->name : $userSlug;
+
+    return view('v2.resources.contents',
+        compact('resources', 'searchBy', 'userData'));
     }
 
     public function uploadImage(Request $request)
