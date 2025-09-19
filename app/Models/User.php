@@ -208,16 +208,83 @@ class User extends Authenticatable implements FilamentUser
         ->get();
     }   
 
-    public static function getPersonMergedData(array $person): array {
-        return array_merge(
-            [
-                'id' => self::getSlugFrom($person['name']),
-                'slug' => self::getSlugFrom($person['name']),
-                'picture_url' => url($person['picture_url']),
-            ],
-            $person
-        );
+    public static function getPersonMergedData($person): array
+{
+    // Se $person já é um array (dados vindos do banco), usa diretamente
+    if (is_array($person)) {
+        return [
+            'id' => $person['id'] ?? null,
+            'name' => $person['name'] ?? '',
+            'slug' => $person['slug'] ?? '',
+            'university' => $person['university'] ?? '',
+            'picture_url' => $person['picture_url'] ?? '/images/team/default.jpg',
+            'lattes_url' => $person['lattes_url'] ?? null,
+            'orcid_url' => $person['orcid_url'] ?? null,
+            'linkedin_url' => $person['linkedin_url'] ?? null,
+            'minibio' => $person['minibio'] ?? '',
+            'description' => $person['description'] ?? '',
+            'title' => $person['title'] ?? null,
+            'website' => $person['website'] ?? null,
+        ];
     }
+    
+    // Se $person é uma string (nome), busca no banco
+    if (is_string($person)) {
+        $user = self::where('name', $person)->with('information')->first();
+        
+        if (!$user) {
+            return [
+                'id' => null,
+                'name' => $person,
+                'slug' => '',
+                'university' => '',
+                'picture_url' => '/images/team/default.jpg',
+                'lattes_url' => null,
+                'orcid_url' => null,
+                'linkedin_url' => null,
+                'minibio' => '',
+                'description' => '',
+                'title' => null,
+                'website' => null,
+            ];
+        }
+        
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'slug' => $user->slug,
+            'university' => $user->information->university->name ?? '',
+            'picture_url' => $user->information->picture_url ?? '/images/team/default.jpg',
+            'lattes_url' => $user->information->lattes_url,
+            'orcid_url' => $user->information->orcid_url,
+            'linkedin_url' => $user->information->linkedin_url,
+            'minibio' => $user->information->minibio,
+            'description' => $user->information->description,
+            'title' => $user->information->title,
+            'website' => $user->information->website,
+        ];
+    }
+    
+    // Se $person é um objeto User
+    if ($person instanceof User) {
+        return [
+            'id' => $person->id,
+            'name' => $person->name,
+            'slug' => $person->slug,
+            'university' => $person->information->university->name ?? '',
+            'picture_url' => $person->information->picture_url ?? '/images/team/default.jpg',
+            'lattes_url' => $person->information->lattes_url,
+            'orcid_url' => $person->information->orcid_url,
+            'linkedin_url' => $person->information->linkedin_url,
+            'minibio' => $person->information->minibio,
+            'description' => $person->information->description,
+            'title' => $person->information->title,
+            'website' => $person->information->website,
+        ];
+    }
+    
+    return [];
+}
 
     public static function getInvitedResearchers(): Collection {
         return User::getUsersByRole('invited');

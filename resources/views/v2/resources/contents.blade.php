@@ -12,10 +12,12 @@
                             <div class="col-12 mb-5">
                                 <div id="coordinator-container" class="row mt-2">
                                     <div class="col-xs-12 col-sm-6">
-                                        <img src="{{ $userData['picture_url'] }}"
-                                             alt="{{ $userData['name'] }}"
-                                             class="mr-2"
-                                        />
+                                        @if($userData['picture_url'])
+                                            <img src="{{ Storage::url($userData['picture_url']) }}"
+                                                 alt="{{ $userData['name'] }}"
+                                                 class="mr-2"
+                                            />
+                                        @endif
                                     </div>
 
                                     <div class="col-xs-12 col-sm-6">
@@ -26,21 +28,19 @@
                                     </div>
                                 </div>
                             </div>
-
-                            
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="col-12 mb-5">
-            <h2>Sobre o pesquisador</h2>
-            <p class="mt-0 description">{{ $userData['minibio'] }}</p>
-            
-            <a href="{{ route('user.posts', $userData['slug']) }}" class="btn btn-outline-primary">
-                <i class="fas fa-blog"></i> Ver Blog do Pesquisador
-            </a>
-        </div>
+                <h2>Sobre o pesquisador</h2>
+                <p class="mt-0 description">{{ $userData['minibio'] }}</p>
+                
+                <a href="{{ route('user.posts', $userData['slug']) }}" class="btn btn-outline-primary">
+                    <i class="fas fa-blog"></i> Ver Blog do Pesquisador
+                </a>
+            </div>
 
             <h2 class="mb-3"> Conteúdos deste autor </h2>
         @else

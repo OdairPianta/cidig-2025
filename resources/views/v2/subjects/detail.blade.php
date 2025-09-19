@@ -20,15 +20,28 @@
                         <p class="description">{{ $subjectData['description'] }}</p>
                     </div>
 
-                    @if ($subjectData['videoId'])
+                    @if ($subjectData['video'] && $subjectData['video']->is_active)
                         <div class="col-12" id="video-presentation">
                             <h2 class="mb-0">Apresentação do Verbete</h2>
+                            @if($subjectData['video']->title)
+                                <h4 class="mt-2 mb-3">{{ $subjectData['video']->title }}</h4>
+                            @endif
+                            @if($subjectData['video']->description)
+                                <p class="mb-3">{{ $subjectData['video']->description }}</p>
+                            @endif
                             <div class="row m-3 align-content-center" style="justify-content: center;">
-                                <iframe width="80%" height="600" src="https://www.youtube.com/embed/{{ $subjectData['videoId'] }}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                <iframe 
+                                    width="80%" 
+                                    height="600" 
+                                    src="https://www.youtube.com/embed/{{ $subjectData['video']->video_id }}" 
+                                    title="{{ $subjectData['video']->title ?? 'Apresentação do Verbete' }}" 
+                                    frameborder="0" 
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                    allowfullscreen>
+                                </iframe>
                             </div>
                         </div>
                     @endif
-
 
                     <div class="col-12" id="researchers-list">
                         <div class="col-12">
@@ -42,7 +55,7 @@
                                     <div class="col-12 media mt-2 mb-3">
                                         <div class="row">
                                             <div class="col-4 col-lg-3">
-                                                @php($researcher = \App\Models\User::getPersonMergedData($person))
+                                               
                                                 <a  href="{{ route('v2.authorPage', $researcher['slug']) }}"
                                                     class="mr-2 team-person-link team-person-picture-link rounded-circle"
                                                     style="height: 7em;width: 7em;display: block;"
@@ -94,4 +107,4 @@
             </div>
         </div>
     </div>
-@endsection
+@endsection 

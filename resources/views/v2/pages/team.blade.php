@@ -53,7 +53,7 @@
                                                 >
                                                     @if(data_get($researcher, 'information.picture_url'))
                                                         <img src="{{ Storage::url(data_get($researcher, 'information.picture_url')) }}" alt="{{ $researcher->name }}"
-         class="team-person-picture rounded-circle mr-2" />
+                                                        class="team-person-picture rounded-circle mr-2" />
                                                     @endif
                                                 </a>
                                             </div>
