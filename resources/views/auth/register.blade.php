@@ -1,5 +1,5 @@
 @extends('layouts.app')
-
+@vite(['resources/css/app.css', 'resources/js/app.js'])
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
@@ -7,8 +7,10 @@
             <div class="card">
                 <div class="card-header">{{ __('Register') }}</div>
 
+                
+
                 <div class="card-body">
-                    <form method="POST" action="{{ route('create') }}">
+                    <form method="POST" action="{{ route('register') }}">
                         @csrf
 
                         <div class="form-group row">

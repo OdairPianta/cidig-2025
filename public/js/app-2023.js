@@ -66141,7 +66141,7 @@ if (document.getElementById('example')) {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! /Users/sandrogallina/projects/cidig-2025/resources/js/app-2023.js */"./resources/js/app-2023.js");
+module.exports = __webpack_require__(/*! /home/joao/projects/cidig-2025/resources/js/app-2023.js */"./resources/js/app-2023.js");
 
 
 /***/ })

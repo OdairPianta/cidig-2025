@@ -4,17 +4,16 @@ use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\TicketController;
+use App\Http\Controllers\PostController;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
+use App\Livewire\Auth\Register;
 
 //Route::get('/', function () {
 //    return view('welcome');
 //})->name('home');
 
-Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
-
+// ...existing code...
 Route::prefix('/v0')->group(function() {
     Route::get('/', 'App\Http\Controllers\HomeController@landingPage')->name('lp');
     Route::get('/inicio', 'App\Http\Controllers\HomeController@index')->name('index');
@@ -31,7 +30,6 @@ Route::prefix('/v0')->group(function() {
 
     Route::get('/special/{subjectSlug}', 'App\Http\Controllers\SubjectController@showSpecialPage')->name('showSpecialPage');
 });
-
 
 Route::group(['middleware' => ['auth', 'active_user']], function() {
     Route::get('/home', 'App\Http\Controllers\HomeController@home')->name('home');
@@ -86,6 +84,9 @@ Route::prefix('/search')->group(function(){
         ->name('v2.searchBySubject');
 });
 
+Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
+Route::get('/{userSlug}/posts', [PostController::class, 'showUserPosts'])->name('user.posts');
+Route::get('/{userSlug}/{postSlug}', [PostController::class, 'show'])->name('post.show');
 
 Route::middleware(['auth'])->group(function () {
     Route::redirect('settings', 'settings/profile');

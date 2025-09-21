@@ -379,30 +379,58 @@ class ResourceController extends Controller
 
     public function showByUserV2(string $userSlug)
     {
-        $userId = null;
-        $userData = null;
-        foreach (User::MAP_ID_USER as $id => $user) {
-            if ($userSlug === User::getSlugFrom($user['name'])) {
-                $userId = $id;
-                $userData = $user;
-                $userData['slug'] = $userSlug;
-                break;
-            }
+    $user = User::whereRaw("LOWER(REPLACE(name, ' ', '-')) = ?", [$userSlug])->first();
+
+    $resources = collect([]);
+    $userData = null;
+    if ($user) {
+        $resources = $user
+            ->resources()
+            ->published()
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        $userData = $user->getFullProfile();
+        $userData['slug'] = $userSlug;
+    }
+
+    $searchBy = $user ? $user->name : $userSlug;
+
+    return view('v2.resources.contents',
+        compact('resources', 'searchBy', 'userData'));
+    }
+
+    public function uploadImage(Request $request)
+    {
+        if (!auth()->check()) {
+            return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        $user = User::find($userId);
-        $resources = collect([]);
-        if ($user) {
-            $resources = $user
-                ->resources()
-                ->published()
-                ->orderBy('created_at', 'desc')
-                ->paginate(20);
+        try {
+            $request->validate([
+                'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+
+            $image = $request->file('image');
+            $filename = time() . '.' . $image->getClientOriginalExtension();
+            $path = $image->storeAs('uploads/images', $filename, 'public');
+
+            $response = response()->json([
+                'success' => true,
+                'filename' => $filename,
+                'path' => Storage::url($path),
+                'message' => 'Image uploaded successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            $response = response()->json([
+                'success' => false,
+                'message' => 'Upload failed: ' . $e->getMessage()
+            ], 500);
         }
 
-        $searchBy = $user ? $user->name : $userSlug;
-
-        return view('v2.resources.contents',
-            compact('resources', 'searchBy', 'userData'));
+        return $response->header('Access-Control-Allow-Origin', '*')
+                       ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+                       ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
     }
 }

@@ -110,7 +110,8 @@ class ManageTicketReplies extends ManageRelatedRecords
                 Tables\Actions\DeleteAction::make()->label('Excluir')->hidden(fn (TicketComment $record): bool => $this->shouldHiddeAction($record)),
             ])
             ->groupedBulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+                Tables\Actions\DeleteBulkAction::make()
+                ->hidden(fn (): bool => !auth()->user()->isAdmin()),
             ]);
     }
 

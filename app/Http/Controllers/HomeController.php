@@ -56,61 +56,80 @@ class HomeController extends Controller
     }
 
     public function indexV2()
-    {
-        $series = [];
-        $tagsToShow = [];
-        foreach (Subject::SERIES_PAGES as $seriesId => $seriesData){
-            if ($seriesId === Subject::UNICO) {
-                continue;
-            }
-
-            $tags = Tag::byIds($seriesData['tags_ids'])->get();
-            $tagsToShow += $tags->toArray();
-
-            $series[] = [
-                'id' => $seriesId,
-                'title' => $seriesData['title'],
-                'description' => $seriesData['description'],
-                'tags' => $tags,
-                'thumbnail' => url($seriesData['thumbnail-novo'] ?? $seriesData['thumbnail']),
-                'url' => route('v2.showSpecialPage', $seriesId),
-            ];
+{
+    // Buscar séries dinamicamente da tabela series
+    $series = [];
+    $tagsToShow = [];
+    
+    $seriesRecords = \App\Models\Serie::where('is_active', true)
+        ->with(['tags' => function($query) {
+            $query->where('is_active', true);
+        }])
+        ->get();
+    
+    foreach ($seriesRecords as $serieRecord) {
+        // Pular se for UNICO (mantém a lógica original)
+        if ($serieRecord->slug === 'unico') {
+            continue;
         }
-
-        $subjects = array_filter(
-            Subject::SUBJECT_NAMES_IMAGES,
-            function ($subject) {
-                return strpos($subject['image'], 'subjects') > 0;
-            }
-        );
-
-        $partners = [
-            url('/images/logos/fapcom-logo-gray.png'),
-            url('/images/logos/jornalismos-logo-gray.png'),
-            url('/images/logos/fake-news-logo-gray.png'),
-            url('/images/logos/gpe-du-logo-gray.png'),
+        
+        // Coletar tags para exibição
+        $tagsToShow = array_merge($tagsToShow, $serieRecord->tags->toArray());
+        
+        $series[] = [
+            'id' => $serieRecord->slug,
+            'title' => $serieRecord->title,
+            'description' => $serieRecord->description,
+            'tags' => $serieRecord->tags,
+            'thumbnail' => url($serieRecord->thumbnail_novo ?? $serieRecord->thumbnail ?? '/images/default.jpg'),
+            'url' => route('v2.showSpecialPage', $serieRecord->slug),
         ];
-
-        $masterclasses = [
-            [
-                'title' => 'Evento Cidig',
-                'url' => self::CONGRESS_URL,
-                'thumbnail' => '/images/events/cidig_bannerWeb.jpg',
-                'thumbnail-tablet' => '/images/events/cidig_bannerTablet.jpg',
-                'thumbnail-mobile' => '/images/events/cidig_bannerMobile.jpg',
-            ],
-        ];
-
-        return view('v2/home',
-            compact(
-                'subjects',
-                'series',
-                'partners',
-                'tagsToShow',
-                'masterclasses'
-            )
-        );
     }
+
+    // Buscar verbetes dinamicamente do banco de dados
+    $subjects = Subject::where('is_active', true)
+        ->whereNotNull('image')
+        ->where('image', 'like', '%subjects%')
+        ->get()
+        ->mapWithKeys(function ($subject) {
+            return [
+                $subject->slug => [
+                    'name' => $subject->name,
+                    'image' => $subject->image,
+                    'id' => $subject->slug,
+                    'inactive' => false,
+                ]
+            ];
+        })
+        ->toArray();
+
+    $partners = [
+        url('/images/logos/fapcom-logo-gray.png'),
+        url('/images/logos/jornalismos-logo-gray.png'),
+        url('/images/logos/fake-news-logo-gray.png'),
+        url('/images/logos/gpe-du-logo-gray.png'),
+    ];
+
+    $masterclasses = [
+        [
+            'title' => 'Evento Cidig',
+            'url' => self::CONGRESS_URL,
+            'thumbnail' => '/images/events/cidig_bannerWeb.jpg',
+            'thumbnail-tablet' => '/images/events/cidig_bannerTablet.jpg',
+            'thumbnail-mobile' => '/images/events/cidig_bannerMobile.jpg',
+        ],
+    ];
+
+    return view('v2/home',
+        compact(
+            'subjects',
+            'series',
+            'partners',
+            'tagsToShow',
+            'masterclasses'
+        )
+    );
+}
 
     /**
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View

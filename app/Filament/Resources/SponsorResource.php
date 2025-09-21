@@ -51,7 +51,8 @@ class SponsorResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                    ->hidden(fn (): bool => !auth()->user()->isAdmin()),
                 ]),
             ]);
     }
@@ -70,5 +71,10 @@ class SponsorResource extends Resource
             'create' => Pages\CreateSponsor::route('/create'),
             'edit' => Pages\EditSponsor::route('/{record}/edit'),
         ];
+    }
+        
+    public static function canAccess(): bool
+    {
+        return auth()->check() && auth()->user()->isAdmin();
     }
 }

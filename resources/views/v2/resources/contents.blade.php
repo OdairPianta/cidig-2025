@@ -27,14 +27,20 @@
                                 </div>
                             </div>
 
-                            <div class="col-12 mb-5">
-                                <h2>Sobre o pesquisador</h2>
-                                <p class="mt-0 description">{{ $userData['minibio'] }}</p>
-                            </div>
+                            
                         </div>
                     </div>
                 </div>
             </div>
+
+            <div class="col-12 mb-5">
+            <h2>Sobre o pesquisador</h2>
+            <p class="mt-0 description">{{ $userData['minibio'] }}</p>
+            
+            <a href="{{ route('user.posts', $userData['slug']) }}" class="btn btn-outline-primary">
+                <i class="fas fa-blog"></i> Ver Blog do Pesquisador
+            </a>
+        </div>
 
             <h2 class="mb-3"> Conteúdos deste autor </h2>
         @else
