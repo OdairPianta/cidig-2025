@@ -57,6 +57,7 @@ class HomeController extends Controller
 
     public function indexV2()
 {
+
     // Buscar séries dinamicamente da tabela series
     $series = [];
     $tagsToShow = [];
@@ -88,20 +89,19 @@ class HomeController extends Controller
 
     // Buscar verbetes dinamicamente do banco de dados
     $subjects = Subject::where('is_active', true)
-        ->whereNotNull('image')
-        ->where('image', 'like', '%subjects%')
-        ->get()
-        ->mapWithKeys(function ($subject) {
-            return [
-                $subject->slug => [
-                    'name' => $subject->name,
-                    'image' => $subject->image,
-                    'id' => $subject->slug,
-                    'inactive' => false,
-                ]
-            ];
-        })
-        ->toArray();
+    ->whereNotNull('image')
+    ->where('image', '!=', '')
+    ->get()
+    ->mapWithKeys(function ($subject) {
+        return [
+            $subject->slug => [
+                'name' => $subject->name,
+                'image' => url($subject->image), // Adicionar url() para caminho completo
+                'id' => $subject->slug,
+            ]
+        ];
+    })
+    ->toArray();
 
     $partners = [
         url('/images/logos/fapcom-logo-gray.png'),

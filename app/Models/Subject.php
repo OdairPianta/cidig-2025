@@ -4,8 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+
 
 class Subject extends Model
 {
@@ -155,7 +157,7 @@ class Subject extends Model
             ->toArray();
     }
 
-    // Manter métodos existentes
+    // Relacionamentos
     public function resources(): HasMany
     {
         return $this->hasMany(Resource::class);
@@ -171,6 +173,17 @@ class Subject extends Model
         return $this->belongsToMany(Tag::class);
     }
 
+    /**
+     * Relacionamento com o vídeo principal
+     */
+    public function video(): BelongsTo
+    {
+        return $this->belongsTo(Video::class, 'video_id');
+    }
+
+    /**
+     * Relacionamento com vídeos relacionados
+     */
     public function videos(): HasMany
     {
         return $this->hasMany(Video::class);

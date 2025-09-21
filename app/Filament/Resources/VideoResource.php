@@ -17,13 +17,65 @@ class VideoResource extends Resource
 {
     protected static ?string $model = Video::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-video-camera';
+
+    protected static ?string $modelLabel = 'Vídeo';
+
+    protected static ?string $pluralModelLabel = 'Vídeos';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                //
+                Forms\Components\Section::make('Informações do Vídeo')
+                    ->schema([
+                        Forms\Components\Select::make('subject_id')
+                            ->label('Assunto')
+                            ->placeholder('Selecione um assunto')
+                            ->relationship('subject', 'name')
+                            ->searchable()
+                            ->preload(),
+                        
+                        Forms\Components\TextInput::make('video_id')
+                            ->label('ID do Vídeo (YouTube)')
+                            ->required()
+                            ->helperText('Ex: dQw4w9WgXcQ (apenas o ID, não a URL completa)'),
+                        
+                        Forms\Components\TextInput::make('title')
+                            ->label('Título')
+                            ->maxLength(255)
+                            ->columnSpanFull(),
+                        
+                        Forms\Components\Textarea::make('description')
+                            ->label('Descrição')
+                            ->rows(4)
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(2),
+                
+                Forms\Components\Section::make('Configurações')
+                    ->schema([
+                        Forms\Components\Checkbox::make('is_featured')
+                            ->label('Vídeo em Destaque')
+                            ->helperText('Marque se este vídeo deve aparecer em destaque'),
+                        
+                        Forms\Components\Checkbox::make('is_active')
+                            ->label('Ativo')
+                            ->default(true)
+                            ->helperText('Marque para tornar o vídeo visível no site'),
+                    ])
+                    ->columns(2),
+                
+                Forms\Components\Section::make('Autores')
+                    ->schema([
+                        Forms\Components\Select::make('users')
+                            ->label('Autores do Vídeo')
+                            ->placeholder('Selecione os autores')
+                            ->relationship('users', 'name')
+                            ->multiple()
+                            ->searchable()
+                            ->preload(),
+                    ]),
             ]);
     }
 
@@ -31,20 +83,64 @@ class VideoResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('title')
+                    ->label('Título')
+                    ->searchable()
+                    ->sortable()
+                    ->limit(50)
+                    ->tooltip(fn (Video $record) => $record->title),
+                
+                Tables\Columns\TextColumn::make('users.name')
+                    ->label('Autores')
+                    ->badge()
+                    ->separator(',')
+                    ->limit(2),
+                
+                Tables\Columns\IconColumn::make('is_featured')
+                    ->label('Destaque')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-star')
+                    ->falseIcon('heroicon-o-star')
+                    ->trueColor('warning')
+                    ->falseColor('gray'),
+                
+                Tables\Columns\IconColumn::make('is_active')
+                    ->label('Ativo')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-check-circle')
+                    ->falseIcon('heroicon-o-x-circle')
+                    ->trueColor('success')
+                    ->falseColor('danger'),
+                
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Criado em')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->filters([
-                //
+            ->filters([ 
+                
+                Tables\Filters\TernaryFilter::make('is_featured')
+                    ->label('Em Destaque'),
+                
+                Tables\Filters\TernaryFilter::make('is_active')
+                    ->label('Ativo'),
             ])
             ->actions([
+                Tables\Actions\ViewAction::make()
+                    ->url(fn (Video $record) => "https://www.youtube.com/watch?v={$record->video_id}")
+                    ->openUrlInNewTab()
+                    ->icon('heroicon-o-play'),
+                
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
-                    ->hidden(fn (): bool => !auth()->user()->isAdmin()),
+                        ->hidden(fn (): bool => !auth()->user()->isAdmin()),
                 ]),
-            ]);
+            ])
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getRelations(): array
