@@ -326,7 +326,6 @@ Ao todo, são cinco aulas ministradas por professores e profissionais de mercado
                 ]);
             }
 
-            // Criação do sponsor
             $sponsorsToInsert = data_get($serieToInsert, 'sponsors');
 
             if ($sponsorsToInsert) {
@@ -352,10 +351,8 @@ Ao todo, são cinco aulas ministradas por professores e profissionais de mercado
             }
 
 
-            // Criação das tags
             $serie->tags()->sync(data_get($serieToInsert, 'tags_ids'));
 
-            // Criação dos vídeos
             $videosToInsert = data_get($serieToInsert, 'videos');
 
             foreach ($videosToInsert as $videoToInsert) {

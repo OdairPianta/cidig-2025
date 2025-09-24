@@ -58,7 +58,6 @@ class HomeController extends Controller
     public function indexV2()
 {
 
-    // Buscar séries dinamicamente da tabela series
     $series = [];
     $tagsToShow = [];
     
@@ -69,12 +68,10 @@ class HomeController extends Controller
         ->get();
     
     foreach ($seriesRecords as $serieRecord) {
-        // Pular se for UNICO (mantém a lógica original)
         if ($serieRecord->slug === 'unico') {
             continue;
         }
         
-        // Coletar tags para exibição
         $tagsToShow = array_merge($tagsToShow, $serieRecord->tags->toArray());
         
         $series[] = [
@@ -87,7 +84,6 @@ class HomeController extends Controller
         ];
     }
 
-    // Buscar verbetes dinamicamente do banco de dados
     $subjects = Subject::where('is_active', true)
     ->whereNotNull('image')
     ->where('image', '!=', '')
@@ -96,7 +92,7 @@ class HomeController extends Controller
         return [
             $subject->slug => [
                 'name' => $subject->name,
-                'image' => url($subject->image), // Adicionar url() para caminho completo
+                'image' => url($subject->image),
                 'id' => $subject->slug,
             ]
         ];

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Builder;
@@ -44,7 +43,6 @@ class User extends Authenticatable implements FilamentUser
         'picture_url' => $this->information->picture_url,
         'minibio' => $this->information->minibio,
         'roles' => $this->information->roles,
-        // adicione outros campos conforme necessário
     ];
     }
 
@@ -58,7 +56,7 @@ class User extends Authenticatable implements FilamentUser
         'remember_token',
     ];
 
-    protected $with = ['information']; // Isso carrega automaticamente as informações do usuário
+    protected $with = ['information'];
     /**
      * Get the attributes that should be cast.
      *
@@ -78,8 +76,6 @@ class User extends Authenticatable implements FilamentUser
         'is_admin' => false,
         'is_active' => false,
     ];
-
-    // ...existing code (mantenha todos os outros métodos como estavam)...
     
     /**
      * Get the user's initials.
@@ -203,14 +199,13 @@ class User extends Authenticatable implements FilamentUser
     private static function getUsersByRole(string $role): Collection {
         return User::with('information.university')
         ->withRole($role)
-        ->where('is_active', 1)  // Add this line to filter active users only
+        ->where('is_active', 1)
         ->orderBy('name')
         ->get();
     }   
 
     public static function getPersonMergedData($person): array
 {
-    // Se $person já é um array (dados vindos do banco), usa diretamente
     if (is_array($person)) {
         return [
             'id' => $person['id'] ?? null,
@@ -228,7 +223,6 @@ class User extends Authenticatable implements FilamentUser
         ];
     }
     
-    // Se $person é uma string (nome), busca no banco
     if (is_string($person)) {
         $user = self::where('name', $person)->with('information')->first();
         
@@ -253,38 +247,38 @@ class User extends Authenticatable implements FilamentUser
             'id' => $user->id,
             'name' => $user->name,
             'slug' => $user->slug,
-            'university' => $user->information->university->name ?? '',
-            'picture_url' => $user->information->picture_url ?? '/images/team/default.jpg',
-            'lattes_url' => $user->information->lattes_url,
-            'orcid_url' => $user->information->orcid_url,
-            'linkedin_url' => $user->information->linkedin_url,
-            'minibio' => $user->information->minibio,
-            'description' => $user->information->description,
-            'title' => $user->information->title,
-            'website' => $user->information->website,
+            'university' => $user->information?->university?->name ?? '',
+            'picture_url' => $user->information?->picture_url ?? '/images/team/default.jpg',
+            'lattes_url' => $user->information?->lattes_url,
+            'orcid_url' => $user->information?->orcid_url,
+            'linkedin_url' => $user->information?->linkedin_url,
+            'minibio' => $user->information?->minibio ?? '',
+            'description' => $user->information?->description ?? '',
+            'title' => $user->information?->title,
+            'website' => $user->information?->website,
         ];
     }
     
-    // Se $person é um objeto User
     if ($person instanceof User) {
         return [
             'id' => $person->id,
             'name' => $person->name,
             'slug' => $person->slug,
-            'university' => $person->information->university->name ?? '',
-            'picture_url' => $person->information->picture_url ?? '/images/team/default.jpg',
-            'lattes_url' => $person->information->lattes_url,
-            'orcid_url' => $person->information->orcid_url,
-            'linkedin_url' => $person->information->linkedin_url,
-            'minibio' => $person->information->minibio,
-            'description' => $person->information->description,
-            'title' => $person->information->title,
-            'website' => $person->information->website,
+            'university' => $person->information?->university?->name ?? '',
+            'picture_url' => $person->information?->picture_url ?? '/images/team/default.jpg',
+            'lattes_url' => $person->information?->lattes_url,
+            'orcid_url' => $person->information?->orcid_url,
+            'linkedin_url' => $person->information?->linkedin_url,
+            'minibio' => $person->information?->minibio ?? '',
+            'description' => $person->information?->description ?? '',
+            'title' => $person->information?->title,
+            'website' => $person->information?->website,
         ];
     }
     
     return [];
 }
+
 
     public static function getInvitedResearchers(): Collection {
         return User::getUsersByRole('invited');

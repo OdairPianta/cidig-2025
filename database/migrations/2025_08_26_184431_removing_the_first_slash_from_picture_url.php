@@ -22,7 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Opcional: voltar ao estado original (recolocar a barra no início)
         DB::statement("
             UPDATE user_informations
             SET picture_url = CONCAT('/', picture_url)

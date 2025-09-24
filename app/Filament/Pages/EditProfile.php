@@ -24,8 +24,7 @@ class EditProfile extends BaseEditProfile
                 $this->getEmailFormComponent(),
                 $this->getPasswordFormComponent(),
                 $this->getPasswordConfirmationFormComponent(),
-                
-                // Campos EXATAMENTE iguais ao UserInformationResource, mas sem user_id
+
                 Forms\Components\Select::make('university_id')
                     ->label('Universidade')
                     ->placeholder('Selecione uma universidade')
@@ -83,10 +82,8 @@ class EditProfile extends BaseEditProfile
     {
         $data = parent::mutateFormDataBeforeFill($data);
         
-        // Carrega dados do UserInformation se existir
         $user = auth()->user();
         if ($user->information) {
-            // Adiciona todos os campos do UserInformation ao array de dados
             $informationData = $user->information->toArray();
             $data = array_merge($data, $informationData);
         }
@@ -96,13 +93,11 @@ class EditProfile extends BaseEditProfile
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        // Campos que pertencem ao UserInformation (mesmos do Resource)
         $informationFields = [
             'university_id', 'picture_url', 'linkedin_url', 'lattes_url', 
             'orcid_url', 'minibio', 'description', 'title', 'roles', 'website'
         ];
-        
-        // Separa os dados
+
         $informationData = [];
         foreach ($informationFields as $field) {
             if (array_key_exists($field, $data)) {
@@ -111,7 +106,6 @@ class EditProfile extends BaseEditProfile
             }
         }
 
-        // Salva/atualiza UserInformation
         if (!empty($informationData)) {
             $user = auth()->user();
             

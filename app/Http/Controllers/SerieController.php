@@ -1,0 +1,98 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Serie;
+use App\Models\User;
+use App\Models\Resource;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+
+class SerieController extends Controller
+{
+    public function index()
+    {
+        $series = Serie::where('is_active', true)
+            ->with(['tags'])
+            ->get();
+        return view('v2.series.index', compact('series'));
+    }
+
+public function show(string $serieSlug)
+{
+    $serie = Serie::where('slug', $serieSlug)
+        ->with(['tags', 'sponsors', 'user'])
+        ->firstOrFail();
+        
+    $videos = $serie->videos();
+    
+    $videosArray = $videos->map(function($video) {
+    return [
+        'id' => $video->video_id,
+        'title' => $video->title,
+        'description' => $video->description,
+    ];
+    })->toArray();
+    
+    $seriesData = [
+        'title' => $serie->title,
+        'description' => $serie->description,
+        'background-image' => $serie->background_image,
+        'background-credit' => $serie->background_credit,
+        'thumbnail' => $serie->thumbnail,
+        'videos' => $videosArray,
+        'researchers' => $serie->user ? [$serie->user] : [],
+        'subjects' => [],
+        'sponsors' => $serie->sponsors->pluck('image')->toArray(),
+    ];
+    
+    $tags = $serie->tags;
+    $resources = collect([]);
+    
+    return view('v2.series.detail', compact('serie', 'seriesData', 'tags', 'resources'));
+}
+
+
+    public function indexV2()
+    {
+        $series = Serie::where('is_active', true)
+            ->with(['tags'])
+            ->get();
+        return view('v2.series.index', compact('series'));
+    }
+
+    public function showV2(string $serieSlug)
+{
+    $serie = Serie::where('slug', $serieSlug)
+        ->with(['tags', 'sponsors', 'user'])
+        ->firstOrFail();
+        
+    $videos = $serie->videos();
+    
+    $videosArray = $videos->map(function($video) {
+        return [
+            'id' => $video->video_id,
+            'title' => $video->title,
+            'description' => $video->description,
+        ];
+    })->toArray();
+        
+    $seriesData = [
+        'title' => $serie->title,
+        'description' => $serie->description,
+        'background-image' => $serie->background_image,
+        'background-img' => $serie->background_img,
+        'background-credit' => $serie->background_credit,
+        'thumbnail' => $serie->thumbnail_novo ?? $serie->thumbnail,
+        'videos' => $videosArray,
+        'researchers' => $serie->user ? [$serie->user] : [],
+        'subjects' => [],
+        'sponsors' => $serie->sponsors->pluck('image')->toArray(),
+    ];
+    
+    $tags = $serie->tags;
+    $resources = collect([]);
+    
+    return view('v2.series.detail', compact('serie', 'seriesData', 'tags', 'resources'));
+}
+}

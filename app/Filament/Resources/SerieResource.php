@@ -24,21 +24,27 @@ class SerieResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([
-                Forms\Components\TextInput::make('title')
-                    ->label('Título')
-                    ->columnSpanFull()
-                    ->required(),
-                Forms\Components\TextInput::make('slug')
-                    ->label('Slug')
-                    ->columnSpanFull()
-                    ->required(),
-                Forms\Components\Textarea::make('description')
-                    ->label('Descrição')
-                    ->columnSpanFull()
-                    ->rows(5)
-                    ->required(),
-                Forms\Components\FileUpload::make('thumbnail')
+        ->schema([
+            Forms\Components\TextInput::make('title')
+                ->label('Título')
+                ->columnSpanFull()
+                ->required(),
+            Forms\Components\TextInput::make('slug')
+                ->label('Slug')
+                ->columnSpanFull()
+                ->required(),
+            Forms\Components\Textarea::make('description')
+                ->label('Descrição')
+                ->columnSpanFull()
+                ->required(),
+            Forms\Components\Select::make('user_id')
+                    ->label('Responsável')
+                    ->relationship('user', 'name')
+                    ->searchable()
+                    ->preload(),
+            Forms\Components\Checkbox::make('is_active')
+                    ->label('Ativo'),
+            Forms\Components\FileUpload::make('thumbnail')
                     ->label('Thumbnail')
                     ->acceptedFileTypes(['image/bmp','image/jpeg', 'image/x-png', 'image/png', 'image/gif'])
                     ->disk('public')
@@ -76,8 +82,22 @@ class SerieResource extends Resource
                     ->openable(),
                 Forms\Components\TextInput::make('background_credit')
                     ->label('Crédito do Background'),
-                Forms\Components\Checkbox::make('is_active')
-                    ->label('Ativo'),
+                Forms\Components\Select::make('videos_json')  // Mudança aqui: de 'video_id' para 'videos_json'
+                    ->label('Vídeos da Série')
+                    ->placeholder('Selecione os vídeos')
+                    ->options(
+                        \App\Models\Video::where('is_active', true)
+                    ->whereNotNull('title') // Filtra vídeos sem título
+                    ->get()
+                    ->mapWithKeys(function ($video) {
+                        return [
+                            $video->id => $video->title . ($video->video_id ? " ({$video->video_id})" : '')
+                        ];
+                    }),
+    )
+    ->searchable()
+    ->multiple()
+    ->preload(),
             ]);
     }
 
@@ -92,9 +112,9 @@ class SerieResource extends Resource
                     ->searchable()
                     ->toggleable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Criado em')
-                    ->dateTime()
+                Tables\Columns\TextColumn::make('user.name')
+                    ->label('Responsável')
+                    ->searchable()
                     ->sortable(),
                 Tables\Columns\CheckboxColumn::make('is_active')
                     ->label('Ativo')

@@ -11,7 +11,6 @@ return new class extends Migration
         Schema::table('subjects', function (Blueprint $table) {
             $table->unsignedBigInteger('video_id')->nullable();
             
-            // Adiciona a foreign key constraint
             $table->foreign('video_id')->references('id')->on('videos')->onDelete('set null');
         });
     }
@@ -19,7 +18,7 @@ return new class extends Migration
     public function down()
     {
         Schema::table('subjects', function (Blueprint $table) {
-            $table->dropForeign(['video_id']); // Remove a foreign key primeiro
+            $table->dropForeign(['video_id']);
             $table->dropColumn('video_id');
         });
     }
