@@ -31,6 +31,7 @@ class User extends Authenticatable implements FilamentUser
         'password',
         'email_verified_at',
         'remember_token',
+        'slug',
     ];
 
     public function getFullProfile(): array

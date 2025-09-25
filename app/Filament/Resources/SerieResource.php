@@ -24,27 +24,28 @@ class SerieResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-        ->schema([
-            Forms\Components\TextInput::make('title')
-                ->label('Título')
-                ->columnSpanFull()
-                ->required(),
-            Forms\Components\TextInput::make('slug')
-                ->label('Slug')
-                ->columnSpanFull()
-                ->required(),
-            Forms\Components\Textarea::make('description')
-                ->label('Descrição')
-                ->columnSpanFull()
-                ->required(),
-            Forms\Components\Select::make('user_id')
-                    ->label('Responsável')
-                    ->relationship('user', 'name')
+            ->schema([
+                Forms\Components\TextInput::make('title')
+                    ->label('Título')
+                    ->columnSpanFull()
+                    ->required(),
+                Forms\Components\TextInput::make('slug')
+                    ->label('Slug')
+                    ->columnSpanFull()
+                    ->required(),
+                Forms\Components\Textarea::make('description')
+                    ->label('Descrição')
+                    ->columnSpanFull()
+                    ->required(),
+                Forms\Components\Select::make('users')
+                    ->label('Responsáveis')
+                    ->relationship('users', 'name')
+                    ->multiple()
                     ->searchable()
                     ->preload(),
-            Forms\Components\Checkbox::make('is_active')
+                Forms\Components\Checkbox::make('is_active')
                     ->label('Ativo'),
-            Forms\Components\FileUpload::make('thumbnail')
+                Forms\Components\FileUpload::make('thumbnail')
                     ->label('Thumbnail')
                     ->acceptedFileTypes(['image/bmp','image/jpeg', 'image/x-png', 'image/png', 'image/gif'])
                     ->disk('public')
@@ -54,7 +55,7 @@ class SerieResource extends Resource
                     ->downloadable()
                     ->openable(),
                 Forms\Components\FileUpload::make('thumbnail_novo')
-                    ->label('Thumbnail')
+                    ->label('Thumbnail Novo')
                     ->acceptedFileTypes(['image/bmp','image/jpeg', 'image/x-png', 'image/png', 'image/gif'])
                     ->disk('public')
                     ->directory('resources')
@@ -63,7 +64,7 @@ class SerieResource extends Resource
                     ->downloadable()
                     ->openable(),
                 Forms\Components\FileUpload::make('background_image')
-                    ->label('Thumbnail')
+                    ->label('Imagem de Fundo')
                     ->acceptedFileTypes(['image/bmp','image/jpeg', 'image/x-png', 'image/png', 'image/gif'])
                     ->disk('public')
                     ->directory('resources')
@@ -72,7 +73,7 @@ class SerieResource extends Resource
                     ->downloadable()
                     ->openable(),
                 Forms\Components\FileUpload::make('background_img')
-                    ->label('Thumbnail')
+                    ->label('Background Img')
                     ->acceptedFileTypes(['image/bmp','image/jpeg', 'image/x-png', 'image/png', 'image/gif'])
                     ->disk('public')
                     ->directory('resources')
@@ -82,22 +83,14 @@ class SerieResource extends Resource
                     ->openable(),
                 Forms\Components\TextInput::make('background_credit')
                     ->label('Crédito do Background'),
-                Forms\Components\Select::make('videos_json')  // Mudança aqui: de 'video_id' para 'videos_json'
+                Forms\Components\Select::make('videos')
                     ->label('Vídeos da Série')
                     ->placeholder('Selecione os vídeos')
-                    ->options(
-                        \App\Models\Video::where('is_active', true)
-                    ->whereNotNull('title') // Filtra vídeos sem título
-                    ->get()
-                    ->mapWithKeys(function ($video) {
-                        return [
-                            $video->id => $video->title . ($video->video_id ? " ({$video->video_id})" : '')
-                        ];
-                    }),
-    )
-    ->searchable()
-    ->multiple()
-    ->preload(),
+                    ->relationship('videos', 'title')
+                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->title . ($record->video_id ? " ({$record->video_id})" : ''))
+                    ->searchable(['title', 'video_id'])
+                    ->multiple()
+                    ->preload(),
             ]);
     }
 
@@ -112,8 +105,11 @@ class SerieResource extends Resource
                     ->searchable()
                     ->toggleable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('user.name')
-                    ->label('Responsável')
+                Tables\Columns\TextColumn::make('users.name')
+                    ->label('Responsáveis')
+                    ->formatStateUsing(function ($record) {
+                        return $record->users->pluck('name')->join(', ');
+                    })
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\CheckboxColumn::make('is_active')

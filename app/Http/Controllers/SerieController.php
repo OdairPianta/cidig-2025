@@ -18,40 +18,52 @@ class SerieController extends Controller
         return view('v2.series.index', compact('series'));
     }
 
-public function show(string $serieSlug)
-{
-    $serie = Serie::where('slug', $serieSlug)
-        ->with(['tags', 'sponsors', 'user'])
-        ->firstOrFail();
+    public function show(string $serieSlug)
+    {
+        $serie = Serie::where('slug', $serieSlug)
+            ->with(['tags', 'sponsors', 'users'])
+            ->firstOrFail();
+            
+        $videos = $serie->videos;
         
-    $videos = $serie->videos();
-    
-    $videosArray = $videos->map(function($video) {
-    return [
-        'id' => $video->video_id,
-        'title' => $video->title,
-        'description' => $video->description,
-    ];
-    })->toArray();
-    
-    $seriesData = [
-        'title' => $serie->title,
-        'description' => $serie->description,
-        'background-image' => $serie->background_image,
-        'background-credit' => $serie->background_credit,
-        'thumbnail' => $serie->thumbnail,
-        'videos' => $videosArray,
-        'researchers' => $serie->user ? [$serie->user] : [],
-        'subjects' => [],
-        'sponsors' => $serie->sponsors->pluck('image')->toArray(),
-    ];
-    
-    $tags = $serie->tags;
-    $resources = collect([]);
-    
-    return view('v2.series.detail', compact('serie', 'seriesData', 'tags', 'resources'));
-}
-
+        $videosArray = $videos->map(function($video) {
+            return [
+                'id' => $video->video_id,
+                'title' => $video->title,
+                'description' => $video->description,
+            ];
+        })->toArray();
+        
+        // Mapear os users para incluir o slug
+        $researchers = $serie->users->map(function($user) {
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'slug' => $user->slug,
+                'title' => $user->information?->title,
+                'university' => $user->information?->university?->name,
+                'picture_url' => $user->getPictureLink(),
+                'minibio' => $user->information?->minibio,
+            ];
+        })->toArray();
+        
+        $seriesData = [
+            'title' => $serie->title,
+            'description' => $serie->description,
+            'background-image' => $serie->background_image,
+            'background-credit' => $serie->background_credit,
+            'thumbnail' => $serie->thumbnail,
+            'videos' => $videosArray,
+            'researchers' => $researchers,
+            'subjects' => [],
+            'sponsors' => $serie->sponsors->pluck('image')->toArray(),
+        ];
+        
+        $tags = $serie->tags;
+        $resources = collect([]);
+        
+        return view('v2.series.detail', compact('serie', 'seriesData', 'tags', 'resources'));
+    }
 
     public function indexV2()
     {
@@ -62,37 +74,50 @@ public function show(string $serieSlug)
     }
 
     public function showV2(string $serieSlug)
-{
-    $serie = Serie::where('slug', $serieSlug)
-        ->with(['tags', 'sponsors', 'user'])
-        ->firstOrFail();
+    {
+        $serie = Serie::where('slug', $serieSlug)
+            ->with(['tags', 'sponsors', 'users'])
+            ->firstOrFail();
+            
+        $videos = $serie->videos;
         
-    $videos = $serie->videos();
-    
-    $videosArray = $videos->map(function($video) {
-        return [
-            'id' => $video->video_id,
-            'title' => $video->title,
-            'description' => $video->description,
+        $videosArray = $videos->map(function($video) {
+            return [
+                'id' => $video->video_id,
+                'title' => $video->title,
+                'description' => $video->description,
+            ];
+        })->toArray();
+        
+        // Mapear os users para incluir o slug
+        $researchers = $serie->users->map(function($user) {
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'slug' => $user->slug,
+                'title' => $user->information?->title,
+                'university' => $user->information?->university?->name,
+                'picture_url' => $user->getPictureLink(),
+                'minibio' => $user->information?->minibio,
+            ];
+        })->toArray();
+            
+        $seriesData = [
+            'title' => $serie->title,
+            'description' => $serie->description,
+            'background-image' => $serie->background_image,
+            'background-img' => $serie->background_img,
+            'background-credit' => $serie->background_credit,
+            'thumbnail' => $serie->thumbnail_novo ?? $serie->thumbnail,
+            'videos' => $videosArray,
+            'researchers' => $researchers,
+            'subjects' => [],
+            'sponsors' => $serie->sponsors->pluck('image')->toArray(),
         ];
-    })->toArray();
         
-    $seriesData = [
-        'title' => $serie->title,
-        'description' => $serie->description,
-        'background-image' => $serie->background_image,
-        'background-img' => $serie->background_img,
-        'background-credit' => $serie->background_credit,
-        'thumbnail' => $serie->thumbnail_novo ?? $serie->thumbnail,
-        'videos' => $videosArray,
-        'researchers' => $serie->user ? [$serie->user] : [],
-        'subjects' => [],
-        'sponsors' => $serie->sponsors->pluck('image')->toArray(),
-    ];
-    
-    $tags = $serie->tags;
-    $resources = collect([]);
-    
-    return view('v2.series.detail', compact('serie', 'seriesData', 'tags', 'resources'));
-}
+        $tags = $serie->tags;
+        $resources = collect([]);
+        
+        return view('v2.series.detail', compact('serie', 'seriesData', 'tags', 'resources'));
+    }
 }
