@@ -31,6 +31,11 @@ class Video extends Model
         return $this->belongsTo(Subject::class);
     }
 
+    public function series()
+    {
+        return $this->belongsToMany(Serie::class, 'series_videos', 'video_id', 'serie_id');
+    }
+
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'video_user');

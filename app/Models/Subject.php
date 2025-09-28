@@ -65,41 +65,26 @@ class Subject extends Model
         'content_data' => 'array',
     ];
 
-    /**
-     * Scope para buscar subjects ativos
-     */
     public function scopeIsActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
     }
 
-    /**
-     * Scope para buscar séries
-     */
     public function scopeSeries(Builder $query): Builder
     {
         return $query->where('is_series', true);
     }
 
-    /**
-     * Scope para buscar verbetes (não séries)
-     */
     public function scopeSubjects(Builder $query): Builder
     {
         return $query->where('is_series', false);
     }
 
-    /**
-     * Buscar subject por constant_key (compatibilidade)
-     */
     public static function findByConstant(string $constantKey): ?self
     {
         return static::where('constant_key', $constantKey)->first();
     }
 
-    /**
-     * Obter mapeamento de séries dinamicamente
-     */
     public static function getSeriesSubjectMap(): array
     {
         return static::series()
@@ -109,9 +94,6 @@ class Subject extends Model
             ->toArray();
     }
 
-    /**
-     * Obter nomes e imagens dos subjects
-     */
     public static function getSubjectNamesImages(): array
     {
         return static::subjects()
@@ -129,9 +111,6 @@ class Subject extends Model
             ->toArray();
     }
 
-    /**
-     * Obter conteúdo das páginas
-     */
     public static function getSubjectPagesContent(): array
     {
         return static::subjects()
@@ -143,21 +122,6 @@ class Subject extends Model
             ->toArray();
     }
 
-    /**
-     * Obter páginas de séries
-     */
-    public static function getSeriesPages(): array
-    {
-        return static::series()
-            ->whereNotNull('content_data')
-            ->get()
-            ->mapWithKeys(function ($subject) {
-                return [$subject->constant_key => $subject->content_data];
-            })
-            ->toArray();
-    }
-
-    // Relacionamentos
     public function resources(): HasMany
     {
         return $this->hasMany(Resource::class);
@@ -173,17 +137,11 @@ class Subject extends Model
         return $this->belongsToMany(Tag::class);
     }
 
-    /**
-     * Relacionamento com o vídeo principal
-     */
     public function video(): BelongsTo
     {
         return $this->belongsTo(Video::class, 'video_id');
     }
 
-    /**
-     * Relacionamento com vídeos relacionados
-     */
     public function videos(): HasMany
     {
         return $this->hasMany(Video::class);
@@ -199,9 +157,6 @@ class Subject extends Model
         return $this->tags->contains('id', $tagId);
     }
 
-    /**
-     * Obter IDs de séries por subject ID (atualizado para usar DB)
-     */
     public static function getSeriesIdsFromSubjectId(string $subject): array
     {
         $seriesMap = static::getSeriesSubjectMap();

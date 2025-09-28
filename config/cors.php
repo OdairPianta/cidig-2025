@@ -8,7 +8,7 @@ return [
         'admin/*',
         'filament/*',
         'storage/*',
-        '*', // Para todas as rotas durante desenvolvimento
+        '*',
     ],
 
     'allowed_methods' => ['*'],
@@ -20,7 +20,7 @@ return [
         'http://127.0.0.1',
         'http://127.0.0.1:80',
         'http://127.0.0.1:8000',
-        '*', // Durante desenvolvimento
+        '*',
     ],
 
     'allowed_origins_patterns' => [],

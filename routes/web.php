@@ -84,6 +84,20 @@ Route::prefix('/search')->group(function(){
         ->name('v2.searchBySubject');
 });
 
+// Adicionar estas rotas para séries
+Route::get('/series', 'App\Http\Controllers\SerieController@index')
+    ->name('series.index');
+
+Route::get('/series/{serieSlug}', 'App\Http\Controllers\SerieController@show')
+    ->name('series.show');
+
+// Versão V2 das rotas de séries
+Route::get('/webseries', 'App\Http\Controllers\SerieController@indexV2')
+    ->name('v2.series.index');
+
+Route::get('/webseries/{serieSlug}', 'App\Http\Controllers\SerieController@showV2')
+    ->name('v2.series.show');
+    
 Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
 Route::get('/{userSlug}/posts', [PostController::class, 'showUserPosts'])->name('user.posts');
 Route::get('/{userSlug}/{postSlug}', [PostController::class, 'show'])->name('post.show');

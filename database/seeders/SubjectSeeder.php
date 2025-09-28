@@ -197,10 +197,8 @@ class SubjectSeeder extends Seeder
             }
 
 
-            // Inserindo os researchers
             $researchersToInsert = data_get($subjectToInsert, 'researchers');
 
-            // alterando os usuários para inativos, para depois verificar se realmente devem ficar ativos no foreach!
             DB::table('subject_user')->where('subject_id', $subject->id)->update(['is_active' => false]);
 
             foreach ($researchersToInsert as $researcherToInsert) {
@@ -220,8 +218,6 @@ class SubjectSeeder extends Seeder
                 }
             }
 
-
-            // Inserindo os videos
             $video = data_get($subjectToInsert, 'videoId');
 
             if($video) {

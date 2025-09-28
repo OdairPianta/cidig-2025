@@ -73,8 +73,6 @@ class UserResource extends Resource
                             ->hidden(fn (?User $record) => !auth()->user()->isAdmin() || ($record && $record->id === auth()->id()))
                             ->label('Ativo'),
                     ]),
-
-                // Campos do UserInformation
                 Forms\Components\Section::make('Informações Adicionais')
                     ->columns(2)
                     ->collapsible()

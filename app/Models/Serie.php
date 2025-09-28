@@ -18,11 +18,34 @@ class Serie extends Model
         'background_image',
         'background_img',
         'background_credit',
+        'is_active',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
     ];
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'serie_user', 'serie_id', 'user_id');
+    }
+
+    public function videos()
+    {
+        return $this->belongsToMany(Video::class, 'series_videos', 'serie_id', 'video_id');
+    }
+
+    public function addVideo(int $videoId)
+    {
+        if (!$this->videos()->where('video_id', $videoId)->exists()) {
+            $this->videos()->attach($videoId);
+        }
+    }
+
+    public function removeVideo(int $videoId)
+    {
+        $this->videos()->detach($videoId);
+    }
 
     public function sponsors()
     {

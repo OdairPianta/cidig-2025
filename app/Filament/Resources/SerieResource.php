@@ -36,8 +36,15 @@ class SerieResource extends Resource
                 Forms\Components\Textarea::make('description')
                     ->label('Descrição')
                     ->columnSpanFull()
-                    ->rows(5)
                     ->required(),
+                Forms\Components\Select::make('users')
+                    ->label('Responsáveis')
+                    ->relationship('users', 'name')
+                    ->multiple()
+                    ->searchable()
+                    ->preload(),
+                Forms\Components\Checkbox::make('is_active')
+                    ->label('Ativo'),
                 Forms\Components\FileUpload::make('thumbnail')
                     ->label('Thumbnail')
                     ->acceptedFileTypes(['image/bmp','image/jpeg', 'image/x-png', 'image/png', 'image/gif'])
@@ -48,7 +55,7 @@ class SerieResource extends Resource
                     ->downloadable()
                     ->openable(),
                 Forms\Components\FileUpload::make('thumbnail_novo')
-                    ->label('Thumbnail')
+                    ->label('Thumbnail Novo')
                     ->acceptedFileTypes(['image/bmp','image/jpeg', 'image/x-png', 'image/png', 'image/gif'])
                     ->disk('public')
                     ->directory('resources')
@@ -57,7 +64,7 @@ class SerieResource extends Resource
                     ->downloadable()
                     ->openable(),
                 Forms\Components\FileUpload::make('background_image')
-                    ->label('Thumbnail')
+                    ->label('Imagem de Fundo')
                     ->acceptedFileTypes(['image/bmp','image/jpeg', 'image/x-png', 'image/png', 'image/gif'])
                     ->disk('public')
                     ->directory('resources')
@@ -66,7 +73,7 @@ class SerieResource extends Resource
                     ->downloadable()
                     ->openable(),
                 Forms\Components\FileUpload::make('background_img')
-                    ->label('Thumbnail')
+                    ->label('Background Img')
                     ->acceptedFileTypes(['image/bmp','image/jpeg', 'image/x-png', 'image/png', 'image/gif'])
                     ->disk('public')
                     ->directory('resources')
@@ -76,8 +83,14 @@ class SerieResource extends Resource
                     ->openable(),
                 Forms\Components\TextInput::make('background_credit')
                     ->label('Crédito do Background'),
-                Forms\Components\Checkbox::make('is_active')
-                    ->label('Ativo'),
+                Forms\Components\Select::make('videos')
+                    ->label('Vídeos da Série')
+                    ->placeholder('Selecione os vídeos')
+                    ->relationship('videos', 'title')
+                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->title . ($record->video_id ? " ({$record->video_id})" : ''))
+                    ->searchable(['title', 'video_id'])
+                    ->multiple()
+                    ->preload(),
             ]);
     }
 
@@ -92,9 +105,12 @@ class SerieResource extends Resource
                     ->searchable()
                     ->toggleable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Criado em')
-                    ->dateTime()
+                Tables\Columns\TextColumn::make('users.name')
+                    ->label('Responsáveis')
+                    ->formatStateUsing(function ($record) {
+                        return $record->users->pluck('name')->join(', ');
+                    })
+                    ->searchable()
                     ->sortable(),
                 Tables\Columns\CheckboxColumn::make('is_active')
                     ->label('Ativo')

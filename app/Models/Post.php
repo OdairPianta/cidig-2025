@@ -22,13 +22,11 @@ class Post extends Model
         'published_at' => 'datetime',
     ];
 
-    // Relacionamento com User
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // Gerar slug automaticamente
     protected static function boot()
     {
         parent::boot();
