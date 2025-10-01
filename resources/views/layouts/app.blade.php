@@ -43,17 +43,33 @@
 
                     </ul>
 
-                    <!-- Right Side Of Navbar -->
-                    <ul class="navbar-nav ml-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('about') }}">{{ __('Sobre') }}</a>
+                   <ul class="navbar-nav">
+                @if(isset($menuItems) && $menuItems->count() > 0)
+                    @foreach($menuItems as $menuItem)
+                        <li class="nav-item {{ $loop->last ? 'mr-4' : '' }}">
+                            <a class="nav-link" 
+                               href="{{ $menuItem->link }}"
+                               
+                            >
+                                {{ $menuItem->slug }}
+                            </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('team') }}">{{ __('Equipe') }}</a>
-                        </li>
-                        <li class="nav-item mr-4">
-                            <a class="nav-link" href="http://www.atopos.com.br/" target="_blank">{{ __('Atopos') }}</a>
-                        </li>
+                    @endforeach
+                @else
+                    <!-- Fallback para itens padrão caso não haja itens no banco -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('v2.index') }}">{{ __('Hme') }}</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('v2.about') }}">{{ __('Sobre nós') }}</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('v2.team') }}">{{ __('Equipe') }}</a>
+                    </li>
+                    <li class="nav-item mr-4">
+                        <a class="nav-link" href="#" target="_blank">{{ __('Atopos') }}</a>
+                    </li>
+                @endif
                         <!-- Authentication Links -->
                         @guest
                             <li class="nav-item dropdown">

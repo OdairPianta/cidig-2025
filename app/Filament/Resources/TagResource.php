@@ -17,6 +17,8 @@ class TagResource extends FilamentResourceBase
     protected static ?string $model = Tag::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-tag';
+    
+    protected static ?string $navigationGroup = 'Conteúdos';
 
     public static function form(Form $form): Form
     {

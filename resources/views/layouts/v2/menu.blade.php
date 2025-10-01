@@ -22,25 +22,35 @@
 
             <!-- Right Side Of Navbar -->
             <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('v2.index') }}">{{ __('Home') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('v2.about') }}">{{ __('Sobre nós') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ route('v2.team') }}">{{ __('Equipe') }}</a>
-                </li>
-                <li class="nav-item mr-4">
-                    <a class="nav-link" href="http://www.atopos.com.br/" target="_blank">{{ __('Atopos') }}</a>
-                </li>
+                @if(isset($menuItems) && $menuItems->count() > 0)
+                    @foreach($menuItems as $menuItem)
+                        <li class="nav-item {{ $loop->last ? 'mr-4' : '' }}">
+                            <a class="nav-link" 
+                               href="{{ $menuItem->link }}"
+                               
+                            >
+                                {{ $menuItem->slug }}
+                            </a>
+                        </li>
+                    @endforeach
+                @else
+                    <!-- Fallback para itens padrão caso não haja itens no banco -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('v2.index') }}">{{ __('Hme') }}</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('v2.about') }}">{{ __('Sobre nós') }}</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('v2.team') }}">{{ __('Equipe') }}</a>
+                    </li>
+                    <li class="nav-item mr-4">
+                        <a class="nav-link" href="#" target="_blank">{{ __('Atopos') }}</a>
+                    </li>
+                @endif
+                
                 <!-- Authentication Links -->
                 @guest
-{{--                    <li class="nav-item dropdown">--}}
-{{--                        <a class="nav-link login-button" href="{{ route('login') }}">--}}
-{{--                            {{ __('Login') }}--}}
-{{--                        </a>--}}
-{{--                    </li>--}}
                     <li class="nav-item">
                         <a class="nav-link login-button"
                            href="{{ route('filament.admin.auth.login') }}"

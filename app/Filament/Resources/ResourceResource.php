@@ -22,6 +22,9 @@ class ResourceResource extends FilamentResourceBase
 
     protected static ?string $modelLabel = 'Conteúdos';
 
+    protected static ?string $navigationGroup = 'Conteúdos';
+
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
