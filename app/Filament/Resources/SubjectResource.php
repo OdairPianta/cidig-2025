@@ -20,6 +20,8 @@ class SubjectResource extends FilamentResourceBase
 
     protected static ?string $modelLabel = 'Verbetes';
 
+    protected static ?string $navigationGroup = 'Conteúdos';
+
     public static function form(Form $form): Form
     {
         return $form

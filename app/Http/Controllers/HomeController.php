@@ -12,6 +12,7 @@ use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use App\Models\Menu;
 
 class HomeController extends Controller
 {
@@ -116,15 +117,16 @@ class HomeController extends Controller
         ],
     ];
 
-    return view('v2/home',
-        compact(
-            'subjects',
-            'series',
-            'partners',
-            'tagsToShow',
-            'masterclasses'
-        )
-    );
+    $menuItems = Menu::active()->ordered()->get();
+    
+    return view('v2/home', compact(
+        'subjects',
+        'series', 
+        'partners',
+        'tagsToShow',
+        'masterclasses',
+        'menuItems'
+    ));
 }
 
     /**
@@ -169,7 +171,8 @@ class HomeController extends Controller
 
     public function about()
     {
-        return view('pages.about');
+        $menuItems = Menu::active()->ordered()->get();
+        return view('pages.about', compact('menuItems'));
     }
 
     public function aboutV2()
@@ -194,7 +197,9 @@ class HomeController extends Controller
             'people' => $researchers['people']->merge($invitedResearchers['people']),
         ];
 
-        return view('v2.pages.about', compact('researchers', 'coordinators'));
+        $menuItems = Menu::active()->ordered()->get();
+
+        return view('v2.pages.about', compact('researchers', 'coordinators','menuItems'));
     }
 
     public function team(bool $newVersion = false)
@@ -227,10 +232,14 @@ class HomeController extends Controller
                 'people' => $researchers['people']->merge($invitedResearchers['people']),
             ];
 
-            return view('v2.pages.team', compact('researchers', 'coordinators'));
+            $menuItems = Menu::active()->ordered()->get();
+
+            return view('v2.pages.team', compact('researchers', 'coordinators','menuItems'));
         }
 
-        return view('pages.team', compact('coordinators', 'researchers', 'designers', 'developers', 'invitedResearchers'));
+        $menuItems = Menu::active()->ordered()->get();
+
+        return view('pages.team', compact('coordinators', 'researchers', 'designers', 'developers', 'invitedResearchers','menuItems'));
     }
 
     public function teamV2()

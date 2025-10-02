@@ -20,7 +20,7 @@ class TicketResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-ticket';
 
-    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
+    protected static ?string $navigationGroup = 'Sistema';
 
     public static function form(Form $form): Form
     {

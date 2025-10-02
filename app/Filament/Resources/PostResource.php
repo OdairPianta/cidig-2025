@@ -21,6 +21,8 @@ class PostResource extends FilamentResourceBase
 
     protected static ?string $modelLabel = 'Posts';
 
+    protected static ?string $navigationGroup = 'Conteúdos';
+
     public static function form(Form $form): Form
     {
         return $form

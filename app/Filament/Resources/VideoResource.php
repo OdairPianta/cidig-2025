@@ -23,6 +23,8 @@ class VideoResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Vídeos';
 
+    protected static ?string $navigationGroup = 'Conteúdos';
+
     public static function form(Form $form): Form
     {
         return $form

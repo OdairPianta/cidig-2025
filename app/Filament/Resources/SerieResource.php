@@ -21,6 +21,8 @@ class SerieResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-video-camera';
 
+    protected static ?string $navigationGroup = 'Conteúdos';
+
     public static function form(Form $form): Form
     {
         return $form
