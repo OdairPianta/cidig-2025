@@ -24,9 +24,12 @@ class TagResource extends FilamentResourceBase
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required(),
-                Forms\Components\Checkbox::make('is_active'),
+Forms\Components\TextInput::make('name')
+    ->required()
+    ->label('Nome')
+    ->validationMessages([
+        'required' => 'O nome da tag é obrigatório.',
+    ]),
             ]);
     }
 
@@ -57,6 +60,7 @@ class TagResource extends FilamentResourceBase
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
+    ->label('Excluir')
                     ->hidden(fn (): bool => !auth()->user()->isAdmin()),
                 ]),
             ]);

@@ -28,18 +28,24 @@ class SubjectResource extends FilamentResourceBase
             ->schema([
                 Forms\Components\Section::make('Informações Básicas')
                     ->schema([
-                        Forms\Components\TextInput::make('name')
-                            ->required()
-                            ->label('Título'),
+Forms\Components\TextInput::make('name')
+    ->required()
+    ->label('Título')
+    ->validationMessages([
+        'required' => 'O título é obrigatório.',
+    ]),
                         Forms\Components\TextInput::make('slug'),
                         Forms\Components\Checkbox::make('is_active')
                             ->label('Ativo'),
-                        Forms\Components\Textarea::make('description')
-                            ->label('Descrição')
-                            ->rows(5)
-                            ->autosize()
-                            ->columnSpanFull()
-                            ->required(),
+Forms\Components\Textarea::make('description')
+    ->label('Descrição')
+    ->rows(5)
+    ->autosize()
+    ->columnSpanFull()
+    ->required()
+    ->validationMessages([
+        'required' => 'A descrição é obrigatória.',
+    ]),
                     ])
                     ->columns(2),
 
@@ -131,12 +137,14 @@ class SubjectResource extends FilamentResourceBase
                     ->label('Status'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\ViewAction::make(),
+Tables\Actions\EditAction::make()->label('Editar'),
+Tables\Actions\ViewAction::make()->label('Visualizar'),
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
+                        ->label('Excluir')
                         ->hidden(fn (): bool => !auth()->user()->isAdmin()),
                 ]),
             ]);

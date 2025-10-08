@@ -38,15 +38,22 @@ class VideoResource extends Resource
                             ->searchable()
                             ->preload(),
                         
-                        Forms\Components\TextInput::make('video_id')
-                            ->label('ID do Vídeo (YouTube)')
-                            ->required()
-                            ->helperText('Ex: dQw4w9WgXcQ (apenas o ID, não a URL completa)'),
+Forms\Components\TextInput::make('video_id')
+    ->label('ID do Vídeo (YouTube)')
+    ->required()
+    ->helperText('Ex: dQw4w9WgXcQ (apenas o ID, não a URL completa)')
+    ->validationMessages([
+        'required' => 'O ID do vídeo é obrigatório.',
+    ]),
                         
-                        Forms\Components\TextInput::make('title')
-                            ->label('Título')
-                            ->maxLength(255)
-                            ->columnSpanFull(),
+
+Forms\Components\TextInput::make('title')
+    ->label('Título')
+    ->maxLength(255)
+    ->columnSpanFull()
+    ->validationMessages([
+        'max' => 'O título não pode ter mais que 255 caracteres.',
+    ]),
                         
                         Forms\Components\Textarea::make('description')
                             ->label('Descrição')
@@ -134,11 +141,12 @@ class VideoResource extends Resource
                     ->openUrlInNewTab()
                     ->icon('heroicon-o-play'),
                 
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->label('Editar'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
+                    ->label('Excluir')
                         ->hidden(fn (): bool => !auth()->user()->isAdmin()),
                 ]),
             ])

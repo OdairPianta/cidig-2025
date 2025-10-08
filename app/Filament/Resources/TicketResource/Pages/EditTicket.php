@@ -13,10 +13,20 @@ class EditTicket extends EditRecord
 {
     protected static string $resource = TicketResource::class;
 
+    public static function getNavigationLabel(): string
+    {
+        return 'Editar';
+    }
+    
+    public function getTitle(): string
+    {
+        return 'Editar Ticket';
+    }
+
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\DeleteAction::make()->label('Excluir'),
         ];
     }
 
@@ -40,9 +50,9 @@ class EditTicket extends EditRecord
             'comment_type' => TicketComment::TYPE_SYSTEM_COMMENT,
             'created_by' => auth()->id(),
         ]);
-        $record->comments()->save($comment);
 
         $record->update($data);
+        $record->comments()->save($comment);
 
         return $record;
     }

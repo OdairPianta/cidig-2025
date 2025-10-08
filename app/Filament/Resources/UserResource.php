@@ -28,7 +28,9 @@ class UserResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
 
-    protected static ?string $modelLabel = 'Usuários';
+    protected static ?string $modelLabel = 'Usuário';
+
+    protected static ?string $pluralModelLabel = 'Usuários';
 
     protected static ?string $navigationGroup = 'Sistema';
 
@@ -40,23 +42,41 @@ class UserResource extends Resource
                     ->columns(2)
                     ->collapsible()
                     ->schema([
-                        Forms\Components\TextInput::make('name')
-                            ->label('Nome')
-                            ->required(),
-                        Forms\Components\TextInput::make('email')
-                            ->label('Email')
-                            ->email()
-                            ->required(),
-                        Forms\Components\TextInput::make('password')
-                            ->label('Senha')
-                            ->password()
-                            ->dehydrateStateUsing(fn ($state) => \Hash::make($state))
-                            ->dehydrated(fn ($state) => filled($state))
-                            ->same('password_confirmation'),
-                        Forms\Components\TextInput::make('password_confirmation')
-                            ->label('Confirmar Senha')
-                            ->password()
-                            ->same('password'),
+Forms\Components\TextInput::make('name')
+    ->label('Nome')
+    ->required()
+    ->validationMessages([
+        'required' => 'O nome é obrigatório.',
+    ]),
+Forms\Components\TextInput::make('email')
+    ->label('Email')
+    ->email()
+    ->required()
+    ->validationMessages([
+        'required' => 'O email é obrigatório.',
+        'email' => 'O email deve ser um endereço válido.',
+    ]),
+Forms\Components\TextInput::make('password')
+    ->label('Senha')
+    ->password()
+    ->dehydrateStateUsing(fn ($state) => \Hash::make($state))
+    ->dehydrated(fn ($state) => filled($state))
+    ->same('password_confirmation')
+    ->required()
+    ->validationMessages([
+        'required' => 'A senha é obrigatória.',
+        'same' => 'A confirmação de senha deve ser igual à senha.',
+    ]),
+Forms\Components\TextInput::make('password_confirmation')
+    ->label('Confirmar Senha')
+    ->password()
+    ->same('password')
+    ->required()
+    ->validationMessages([
+        'required' => 'Confirmar a senha é obrigatório.',
+        'same' => 'A confirmação de senha deve ser igual à senha.',
+    ]),
+
                     ]),
 
                 Forms\Components\Section::make('Configurações')
@@ -99,15 +119,24 @@ class UserResource extends Resource
                     ->columns(3)
                     ->collapsible()
                     ->schema([
-                        Forms\Components\TextInput::make('linkedin_url')
-                            ->label('LinkedIn')
-                            ->url(),
-                        Forms\Components\TextInput::make('lattes_url')
-                            ->label('Lattes')
-                            ->url(),
-                        Forms\Components\TextInput::make('orcid_url')
-                            ->label('ORCID')
-                            ->url(),
+Forms\Components\TextInput::make('linkedin_url')
+    ->label('LinkedIn')
+    ->url()
+    ->validationMessages([
+        'url' => 'O LinkedIn deve ser uma URL válida.',
+    ]),
+Forms\Components\TextInput::make('lattes_url')
+    ->label('Lattes')
+    ->url()
+    ->validationMessages([
+        'url' => 'O Lattes deve ser uma URL válida.',
+    ]),
+Forms\Components\TextInput::make('orcid_url')
+    ->label('ORCID')
+    ->url()
+    ->validationMessages([
+        'url' => 'O ORCID deve ser uma URL válida.',
+    ]),
                     ]),
                     
                 Forms\Components\Section::make('Biografia e Descrição')
@@ -115,8 +144,13 @@ class UserResource extends Resource
                     ->collapsible()
                     ->schema([
                         Forms\Components\Textarea::make('minibio')
-                            ->label('Mini Bio')
-                            ->rows(3),
+    ->label('Mini Bio')
+    ->rows(3)
+    ->minLength(90)
+    ->helperText('Mínimo de 90 caracteres')
+    ->validationMessages([
+        'min' => 'A mini bio deve ter pelo menos 90 caracteres.',
+    ]),
                         
                         Forms\Components\Textarea::make('description')
                             ->label('Descrição')
@@ -131,9 +165,12 @@ class UserResource extends Resource
                             ->multiple()
                             ->options(self::ROLES),
                         
-                        Forms\Components\TextInput::make('website')
-                            ->label('Site')
-                            ->url(),
+Forms\Components\TextInput::make('website')
+    ->label('Site')
+    ->url()
+    ->validationMessages([
+        'url' => 'O site deve ser uma URL válida.',
+    ]),
                     ]),
             ]);
     }
@@ -192,6 +229,7 @@ class UserResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
+                    ->label('Excluir')
                     ->hidden(fn (): bool => !auth()->user()->isAdmin()),
                 ]),
             ]);

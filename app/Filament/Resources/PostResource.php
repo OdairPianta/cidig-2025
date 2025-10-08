@@ -19,7 +19,9 @@ class PostResource extends FilamentResourceBase
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
-    protected static ?string $modelLabel = 'Posts';
+    protected static ?string $modelLabel = 'Postagem';
+
+    protected static ?string $pluralModelLabel = 'Postagens';
 
     protected static ?string $navigationGroup = 'Conteúdos';
 
@@ -31,27 +33,36 @@ class PostResource extends FilamentResourceBase
                     ->columns()
                     ->collapsible()
                     ->schema([
-                        Forms\Components\TextInput::make('title')
-                            ->label('Título')
-                            ->columnSpanFull()
-                            ->required(),
+Forms\Components\TextInput::make('title')
+    ->label('Título')
+    ->columnSpanFull()
+    ->required()
+    ->validationMessages([
+        'required' => 'O título do post é obrigatório.',
+    ]),
                         Forms\Components\TextInput::make('slug')
                             ->label('Slug')
                             ->columnSpanFull()
                             ->helperText('Deixe vazio para gerar automaticamente'),
-                        Forms\Components\RichEditor::make('content')
-                            ->label('Conteúdo')
-                            ->columnSpanFull()
-                            ->required(),
-                        Forms\Components\FileUpload::make('image_url')
-                            ->label('Imagem Destacada')
-                            ->acceptedFileTypes(['image/bmp','image/jpeg', 'image/x-png', 'image/png', 'image/gif'])
-                            ->disk('public')
-                            ->directory('posts')
-                            ->visibility('public')
-                            ->preserveFilenames()
-                            ->downloadable()
-                            ->openable(),
+Forms\Components\RichEditor::make('content')
+    ->label('Conteúdo')
+    ->columnSpanFull()
+    ->required()
+    ->validationMessages([
+        'required' => 'O conteúdo do post é obrigatório.',
+    ]),
+Forms\Components\FileUpload::make('image_url')
+    ->label('Imagem Destacada')
+    ->acceptedFileTypes(['image/bmp','image/jpeg', 'image/x-png', 'image/png', 'image/gif'])
+    ->disk('public')
+    ->directory('posts')
+    ->visibility('public')
+    ->preserveFilenames()
+    ->downloadable()
+    ->openable()
+    ->validationMessages([
+        'image' => 'O arquivo deve ser uma imagem válida.',
+    ]),
                         Forms\Components\Checkbox::make('is_published')
                             ->label('Publicar Post')
                             ->helperText('Marque para publicar o post imediatamente'),
@@ -66,7 +77,10 @@ class PostResource extends FilamentResourceBase
                             ->relationship('user', 'name')
                             ->options(User::query()->orderBy('name')->pluck('name', 'id'))
                             ->default(auth()->id())
-                            ->required(),
+                            ->required()
+                                ->validationMessages([
+        'required' => 'O autor do post é obrigatório.',
+    ]),
                         Forms\Components\DateTimePicker::make('published_at')
                             ->label('Data de Publicação')
                             ->helperText('Deixe vazio para usar a data atual'),
@@ -125,6 +139,7 @@ class PostResource extends FilamentResourceBase
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
+                    ->label('Excluir')
                     ->hidden(fn (): bool => !auth()->user()->isAdmin()),
                 ]),
             ]);
@@ -150,5 +165,10 @@ class PostResource extends FilamentResourceBase
     public static function shouldRegisterNavigation(): bool
     {
         return true;
+    }
+
+    public static function canAccess(): bool
+    {
+        return auth()->check() && auth()->user()->isAdmin();
     }
 }

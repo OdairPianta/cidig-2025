@@ -19,11 +19,13 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Filament\View\PanelsRenderHook;
 
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
+
         return $panel
             ->default()
             ->id('admin')
@@ -58,8 +60,13 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class, // Adicione esta linha
             ])
+                    ->renderHook(
+            PanelsRenderHook::USER_MENU_BEFORE,
+            fn (): string => view('filament.pages.header-button')->render()
+        )
             ->authMiddleware([
                 Authenticate::class,
             ]);
+            
     }
 }
