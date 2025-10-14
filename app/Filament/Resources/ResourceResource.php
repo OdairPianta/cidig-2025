@@ -34,14 +34,15 @@ class ResourceResource extends FilamentResourceBase
                     ->columns()
                     ->collapsible()
                     ->schema([
-                        Forms\Components\Select::make('subject_id')
-                            ->label('Assunto')
-                            ->placeholder('Selecione um assunto')
-                            ->relationship('subject', 'name')
-                            ->options(auth()->user()->subjects()->pluck('name', 'id'))
-                            ->relationship('subject', 'name')
-                            ->columns()
-                            ->required(),
+ Forms\Components\Select::make('subject_id')
+    ->label('Assunto')
+    ->placeholder('Selecione um assunto')
+    ->relationship('subject', 'name')
+    ->options(auth()->user()->subjects()->pluck('name', 'id'))
+    ->required()
+    ->validationMessages([
+        'required' => 'O assunto é obrigatório.',
+    ]),
                         Forms\Components\Select::make('format_id')
                             ->label('Tipo de Conteúdo')
                             ->placeholder('Selecione um tipo de conteúdo')
@@ -56,18 +57,25 @@ class ResourceResource extends FilamentResourceBase
                             ->options(Tag::query()->isActive()->orderBy('name')->pluck('name', 'id'))
                             ->columns()
                             ->required(),
-                        Forms\Components\TextInput::make('title')
-                            ->label('Título')
-                            ->columnSpanFull()
-                            ->required(),
-                        Forms\Components\Textarea::make('description')
-                            ->label('Descrição')
-                            ->columnSpanFull()
-                            ->rows(5)
-                            ->required(),
-                        Forms\Components\TextInput::make('source')
-                            ->label('Fonte (Link)')
-                            ->required(),
+Forms\Components\TextInput::make('title')
+    ->label('Título')
+    ->columnSpanFull()
+    ->required()
+    ->validationMessages([
+        'required' => 'O título é obrigatório.',
+    ]),
+Forms\Components\Textarea::make('description')
+    ->label('Descrição')
+    ->required()
+    ->validationMessages([
+        'required' => 'A descrição é obrigatória.',
+    ]),
+Forms\Components\TextInput::make('source')
+    ->label('Fonte (Link)')
+    ->required()
+    ->validationMessages([
+        'required' => 'A fonte é obrigatória.',
+    ]),
                         Forms\Components\FileUpload::make('uploaded_file')
                             ->label('Arquivo (em PDF)')
                             ->acceptedFileTypes(['application/pdf'])
@@ -90,12 +98,18 @@ class ResourceResource extends FilamentResourceBase
                     ->columns()
                     ->collapsible()
                     ->schema([
-                        Forms\Components\TextInput::make('author')
-                            ->label('Autor')
-                            ->required(),
-                        Forms\Components\TextInput::make('publisher')
-                            ->label('Editora ou Canal de Publicação')
-                            ->required(),
+Forms\Components\TextInput::make('author')
+    ->label('Autor')
+    ->required()
+    ->validationMessages([
+        'required' => 'O autor é obrigatório.',
+    ]),
+Forms\Components\TextInput::make('publisher')
+    ->label('Editora ou Canal de Publicação')
+    ->required()
+    ->validationMessages([
+        'required' => 'A editora é obrigatória.',
+    ]),
                         Forms\Components\TextInput::make('contributor')
                             ->label('Co-Autor ou Contribuidor'),
                         Forms\Components\TextInput::make('Direitos')
@@ -111,9 +125,12 @@ class ResourceResource extends FilamentResourceBase
                             ->label('Formato'),
                         Forms\Components\TextInput::make('identifier')
                             ->label('Identificador'),
-                        Forms\Components\TextInput::make('language')
-                            ->label('Idioma do conteúdo')
-                            ->required(),
+Forms\Components\TextInput::make('language')
+    ->label('Idioma do conteúdo')
+    ->required()
+    ->validationMessages([
+        'required' => 'O idioma é obrigatório.',
+    ]),
                     ]),
             ]);
     }
@@ -161,6 +178,7 @@ class ResourceResource extends FilamentResourceBase
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
+                    ->label('Excluir')
                     ->hidden(fn (): bool => !auth()->user()->isAdmin()),
                 ]),
             ]);

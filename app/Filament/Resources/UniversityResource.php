@@ -19,13 +19,22 @@ class UniversityResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
 
+    protected static ?string $modelLabel = 'Universidade';
+
+    protected static ?string $pluralModelLabel = 'Universidades';
+
     protected static ?string $navigationGroup = 'Conteúdos';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')->required(),
+                Forms\Components\TextInput::make('name')
+                    ->required()
+                    ->label('Nome')
+                    ->validationMessages([
+                'required' => 'O nome da universidade é obrigatório.',
+    ]),
                 Forms\Components\Checkbox::make('is_active'),
             ]);
     }
@@ -59,6 +68,7 @@ class UniversityResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
+                    ->label('Excluir')
                     ->hidden(fn (): bool => !auth()->user()->isAdmin()),
                 ]),
             ]);

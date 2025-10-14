@@ -30,17 +30,25 @@ class MenuResource extends Resource
             ->schema([
                 Forms\Components\Section::make('Informações do Menu')
                     ->schema([
-                        Forms\Components\TextInput::make('slug')
-                            ->label('Slug')
-                            ->required()
-                            ->unique(ignoreRecord: true)
-                            ->helperText('Identificador único do menu (ex: home, sobre, contato)'),
+Forms\Components\TextInput::make('slug')
+    ->label('Slug')
+    ->required()
+    ->unique(ignoreRecord: true)
+    ->helperText('Identificador único do menu (ex: home, sobre, contato)')
+    ->validationMessages([
+        'required' => 'O slug é obrigatório.',
+        'unique' => 'Este slug já está sendo usado.',
+    ]),
                         
-                        Forms\Components\TextInput::make('link')
-                            ->label('Link')
-                            ->required()
-                            ->url()
-                            ->helperText('URL do link'),
+Forms\Components\TextInput::make('link')
+    ->label('Link')
+    ->required()
+    ->url()
+    ->helperText('URL do link')
+    ->validationMessages([
+        'required' => 'O link é obrigatório.',
+        'url' => 'O link deve ser uma URL válida.',
+    ]),
                         Forms\Components\TextInput::make('order')
                             ->label('Ordem')
                             ->numeric()
@@ -104,12 +112,13 @@ class MenuResource extends Resource
                     ->falseLabel('Apenas inativos'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+Tables\Actions\EditAction::make()->label('Editar'),
+Tables\Actions\ViewAction::make()->label('Visualizar'),
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()->label('Excluir'),
                 ]),
             ]);
     }

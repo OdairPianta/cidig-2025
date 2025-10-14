@@ -19,13 +19,42 @@ class SponsorResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    protected static ?string $modelLabel = 'Patrocinador';
+
+    protected static ?string $pluralModelLabel = 'Patrocinadores';
+
     protected static ?string $navigationGroup = 'Conteúdos';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                //
+                Forms\Components\Section::make('Informações do Patrocinador')
+                    ->schema([
+                        Forms\Components\TextInput::make('name')
+                            ->label('Nome')
+                            ->required()
+                            ->maxLength(255)
+                            ->validationMessages([
+                                'required' => 'O nome do patrocinador é obrigatório.',
+                                'max' => 'O nome não pode ter mais que 255 caracteres.',
+                            ]),
+                        
+                        Forms\Components\FileUpload::make('image')
+                            ->label('Logo')
+                            ->image()
+                            ->acceptedFileTypes(['image/bmp','image/jpeg', 'image/x-png', 'image/png', 'image/gif'])
+                            ->disk('public')
+                            ->directory('sponsors')
+                            ->visibility('public')
+                            ->preserveFilenames()
+                            ->downloadable()
+                            ->openable()
+                            ->validationMessages([
+                                'image' => 'O arquivo deve ser uma imagem válida.',
+                            ]),
+                    ])
+                    ->columns(1),
             ]);
     }
 
@@ -44,6 +73,11 @@ class SponsorResource extends Resource
                     ->label('Criado em')
                     ->dateTime()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Atualizado em')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggledHiddenByDefault(),
             ])
             ->filters([
                 //

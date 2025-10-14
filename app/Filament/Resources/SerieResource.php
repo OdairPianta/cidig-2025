@@ -21,24 +21,37 @@ class SerieResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-video-camera';
 
+    protected static ?string $modelLabel = 'Série';
+
+    protected static ?string $pluralModelLabel = 'Série';
+
     protected static ?string $navigationGroup = 'Conteúdos';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('title')
-                    ->label('Título')
-                    ->columnSpanFull()
-                    ->required(),
-                Forms\Components\TextInput::make('slug')
-                    ->label('Slug')
-                    ->columnSpanFull()
-                    ->required(),
-                Forms\Components\Textarea::make('description')
-                    ->label('Descrição')
-                    ->columnSpanFull()
-                    ->required(),
+Forms\Components\TextInput::make('title')
+    ->label('Título')
+    ->columnSpanFull()
+    ->required()
+    ->validationMessages([
+        'required' => 'O título é obrigatório.',
+    ]),
+Forms\Components\TextInput::make('slug')
+    ->label('Slug')
+    ->columnSpanFull()
+    ->required()
+    ->validationMessages([
+        'required' => 'O slug é obrigatório.',
+    ]),
+Forms\Components\Textarea::make('description')
+    ->label('Descrição')
+    ->columnSpanFull()
+    ->required()
+    ->validationMessages([
+        'required' => 'A descrição é obrigatória.',
+    ]),
                 Forms\Components\Select::make('users')
                     ->label('Responsáveis')
                     ->relationship('users', 'name')
@@ -127,6 +140,7 @@ class SerieResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
+                        ->label('Excluir')
                     ->hidden(fn (): bool => !auth()->user()->isAdmin()),
                 ]),
             ]);

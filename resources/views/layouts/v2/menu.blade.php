@@ -36,7 +36,7 @@
                 @else
                     <!-- Fallback para itens padrão caso não haja itens no banco -->
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('v2.index') }}">{{ __('Hme') }}</a>
+                        <a class="nav-link" href="{{ route('v2.index') }}">{{ __('Página inicial') }}</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('v2.about') }}">{{ __('Sobre nós') }}</a>

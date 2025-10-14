@@ -26,36 +26,51 @@ class TicketResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Radio::make('ticket_type')
-                    ->label('Tipo')
-                    ->options(Ticket::TYPES_TEXTS)
-                    ->inline()
-                    ->inlineLabel(false)
-                    ->default(request()->query('ticket_type') ?? 2)
-                    ->required(),
-                Forms\Components\Radio::make('status')
-                    ->label('Status')
-                    ->options(Ticket::STATUSES_OPTIONS)
-                    ->inline()
-                    ->inlineLabel(false)
-                    ->default(0)
-                    ->required(),
-                Forms\Components\Select::make('responsible_id')
-                    ->label('Responsável')
-                    ->placeholder('Selecione um responsável')
-                    ->options(User::query()->where('is_active', true)->pluck('name', 'id'))
-                    ->searchable()
-                    ->required(),
-                Forms\Components\TextInput::make('title')
-                    ->label('Título')
-                    ->columnSpanFull()
-                    ->required(),
-                Forms\Components\Textarea::make('description')
-                    ->label('Descrição')
-                    ->rows(5)
-                    ->autosize()
-                    ->columnSpanFull()
-                    ->required(),
+Forms\Components\Radio::make('ticket_type')
+    ->label('Tipo')
+    ->options(Ticket::TYPES_TEXTS)
+    ->inline()
+    ->inlineLabel(false)
+    ->default(request()->query('ticket_type') ?? 2)
+    ->required()
+    ->validationMessages([
+        'required' => 'O tipo do ticket é obrigatório.',
+    ]),
+Forms\Components\Radio::make('status')
+    ->label('Status')
+    ->options(Ticket::STATUSES_OPTIONS)
+    ->inline()
+    ->inlineLabel(false)
+    ->default(0)
+    ->required()
+    ->validationMessages([
+        'required' => 'O status é obrigatório.',
+    ]),
+Forms\Components\Select::make('responsible_id')
+    ->label('Responsável')
+    ->placeholder('Selecione um responsável')
+    ->options(User::query()->where('is_active', true)->pluck('name', 'id'))
+    ->searchable()
+    ->required()
+    ->validationMessages([
+        'required' => 'O responsável é obrigatório.',
+    ]),
+Forms\Components\TextInput::make('title')
+    ->label('Título')
+    ->columnSpanFull()
+    ->required()
+    ->validationMessages([
+        'required' => 'O título é obrigatório.',
+    ]),
+Forms\Components\Textarea::make('description')
+    ->label('Descrição')
+    ->rows(5)
+    ->autosize()
+    ->columnSpanFull()
+    ->required()
+    ->validationMessages([
+        'required' => 'A descrição é obrigatória.',
+    ]),
             ]);
     }
 
@@ -111,6 +126,7 @@ class TicketResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
+                    ->label('Excluir')
                     ->hidden(fn (): bool => !auth()->user()->isAdmin()),
                 ]),
             ])

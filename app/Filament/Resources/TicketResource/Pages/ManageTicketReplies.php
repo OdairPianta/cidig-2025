@@ -43,9 +43,12 @@ class ManageTicketReplies extends ManageRelatedRecords
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('description')
-                    ->label('Descrição')
-                    ->required(),
+Forms\Components\TextInput::make('description')
+    ->label('Descrição')
+    ->required()
+    ->validationMessages([
+        'required' => 'A descrição é obrigatória.',
+    ]),
                 Forms\Components\Hidden::make('comment_type')
                     ->default(1),
                 Forms\Components\Hidden::make('ticket_id')
@@ -111,6 +114,7 @@ class ManageTicketReplies extends ManageRelatedRecords
             ])
             ->groupedBulkActions([
                 Tables\Actions\DeleteBulkAction::make()
+                ->label('Excluir')
                 ->hidden(fn (): bool => !auth()->user()->isAdmin()),
             ]);
     }

@@ -123,4 +123,17 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | AI Access Token
+    |--------------------------------------------------------------------------
+    |
+    | This token is used to authenticate external AI systems that need to
+    | access the GraphQL endpoint. Set this in your .env file using the
+    | AI_ACCESS_TOKEN variable for security.
+    |
+    */
+
+    'ai_access_token' => env('AI_ACCESS_TOKEN'),
+
 ];

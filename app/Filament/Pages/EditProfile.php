@@ -64,16 +64,22 @@ class EditProfile extends BaseEditProfile
                     ->label('Descrição')
                     ->rows(3),
                 
-                Forms\Components\Select::make('roles')
-                    ->label('Funções')
-                    ->placeholder('Selecione as funções')
-                    ->multiple()
-                    ->options(self::ROLES)
-                    ->required(),
+Forms\Components\Select::make('roles')
+    ->label('Funções')
+    ->placeholder('Selecione as funções')
+    ->multiple()
+    ->options(self::ROLES)
+    ->required()
+    ->validationMessages([
+        'required' => 'Pelo menos uma função deve ser selecionada.',
+    ]),
                     
-                Forms\Components\TextInput::make('website')
-                    ->label('Site')
-                    ->url(),
+Forms\Components\TextInput::make('website')
+    ->label('Site')
+    ->url()
+    ->validationMessages([
+        'url' => 'O site deve ser uma URL válida.',
+    ]),
             ])
             ->statePath('data');
     }
