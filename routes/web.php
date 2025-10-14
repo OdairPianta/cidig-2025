@@ -34,11 +34,11 @@ Route::prefix('/v0')->group(function() {
 Route::group(['middleware' => ['auth', 'active_user']], function() {
     Route::get('/home', 'App\Http\Controllers\HomeController@home')->name('home');
 
-    Route::get('users', 'App\Http\Controllers\Auth\RegisterController@showUsers')->name('showUsers');
-    Route::get('users/{userId}', 'App\Http\Controllers\Auth\RegisterController@editUser')->name('editUser');
-    Route::post('new-users', 'App\Http\Controllers\Auth\RegisterController@updateUser')->name('updateUser');
-    Route::post('new-user', 'App\Http\Controllers\Auth\RegisterController@create')->name('create');
-    Route::patch('users/{userId}/toggle-status', 'App\Http\Controllers\Auth\RegisterController@toggleStatus')->name('users.toggleStatus');
+    // Route::get('users', 'App\Http\Controllers\Auth\RegisterController@showUsers')->name('showUsers');
+    // Route::get('users/{userId}', 'App\Http\Controllers\Auth\RegisterController@editUser')->name('editUser');
+    // Route::post('new-users', 'App\Http\Controllers\Auth\RegisterController@updateUser')->name('updateUser');
+    // Route::post('new-user', 'App\Http\Controllers\Auth\RegisterController@create')->name('create');
+    // Route::patch('users/{userId}/toggle-status', 'App\Http\Controllers\Auth\RegisterController@toggleStatus')->name('users.toggleStatus');
 
     Route::resource('tags', TagController::class);
     Route::patch('tags/{tagId}/toggle-status', 'App\Http\Controllers\TagController@toggleStatus')->name('tags.toggleStatus');

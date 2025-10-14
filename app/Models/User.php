@@ -295,6 +295,16 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(Post::class);
     }
 
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    public function series()
+    {
+        return $this->belongsToMany(Serie::class, 'serie_user');
+    }
+
 
     public function getPictureLink(): string
     {

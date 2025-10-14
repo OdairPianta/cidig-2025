@@ -1,0 +1,474 @@
+"A datetime string with format `Y-m-d H:i:s`, e.g. `2018-05-23 13:43:32`."
+scalar DateTime @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\DateTime")
+
+"Indicates what fields are available at the top level of a query operation."
+type Query {
+    # Users
+    "Find a single user by ID."
+    user(
+        "Search by primary key."
+        id: ID @eq @rules(apply: ["prohibits:email", "required_without:email"])
+        "Search by email address."
+        email: String @eq @rules(apply: ["prohibits:id", "required_without:id", "email"])
+    ): User @find
+
+    "List multiple users."
+    users(
+        "Filters by name. Accepts SQL LIKE wildcards `%` and `_`."
+        name: String @where(operator: "like")
+        "Filter by university."
+        university_id: ID @eq
+        "Filter by role."
+        role: String @where(operator: "like")
+    ): [User!]! @paginate(defaultCount: 10)
+
+    # Posts
+    "Find a single post by ID."
+    post(
+        "Search by primary key."
+        id: ID! @eq
+    ): Post @find
+
+    "List multiple posts."
+    posts(
+        "Filters by title. Accepts SQL LIKE wildcards `%` and `_`."
+        title: String @where(operator: "like")
+        "Filter by user ID."
+        user_id: ID @eq
+        "Filter by published status."
+        is_published: Boolean @eq
+    ): [Post!]! @paginate(defaultCount: 10)
+
+    # Comments
+    "Find a single comment by ID."
+    comment(
+        "Search by primary key."
+        id: ID! @eq
+    ): Comment @find
+
+    "List multiple comments."
+    comments(
+        "Filter by post ID."
+        post_id: ID @eq
+        "Filter by user ID."
+        user_id: ID @eq
+    ): [Comment!]! @paginate(defaultCount: 10)
+
+    # Subjects (Verbetes)
+    "Find a single subject by ID."
+    subject(
+        "Search by primary key."
+        id: ID @eq
+        "Search by slug."
+        slug: String @eq
+    ): Subject @find
+
+    "List multiple subjects."
+    subjects(
+        "Filter by name."
+        name: String @where(operator: "like")
+        "Filter by active status."
+        is_active: Boolean @eq
+    ): [Subject!]! @paginate(defaultCount: 10)
+
+    # Videos
+    "Find a single video by ID."
+    video(
+        "Search by primary key."
+        id: ID! @eq
+    ): Video @find
+
+    "List multiple videos."
+    videos(
+        "Filter by title."
+        title: String @where(operator: "like")
+        "Filter by subject."
+        subject_id: ID @eq
+        "Filter by featured status."
+        is_featured: Boolean @eq
+        "Filter by active status."
+        is_active: Boolean @eq
+    ): [Video!]! @paginate(defaultCount: 10)
+
+    # Resources (Conteúdos)
+    "Find a single resource by ID."
+    resource(
+        "Search by primary key."
+        id: ID! @eq
+    ): Resource @find
+
+    "List multiple resources."
+    resources(
+        "Filter by title."
+        title: String @where(operator: "like")
+        "Filter by subject."
+        subject_id: ID @eq
+        "Filter by user."
+        user_id: ID @eq
+    ): [Resource!]! @paginate(defaultCount: 10)
+
+    # Series
+    "Find a single serie by ID."
+    serie(
+        "Search by primary key."
+        id: ID @eq
+        "Search by slug."
+        slug: String @eq
+    ): Serie @find
+
+    "List multiple series."
+    series(
+        "Filter by title."
+        title: String @where(operator: "like")
+        "Filter by active status."
+        is_active: Boolean @eq
+    ): [Serie!]! @paginate(defaultCount: 10)
+
+    # Universities
+    "List multiple universities."
+    universities(
+        "Filter by name."
+        name: String @where(operator: "like")
+        "Filter by active status."
+        is_active: Boolean @eq
+    ): [University!]! @paginate(defaultCount: 10)
+
+    # Tags
+    "List multiple tags."
+    tags(
+        "Filter by name."
+        name: String @where(operator: "like")
+    ): [Tag!]! @paginate(defaultCount: 10)
+}
+
+# User Types
+"Account of a person who utilizes this application."
+type User {
+    "Unique primary key."
+    id: ID!
+
+    "Non-unique name."
+    name: String!
+
+    "Unique email address."
+    email: String!
+
+    "When the email was verified."
+    email_verified_at: DateTime
+
+    "When the account was created."
+    created_at: DateTime!
+
+    "When the account was last updated."
+    updated_at: DateTime!
+
+    "User information details."
+    information: UserInformation @hasOne
+
+    "Posts written by this user."
+    posts: [Post!]! @hasMany
+
+    "Comments written by this user."
+    comments: [Comment!]! @hasMany
+
+    "Resources created by this user."
+    resources: [Resource!]! @hasMany
+
+    "Series associated with this user."
+    series: [Serie!]! @belongsToMany
+
+    "Subjects associated with this user."
+    subjects: [Subject!]! @belongsToMany
+}
+
+"Extended user information."
+type UserInformation {
+    "Unique primary key."
+    id: ID!
+
+    "User ID reference."
+    user_id: ID!
+
+    "University association."
+    university: University @belongsTo
+
+    "Profile picture URL."
+    picture_url: String
+
+    "Lattes curriculum URL."
+    lattes_url: String
+
+    "ORCID profile URL."
+    orcid_url: String
+
+    "LinkedIn profile URL."
+    linkedin_url: String
+
+    "User mini biography."
+    minibio: String
+
+    "User description."
+    description: String
+
+    "User title/position."
+    title: String
+
+    "User roles (JSON)."
+    roles: String
+
+    "User website."
+    website: String
+
+    "When the information was created."
+    created_at: DateTime!
+
+    "When the information was last updated."
+    updated_at: DateTime!
+
+    "Associated user."
+    user: User! @belongsTo
+}
+
+# University Type
+"Educational institution."
+type University {
+    "Unique primary key."
+    id: ID!
+
+    "University name."
+    name: String!
+
+    "Whether the university is active."
+    is_active: Boolean!
+
+    "When the university was created."
+    created_at: DateTime!
+
+    "When the university was last updated."
+    updated_at: DateTime!
+
+    "Users associated with this university."
+    users: [UserInformation!]! @hasMany
+}
+
+# Subject Types
+"A research subject/topic (verbete)."
+type Subject {
+    "Unique primary key."
+    id: ID!
+
+    "Subject name/title."
+    name: String!
+
+    "URL-friendly slug."
+    slug: String
+
+    "Subject description."
+    description: String
+
+    "Subject image URL."
+    image: String
+
+    "Background image URL."
+    background_image: String
+
+    "Background image credit."
+    background_credit: String
+
+    "Whether the subject is active."
+    is_active: Boolean!
+
+    "When the subject was created."
+    created_at: DateTime!
+
+    "When the subject was last updated."
+    updated_at: DateTime!
+
+    "Videos related to this subject."
+    videos: [Video!]! @hasMany
+
+    "Resources related to this subject."
+    resources: [Resource!]! @hasMany
+
+    "Users associated with this subject."
+    users: [User!]! @belongsToMany
+}
+
+# Video Types
+"A video content."
+type Video {
+    "Unique primary key."
+    id: ID!
+
+    "YouTube video ID."
+    video_id: String!
+
+    "Video title."
+    title: String
+
+    "Video description."
+    description: String
+
+    "Whether the video is featured."
+    is_featured: Boolean!
+
+    "Whether the video is active."
+    is_active: Boolean!
+
+    "When the video was created."
+    created_at: DateTime!
+
+    "When the video was last updated."
+    updated_at: DateTime!
+
+    "Subject this video belongs to."
+    subject: Subject @belongsTo
+
+    "User who created this video."
+    user: User @belongsTo
+}
+
+# Resource Types
+"A content resource (documento)."
+type Resource {
+    "Unique primary key."
+    id: ID!
+
+    "Resource title."
+    title: String!
+
+    "Resource description."
+    description: String!
+
+    "Source/link URL."
+    source: String!
+
+    "Uploaded file path."
+    uploaded_file: String
+
+    "When the resource was created."
+    created_at: DateTime!
+
+    "When the resource was last updated."
+    updated_at: DateTime!
+
+    "Subject this resource belongs to."
+    subject: Subject @belongsTo
+
+    "User who created this resource."
+    user: User @belongsTo
+
+    "Tags associated with this resource."
+    tags: [Tag!]! @belongsToMany
+}
+
+# Serie Types
+"A video series."
+type Serie {
+    "Unique primary key."
+    id: ID!
+
+    "Serie title."
+    title: String!
+
+    "URL-friendly slug."
+    slug: String!
+
+    "Serie description."
+    description: String!
+
+    "Thumbnail image URL."
+    thumbnail: String
+
+    "Whether the serie is active."
+    is_active: Boolean!
+
+    "When the serie was created."
+    created_at: DateTime!
+
+    "When the serie was last updated."
+    updated_at: DateTime!
+
+    "Users responsible for this serie."
+    users: [User!]! @belongsToMany
+}
+
+# Tag Type
+"A content tag."
+type Tag {
+    "Unique primary key."
+    id: ID!
+
+    "Tag name."
+    name: String!
+
+    "Tag color."
+    color: String
+
+    "When the tag was created."
+    created_at: DateTime!
+
+    "When the tag was last updated."
+    updated_at: DateTime!
+
+    "Resources tagged with this tag."
+    resources: [Resource!]! @belongsToMany
+}
+
+# Legacy Post and Comment types (manter para compatibilidade)
+"A blog post written by a user."
+type Post {
+    "Unique primary key."
+    id: ID!
+
+    "The title of the post."
+    title: String!
+
+    "The URL-friendly slug."
+    slug: String
+
+    "The content of the post."
+    content: String
+
+    "The featured image URL."
+    image_url: String
+
+    "Whether the post is published."
+    is_published: Boolean!
+
+    "When the post was published."
+    published_at: DateTime
+
+    "When the post was created."
+    created_at: DateTime!
+
+    "When the post was last updated."
+    updated_at: DateTime!
+
+    "The user who wrote this post."
+    user: User! @belongsTo
+
+    "Comments on this post."
+    comments: [Comment!]! @hasMany
+}
+
+"A comment on a blog post."
+type Comment {
+    "Unique primary key."
+    id: ID!
+
+    "The content of the comment."
+    content: String!
+
+    "When the comment was created."
+    created_at: DateTime!
+
+    "When the comment was last updated."
+    updated_at: DateTime!
+
+    "The post this comment belongs to."
+    post: Post! @belongsTo
+
+    "The user who wrote this comment."
+    user: User! @belongsTo
+}
