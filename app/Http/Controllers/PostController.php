@@ -28,7 +28,7 @@ class PostController extends Controller
         $user = $this->findUserBySlug($userSlug);
         
         $posts = $user->posts()
-            ->where('is_published', true)
+            ->published()
             ->orderBy('published_at', 'desc')
             ->paginate(10);
 
@@ -41,7 +41,7 @@ class PostController extends Controller
         
         $post = $user->posts()
             ->where('slug', $postSlug)
-            ->where('is_published', true)
+            ->published()
             ->firstOrFail();
 
         return view('posts.show', compact('user', 'post'));
@@ -49,7 +49,7 @@ class PostController extends Controller
 
     public function index()
     {
-        $posts = Post::where('is_published', true)
+        $posts = Post::published()
             ->with('user')
             ->orderBy('published_at', 'desc')
             ->paginate(12);

@@ -102,9 +102,18 @@ Forms\Components\TextInput::make('password_confirmation')
                     ->collapsible()
                     ->schema([
                         Forms\Components\Select::make('university_id')
-                            ->label('Universidade')
-                            ->placeholder('Selecione uma universidade')
-                            ->options(University::query()->where('is_active', true)->pluck('name', 'id')),
+                            ->label('Instituição')
+                            ->placeholder('Selecione ou cadastre uma instituição')
+                            ->helperText('Não encontrou? Use o "+" para cadastrar uma nova instituição.')
+                            ->options(fn () => University::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id'))
+                            ->searchable()
+                            ->createOptionForm([
+                                Forms\Components\TextInput::make('name')
+                                    ->label('Nome da instituição')
+                                    ->required()
+                                    ->maxLength(255),
+                            ])
+                            ->createOptionUsing(fn (array $data) => University::findOrCreateByName($data['name'])->getKey()),
                         
                         Forms\Components\FileUpload::make('picture_url')
                             ->label('Foto de perfil')
@@ -149,13 +158,14 @@ Forms\Components\TextInput::make('orcid_url')
     ->label('Mini Bio')
     ->rows(3)
     ->minLength(90)
-    ->helperText('Mínimo de 90 caracteres')
+    ->helperText('Resumo curto (mínimo de 90 caracteres), exibido nos cartões e listas da equipe.')
     ->validationMessages([
         'min' => 'A mini bio deve ter pelo menos 90 caracteres.',
     ]),
                         
                         Forms\Components\Textarea::make('description')
                             ->label('Descrição')
+                            ->helperText('Texto completo e opcional, exibido na página de perfil.')
                             ->rows(3),
                         
                         Forms\Components\TextInput::make('title')
@@ -188,11 +198,23 @@ Forms\Components\TextInput::make('website')
                 Tables\Columns\TextColumn::make('email')
                     ->label('E-mail')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('information.university.name')
-                    ->label('Universidade')
+                    ->label('Instituição')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Criado em')
+                    ->dateTime('d/m/Y')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Atualizado em')
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('information.roles')
                     ->label('Funções')
                     ->formatStateUsing(function ($state) {
@@ -210,13 +232,40 @@ Forms\Components\TextInput::make('website')
                         return implode(', ', $roleNames);
                     })
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\CheckboxColumn::make('is_active')
                     ->label('Ativo')
                     ->disabled(fn (User $record) => !auth()->user()->isAdmin() || $record->id === auth()->id())
                     ->sortable(),
             ])
+            ->defaultSort('name')
             ->filters([
+                Tables\Filters\Filter::make('order')
+                    ->label('Ordenar por')
+                    ->form([
+                        Forms\Components\Select::make('order_by')
+                            ->label('Ordenar por')
+                            ->placeholder('Padrão (ordem alfabética)')
+                            ->options([
+                                'name_asc' => 'Ordem alfabética (A–Z)',
+                                'name_desc' => 'Ordem alfabética (Z–A)',
+                                'created_desc' => 'Perfis criados recentemente',
+                                'created_asc' => 'Perfis mais antigos',
+                                'updated_desc' => 'Atualizados recentemente',
+                            ]),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return match ($data['order_by'] ?? null) {
+                            'name_asc' => $query->reorder('name'),
+                            'name_desc' => $query->reorder('name', 'desc'),
+                            'created_desc' => $query->reorder('created_at', 'desc'),
+                            'created_asc' => $query->reorder('created_at'),
+                            'updated_desc' => $query->reorder('updated_at', 'desc'),
+                            default => $query,
+                        };
+                    })
+                    ->indicateUsing(fn (array $data): ?string => ($data['order_by'] ?? null) ? 'Ordenação personalizada' : null),
                 Tables\Filters\TernaryFilter::make('is_active')
                     ->label('Ativo')
                     ->placeholder('Todos')

@@ -14,13 +14,37 @@ class Post extends Model
         'content',
         'image_url',
         'is_published',
-        'published_at'
+        'published_at',
+        'archived_at',
     ];
 
     protected $casts = [
         'is_published' => 'boolean',
         'published_at' => 'datetime',
+        'archived_at' => 'datetime',
     ];
+
+    public function scopePublished($query)
+    {
+        return $query->where('is_published', true)->whereNull('archived_at');
+    }
+
+    public function isArchived(): bool
+    {
+        return $this->archived_at !== null;
+    }
+
+    /**
+     * Public URL of the post on the website (author slug + post slug).
+     */
+    public function getPublicUrlAttribute(): ?string
+    {
+        if (! $this->user || ! $this->slug) {
+            return null;
+        }
+
+        return route('post.show', [Str::slug($this->user->name), $this->slug]);
+    }
 
     public function user()
     {

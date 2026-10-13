@@ -33,10 +33,33 @@ class UniversityResource extends Resource
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->label('Nome')
+                    ->maxLength(255)
+                    ->live(onBlur: true)
+                    ->helperText(function (?University $record, Forms\Get $get) {
+                        $similar = University::similarTo((string) $get('name'), $record?->getKey());
+
+                        return $similar->isEmpty()
+                            ? null
+                            : 'Você quis dizer: ' . $similar->pluck('name')->join(' · ') . '? Se for a mesma instituição, edite a existente e adicione este nome em "Nomes alternativos".';
+                    })
+                    ->rules([
+                        fn (?University $record) => function (string $attribute, $value, \Closure $fail) use ($record) {
+                            $existing = University::findByName((string) $value);
+
+                            if ($existing && (! $record || $existing->getKey() !== $record->getKey())) {
+                                $fail("Esta instituição já está cadastrada como \"{$existing->name}\".");
+                            }
+                        },
+                    ])
                     ->validationMessages([
-                'required' => 'O nome da universidade é obrigatório.',
-    ]),
-                Forms\Components\Checkbox::make('is_active'),
+                        'required' => 'O nome da instituição é obrigatório.',
+                    ]),
+                Forms\Components\TagsInput::make('aliases')
+                    ->label('Nomes alternativos')
+                    ->helperText('Outros nomes ou idiomas, ex.: "Politecnico di Torino" para "Universidade Politécnica de Turim". Pressione Enter após cada nome.'),
+                Forms\Components\Checkbox::make('is_active')
+                    ->label('Ativo')
+                    ->default(true),
             ]);
     }
 
@@ -48,14 +71,10 @@ class UniversityResource extends Resource
                     ->label('Nome')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Criado em')
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Atualizado em')
-                    ->dateTime()
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('aliases')
+                    ->label('Nomes alternativos')
+                    ->badge()
+                    ->toggleable(),
                 Tables\Columns\CheckboxColumn::make('is_active')
                     ->label('Ativo')
                     ->sortable(),
@@ -64,7 +83,8 @@ class UniversityResource extends Resource
                 Tables\Filters\Filter::make('active')->query(fn (Builder $query) => $query->where('is_active', true)),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()->label('Visualizar')
+                Tables\Actions\ViewAction::make()->label('Visualizar'),
+                Tables\Actions\EditAction::make()->label('Editar'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

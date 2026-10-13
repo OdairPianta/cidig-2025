@@ -11,7 +11,8 @@ class CreatePost extends CreateRecord
 
     protected function getRedirectUrl(): string
     {
-        return $this->previousUrl ?? $this->getResource()::getUrl('index');
+        // Open the new post so the author can check how it looks.
+        return $this->getResource()::getUrl('view', ['record' => $this->getRecord()]);
     }
 
     protected function mutateFormDataBeforeCreate(array $data): array

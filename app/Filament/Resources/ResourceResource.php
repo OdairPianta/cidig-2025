@@ -196,7 +196,7 @@ Forms\Components\TextInput::make('language')
         return [
             'index' => Pages\ListResources::route('/'),
             'create' => Pages\CreateResource::route('/create'),
-            'show' => Pages\ViewResource::route('/{record}'),
+            'view' => Pages\ViewResource::route('/{record}'),
             'edit' => Pages\EditResource::route('/{record}/edit'),
         ];
     }
