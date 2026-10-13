@@ -78,7 +78,7 @@ class SponsorResource extends Resource
                                     ->required()
                                     ->image()
                                     ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/gif', 'image/webp', 'image/bmp'])
-                                    ->disk('public')
+                                    ->disk(\App\Support\Uploads::disk())
                                     ->directory('sponsors')
                                     ->visibility('public')
                                     ->preserveFilenames()
@@ -143,7 +143,7 @@ class SponsorResource extends Resource
         return $infolist->schema([
             Infolists\Components\Section::make('Patrocinador')->columns(2)->schema([
                 Infolists\Components\TextEntry::make('name')->label('Nome')->copyable(),
-                Infolists\Components\ImageEntry::make('image')->label('Logo em uso')->disk('public'),
+                Infolists\Components\ImageEntry::make('image')->label('Logo em uso')->disk(\App\Support\Uploads::disk()),
                 Infolists\Components\RepeatableEntry::make('logos')->label('Versões do logo')->columnSpanFull()->schema([
                     Infolists\Components\ImageEntry::make('url')->label('')->height(60),
                     Infolists\Components\TextEntry::make('label')->label('Descrição')->placeholder('—'),

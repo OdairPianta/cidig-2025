@@ -156,7 +156,7 @@ class Resource extends Model
     public function getSourceLink(): string
     {
         if( $this->uploadedFile()->count() ) {
-            return Storage::url($this->source);
+            return \App\Support\Uploads::url($this->source);
         }
 
         return $this->source;

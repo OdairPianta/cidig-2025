@@ -13,7 +13,7 @@
                                 <div id="coordinator-container" class="row mt-2">
                                     <div class="col-xs-12 col-sm-6">
                                         @if($userData['picture_url'])
-                                            <img src="{{ Storage::url($userData['picture_url']) }}"
+                                            <img src="{{ \App\Support\Uploads::url($userData['picture_url']) }}"
                                                  alt="{{ $userData['name'] }}"
                                                  class="mr-2"
                                             />

@@ -86,3 +86,23 @@ it('refuses to download images from private addresses or non-images', function (
 
     expect(fn () => $downloader->store('https://1.1.1.1/not-image', 'resources'))->toThrow(InvalidArgumentException::class);
 });
+
+it('resolves upload urls from the configured disk and keeps legacy public images', function () {
+    \Illuminate\Support\Facades\Storage::fake('public');
+    config(['filesystems.uploads_disk' => 'public']);
+
+    expect(\App\Support\Uploads::url(null))->toBeNull()
+        ->and(\App\Support\Uploads::url('https://cdn.example.com/a.png'))->toBe('https://cdn.example.com/a.png')
+        ->and(\App\Support\Uploads::url('posts/new.png'))->toContain('posts/new.png');
+
+    // A legacy file shipped under public/ is served from there, not from the upload disk.
+    $legacy = public_path('images/_legacy_test.png');
+    @mkdir(dirname($legacy), 0777, true);
+    file_put_contents($legacy, 'x');
+
+    try {
+        expect(\App\Support\Uploads::url('images/_legacy_test.png'))->toBe(url('images/_legacy_test.png'));
+    } finally {
+        unlink($legacy);
+    }
+});

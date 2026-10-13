@@ -225,7 +225,7 @@ Tables\Actions\ViewAction::make()->label('Visualizar'),
                 Infolists\Components\IconEntry::make('is_active')->label('Ativo')->boolean(),
                 Infolists\Components\TextEntry::make('video.video_id')->label('Vídeo (YouTube)')->copyable(),
                 Infolists\Components\TextEntry::make('description')->label('Descrição')->columnSpanFull()->copyable(),
-                Infolists\Components\ImageEntry::make('image')->label('Imagem')->disk('public'),
+                Infolists\Components\ImageEntry::make('image')->label('Imagem')->disk(\App\Support\Uploads::disk()),
                 Infolists\Components\TextEntry::make('background-credit')->label('Crédito da imagem de fundo')->copyable(),
             ]),
         ]);

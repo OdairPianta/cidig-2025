@@ -95,14 +95,14 @@ Forms\Components\TextInput::make('source')
                         Forms\Components\FileUpload::make('uploaded_file')
                             ->label('Arquivo (em PDF)')
                             ->acceptedFileTypes(['application/pdf'])
-                            ->disk('public')
+                            ->disk(\App\Support\Uploads::disk())
                             ->directory('resources')
                             ->visibility('public')
                             ->preserveFilenames()
                             ->downloadable()
                             ->openable()
                             ->helperText(fn ($record) => $record && $record->uploadedFile
-                                ? new HtmlString('Arquivo atual: <a href="' . Storage::disk('public')->url($record->uploadedFile->path) . '" target="_blank">' . $record->uploadedFile->original_name . '</a>')
+                                ? new HtmlString('Arquivo atual: <a href="' . \App\Support\Uploads::storage()->url($record->uploadedFile->path) . '" target="_blank">' . $record->uploadedFile->original_name . '</a>')
                                 : 'No file uploaded yet.'
                             ),
                         Forms\Components\TextInput::make('coverage')
@@ -222,7 +222,7 @@ Forms\Components\TextInput::make('language')
                     ->url(fn (ResourceModel $record) => filled($record->source) ? $record->getSourceLink() : null, true)
                     ->columnSpanFull(),
                 Infolists\Components\TextEntry::make('uploadedFile.original_name')->label('Arquivo (PDF)')
-                    ->url(fn (ResourceModel $record) => $record->uploadedFile ? Storage::disk('public')->url($record->uploadedFile->path) : null, true)
+                    ->url(fn (ResourceModel $record) => $record->uploadedFile ? \App\Support\Uploads::storage()->url($record->uploadedFile->path) : null, true)
                     ->placeholder('Nenhum arquivo enviado'),
                 Infolists\Components\TextEntry::make('coverage')->label('Cobertura (tempo/espacial)')->copyable()->placeholder('—'),
             ]),

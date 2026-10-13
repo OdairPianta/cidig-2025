@@ -16,6 +16,12 @@ return [
     'default' => env('FILESYSTEM_DISK', 'local'),
 
     /*
+    | Disk used for files uploaded through the admin (images, PDFs). Set UPLOADS_DISK=spaces
+    | in production, where the app's local disk does not survive deploys.
+    */
+    'uploads_disk' => env('UPLOADS_DISK', 'public'),
+
+    /*
     |--------------------------------------------------------------------------
     | Filesystem Disks
     |--------------------------------------------------------------------------
@@ -42,6 +48,20 @@ return [
             'driver' => 'local',
             'root' => storage_path('app/public'),
             'url' => env('APP_URL').'/storage',
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
+
+        'spaces' => [
+            'driver' => 's3',
+            'key' => env('SPACES_KEY'),
+            'secret' => env('SPACES_SECRET'),
+            'region' => env('SPACES_REGION', 'nyc3'),
+            'bucket' => env('SPACES_BUCKET'),
+            'url' => env('SPACES_URL'),
+            'endpoint' => env('SPACES_ENDPOINT'),
+            'use_path_style_endpoint' => false,
             'visibility' => 'public',
             'throw' => false,
             'report' => false,

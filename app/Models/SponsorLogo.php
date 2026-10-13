@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Storage;
 
 class SponsorLogo extends Model
 {
@@ -21,8 +20,6 @@ class SponsorLogo extends Model
 
     public function getUrlAttribute(): string
     {
-        return Storage::disk('public')->exists($this->path)
-            ? Storage::disk('public')->url($this->path)
-            : url($this->path);
+        return \App\Support\Uploads::url($this->path);
     }
 }
