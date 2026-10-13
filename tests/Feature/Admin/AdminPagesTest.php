@@ -131,3 +131,101 @@ it('builds a clean excerpt without html entities', function () {
 
     expect($post->excerpt)->toBe('Testando a criação & mais');
 });
+
+it('keeps exactly one sponsor logo in use and mirrors it into image', function () {
+    $sponsor = Sponsor::create(['name' => 'Patrocinador']);
+    $a = $sponsor->logos()->create(['path' => 'sponsors/a.png', 'label' => 'Claro', 'is_active' => false]);
+    $b = $sponsor->logos()->create(['path' => 'sponsors/b.png', 'label' => 'Escuro', 'is_active' => true]);
+    $c = $sponsor->logos()->create(['path' => 'sponsors/c.png', 'is_active' => true]);
+
+    $sponsor->syncActiveLogo();
+
+    expect($sponsor->fresh()->image)->toBe('sponsors/b.png')
+        ->and($a->fresh()->is_active)->toBeFalse()
+        ->and($b->fresh()->is_active)->toBeTrue()
+        ->and($c->fresh()->is_active)->toBeFalse();
+
+    // No logo marked: the first one is used.
+    $b->update(['is_active' => false]);
+    $sponsor->syncActiveLogo();
+
+    expect($sponsor->fresh()->image)->toBe('sponsors/a.png');
+
+    // No logos at all: image is cleared.
+    $sponsor->logos()->delete();
+    $sponsor->syncActiveLogo();
+
+    expect($sponsor->fresh()->image)->toBeNull();
+});
+
+it('deactivates the other logos when one is switched on in the form', function () {
+    \Illuminate\Support\Facades\Storage::fake('public');
+    \Illuminate\Support\Facades\Storage::disk('public')->put('sponsors/a.png', 'x');
+    \Illuminate\Support\Facades\Storage::disk('public')->put('sponsors/b.png', 'x');
+
+    $sponsor = Sponsor::create(['name' => 'Patrocinador']);
+    $sponsor->logos()->create(['path' => 'sponsors/a.png', 'is_active' => true]);
+    $second = $sponsor->logos()->create(['path' => 'sponsors/b.png', 'is_active' => false]);
+
+    $component = Livewire::test(\App\Filament\Resources\SponsorResource\Pages\EditSponsor::class, ['record' => $sponsor->getKey()]);
+    $secondKey = collect($component->get('data.logos'))
+        ->search(fn ($item) => in_array('sponsors/b.png', array_values((array) ($item['path'] ?? []))));
+
+    expect($secondKey)->not->toBeFalse();
+
+    $component->set("data.logos.{$secondKey}.is_active", true);
+
+    $states = collect($component->get('data.logos'))->map(fn ($item) => $item['is_active']);
+
+    expect($states->filter()->count())->toBe(1)
+        ->and($states[$secondKey])->toBeTrue();
+});
+
+it('renders the sponsor view page with logo variants', function () {
+    $sponsor = Sponsor::create(['name' => 'Patrocinador', 'image' => 'sponsors/a.png']);
+    $sponsor->logos()->create(['path' => 'sponsors/a.png', 'label' => 'Claro', 'is_active' => true]);
+
+    Livewire::test(ViewSponsor::class, ['record' => $sponsor->getKey()])->assertSuccessful()->assertSee('Claro');
+});
+
+it('shows every content metadata field on the view page and offers easy copy', function () {
+    $subject = Subject::create(['name' => 'Verbete X', 'slug' => 'x']);
+    $tag = Tag::create(['name' => 'Algoritmo']);
+    $content = \App\Models\Resource::create([
+        'title' => 'Conteúdo de teste',
+        'description' => 'Descrição completa',
+        'source' => 'https://example.com/artigo',
+        'format_id' => \App\Models\Resource::FORMAT_TEXT,
+        'subject_id' => $subject->id,
+        'created_by' => $this->admin->id,
+        'author' => 'Maria',
+        'publisher' => 'Editora Y',
+        'copy_rights' => 'CC-BY',
+        'language' => 'pt-BR',
+    ]);
+    $content->tags()->attach($tag);
+
+    Livewire::test(\App\Filament\Resources\ResourceResource\Pages\ViewResource::class, ['record' => $content->getKey()])
+        ->assertSuccessful()
+        ->assertSee(['Conteúdo de teste', 'Verbete X', 'Algoritmo', 'Maria', 'Editora Y', 'CC-BY', 'https://example.com/artigo', 'Copiar todos os dados']);
+
+    expect($content->fresh()->toCopyText())
+        ->toContain('Título: Conteúdo de teste')
+        ->toContain('Tags: Algoritmo')
+        ->toContain('Direitos: CC-BY');
+});
+
+it('saves the copyright field of a content', function () {
+    $subject = Subject::create(['name' => 'Verbete X', 'slug' => 'x']);
+    $tag = Tag::create(['name' => 'T']);
+
+    Livewire::test(\App\Filament\Resources\ResourceResource\Pages\CreateResource::class)
+        ->fillForm([
+            'subject_id' => $subject->id, 'format_id' => 1, 'tags' => [$tag->id], 'title' => 'T', 'description' => 'D',
+            'source' => 'https://example.com', 'author' => 'A', 'publisher' => 'P', 'language' => 'pt', 'copy_rights' => 'CC-BY',
+        ])
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    expect(\App\Models\Resource::first()->copy_rights)->toBe('CC-BY');
+});

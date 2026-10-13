@@ -41,19 +41,54 @@ class SponsorResource extends Resource
                                 'max' => 'O nome não pode ter mais que 255 caracteres.',
                             ]),
                         
-                        Forms\Components\FileUpload::make('image')
-                            ->label('Logo')
-                            ->helperText('Orientações: fundo transparente (PNG) ou branco, formato horizontal de aproximadamente 400 x 200 px, até 10 MB. Envie a versão que deve aparecer no site.')
-                            ->image()
-                            ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/gif', 'image/webp', 'image/bmp'])
-                            ->disk('public')
-                            ->directory('sponsors')
-                            ->visibility('public')
-                            ->preserveFilenames()
-                            ->downloadable()
-                            ->openable()
-                            ->validationMessages([
-                                'image' => 'O arquivo deve ser uma imagem válida.',
+                        Forms\Components\Repeater::make('logos')
+                            ->label('Logos')
+                            ->relationship('logos')
+                            ->helperText('Envie várias versões do logo (ex.: fundo claro, fundo escuro, horizontal) e marque qual está "em uso" no site. Orientações: PNG com fundo transparente, formato horizontal de aproximadamente 400 x 200 px, até 10 MB.')
+                            ->addActionLabel('Adicionar versão do logo')
+                            ->reorderable(false)
+                            ->collapsible()
+                            ->itemLabel(fn (array $state): ?string => ($state['label'] ?? null) ?: 'Logo')
+                            ->columns(2)
+                            ->schema([
+                                Forms\Components\TextInput::make('label')
+                                    ->label('Descrição da versão')
+                                    ->placeholder('Ex.: Fundo escuro, Horizontal, Versão 2024')
+                                    ->maxLength(255)
+                                    ->live(onBlur: true),
+                                Forms\Components\Toggle::make('is_active')
+                                    ->label('Em uso no site')
+                                    ->helperText('Somente uma versão fica em uso.')
+                                    ->inline(false)
+                                    ->live()
+                                    ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get, Forms\Components\Component $component) {
+                                        if (! $state) {
+                                            return;
+                                        }
+
+                                        $current = $component->getContainer()->getStatePath(isAbsolute: false);
+                                        foreach (array_keys($get('../../logos') ?? []) as $key) {
+                                            if ($key !== $current) {
+                                                $set("../../logos.{$key}.is_active", false);
+                                            }
+                                        }
+                                    }),
+                                Forms\Components\FileUpload::make('path')
+                                    ->label('Arquivo')
+                                    ->required()
+                                    ->image()
+                                    ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/gif', 'image/webp', 'image/bmp'])
+                                    ->disk('public')
+                                    ->directory('sponsors')
+                                    ->visibility('public')
+                                    ->preserveFilenames()
+                                    ->downloadable()
+                                    ->openable()
+                                    ->columnSpanFull()
+                                    ->validationMessages([
+                                        'required' => 'Envie o arquivo do logo.',
+                                        'image' => 'O arquivo deve ser uma imagem válida.',
+                                    ]),
                             ]),
                     ])
                     ->columns(1),
@@ -108,7 +143,12 @@ class SponsorResource extends Resource
         return $infolist->schema([
             Infolists\Components\Section::make('Patrocinador')->columns(2)->schema([
                 Infolists\Components\TextEntry::make('name')->label('Nome')->copyable(),
-                Infolists\Components\ImageEntry::make('image')->label('Logo')->disk('public'),
+                Infolists\Components\ImageEntry::make('image')->label('Logo em uso')->disk('public'),
+                Infolists\Components\RepeatableEntry::make('logos')->label('Versões do logo')->columnSpanFull()->schema([
+                    Infolists\Components\ImageEntry::make('url')->label('')->height(60),
+                    Infolists\Components\TextEntry::make('label')->label('Descrição')->placeholder('—'),
+                    Infolists\Components\IconEntry::make('is_active')->label('Em uso')->boolean(),
+                ])->columns(3),
             ]),
         ]);
     }

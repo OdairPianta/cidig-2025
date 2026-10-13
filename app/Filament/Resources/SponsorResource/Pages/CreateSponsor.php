@@ -9,4 +9,9 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateSponsor extends CreateRecord
 {
     protected static string $resource = SponsorResource::class;
+
+    protected function afterCreate(): void
+    {
+        $this->record->syncActiveLogo();
+    }
 }

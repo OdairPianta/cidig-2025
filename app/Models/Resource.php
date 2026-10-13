@@ -61,6 +61,35 @@ class Resource extends Model
     }
 
     /**
+     * All metadata as plain text, ready to paste elsewhere ("easy copy").
+     */
+    public function toCopyText(): string
+    {
+        $lines = [
+            'Título' => $this->title,
+            'Verbete' => $this->subject?->name,
+            'Tipo de conteúdo' => self::FORMAT_TYPES[$this->format_id] ?? null,
+            'Tags' => $this->tags->pluck('name')->join(', '),
+            'Descrição' => $this->description,
+            'Fonte (link)' => $this->source ? $this->getSourceLink() : null,
+            'Cobertura' => $this->coverage,
+            'Autor' => $this->author,
+            'Editora ou canal de publicação' => $this->publisher,
+            'Co-autor ou contribuidor' => $this->contributor,
+            'Direitos' => $this->copy_rights,
+            'Data' => $this->original_date,
+            'Formato' => $this->format,
+            'Identificador' => $this->identifier,
+            'Idioma' => $this->language,
+        ];
+
+        return collect($lines)
+            ->filter(fn ($value) => filled($value))
+            ->map(fn ($value, $label) => "{$label}: {$value}")
+            ->implode("\n");
+    }
+
+    /**
      * @return BelongsToMany
      */
     public function tags()

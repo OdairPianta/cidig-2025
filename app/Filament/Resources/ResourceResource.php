@@ -8,6 +8,7 @@ use App\Models\Resource as ResourceModel;
 use App\Models\Tag;
 use App\Models\User;
 use Filament\Forms;
+use Filament\Infolists;
 use Filament\Forms\Form;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -127,7 +128,7 @@ Forms\Components\TextInput::make('publisher')
     ]),
                         Forms\Components\TextInput::make('contributor')
                             ->label('Co-Autor ou Contribuidor'),
-                        Forms\Components\TextInput::make('Direitos')
+                        Forms\Components\TextInput::make('copy_rights')
                             ->label('Direitos'),
                     ]),
                 Forms\Components\Section::make('Instanciação')
@@ -204,6 +205,45 @@ Forms\Components\TextInput::make('language')
         return [
             //
         ];
+    }
+
+    public static function infolist(\Filament\Infolists\Infolist $infolist): \Filament\Infolists\Infolist
+    {
+        return $infolist->schema([
+            Infolists\Components\Section::make('Conteúdo')->columns(2)->schema([
+                Infolists\Components\TextEntry::make('title')->label('Título')->copyable()->columnSpanFull(),
+                Infolists\Components\TextEntry::make('subject.name')->label('Verbete')->copyable(),
+                Infolists\Components\TextEntry::make('format_id')->label('Tipo de conteúdo')
+                    ->formatStateUsing(fn ($state) => ResourceModel::FORMAT_TYPES[$state] ?? '—'),
+                Infolists\Components\TextEntry::make('tags.name')->label('Tags')->badge()->placeholder('—'),
+                Infolists\Components\TextEntry::make('published_at')->label('Publicado em')->dateTime('d/m/Y H:i')->placeholder('Não publicado'),
+                Infolists\Components\TextEntry::make('description')->label('Descrição')->copyable()->columnSpanFull(),
+                Infolists\Components\TextEntry::make('source')->label('Fonte (link)')->copyable()
+                    ->url(fn (ResourceModel $record) => filled($record->source) ? $record->getSourceLink() : null, true)
+                    ->columnSpanFull(),
+                Infolists\Components\TextEntry::make('uploadedFile.original_name')->label('Arquivo (PDF)')
+                    ->url(fn (ResourceModel $record) => $record->uploadedFile ? Storage::disk('public')->url($record->uploadedFile->path) : null, true)
+                    ->placeholder('Nenhum arquivo enviado'),
+                Infolists\Components\TextEntry::make('coverage')->label('Cobertura (tempo/espacial)')->copyable()->placeholder('—'),
+            ]),
+            Infolists\Components\Section::make('Propriedade Intelectual')->columns(2)->schema([
+                Infolists\Components\TextEntry::make('author')->label('Autor')->copyable()->placeholder('—'),
+                Infolists\Components\TextEntry::make('publisher')->label('Editora ou canal de publicação')->copyable()->placeholder('—'),
+                Infolists\Components\TextEntry::make('contributor')->label('Co-autor ou contribuidor')->copyable()->placeholder('—'),
+                Infolists\Components\TextEntry::make('copy_rights')->label('Direitos')->copyable()->placeholder('—'),
+            ]),
+            Infolists\Components\Section::make('Instanciação')->columns(2)->schema([
+                Infolists\Components\TextEntry::make('original_date')->label('Data')->date('d/m/Y')->placeholder('—'),
+                Infolists\Components\TextEntry::make('format')->label('Formato')->copyable()->placeholder('—'),
+                Infolists\Components\TextEntry::make('identifier')->label('Identificador')->copyable()->placeholder('—'),
+                Infolists\Components\TextEntry::make('language')->label('Idioma do conteúdo')->copyable()->placeholder('—'),
+            ]),
+            Infolists\Components\Section::make('Registro')->columns(3)->collapsed()->schema([
+                Infolists\Components\TextEntry::make('user.name')->label('Criado por')->placeholder('—'),
+                Infolists\Components\TextEntry::make('created_at')->label('Criado em')->dateTime('d/m/Y H:i'),
+                Infolists\Components\TextEntry::make('updated_at')->label('Atualizado em')->dateTime('d/m/Y H:i'),
+            ]),
+        ]);
     }
 
     public static function getPages(): array
