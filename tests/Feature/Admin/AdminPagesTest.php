@@ -87,3 +87,40 @@ it('lists tags and renders the analytics page', function () {
 it('lists users with the sort filter', function () {
     Livewire::test(ListUsers::class)->assertSuccessful();
 });
+
+it('sanitises the post body but keeps links and images', function () {
+    $author = User::factory()->create();
+    $post = Post::create([
+        'user_id' => $author->id,
+        'title' => 'Seguro',
+        'content' => '<p onclick="x()">oi <a href="https://example.com">link</a></p><img src="/storage/a.png"><script>alert(1)</script>',
+        'is_published' => true,
+    ]);
+
+    expect($post->safe_content)
+        ->toContain('href="https://example.com"')
+        ->toContain('target="_blank"')
+        ->toContain('<img src="/storage/a.png"')
+        ->not->toContain('<script')
+        ->not->toContain('onclick');
+});
+
+it('lets an admin pick any verbete when creating content', function () {
+    Subject::create(['name' => 'Verbete A', 'slug' => 'a']);
+    Subject::create(['name' => 'Verbete B', 'slug' => 'b']);
+
+    Livewire::test(\App\Filament\Resources\ResourceResource\Pages\CreateResource::class)
+        ->assertFormFieldExists('subject_id', fn ($field) => $field->getOptions() === Subject::orderBy('name')->pluck('name', 'id')->all());
+});
+
+it('filters and sorts verbetes in the simplified list', function () {
+    Subject::create(['name' => 'Zeta', 'slug' => 'zeta']);
+    Subject::create(['name' => 'Alfa', 'slug' => 'alfa']);
+
+    Livewire::test(\App\Filament\Resources\SubjectResource\Pages\ListSubjects::class)
+        ->assertSuccessful()
+        ->filterTable('order', ['order_by' => 'content_desc'])
+        ->assertSuccessful()
+        ->filterTable('order', ['order_by' => 'posts_desc'])
+        ->assertSuccessful();
+});

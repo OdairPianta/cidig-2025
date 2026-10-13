@@ -74,3 +74,15 @@ it('suggests similar institutions', function () {
     expect(University::similarTo('Universidade de Sao Paulo (USP)')->pluck('name')->all())
         ->toContain('Universidade de São Paulo');
 });
+
+it('refuses to download images from private addresses or non-images', function () {
+    $downloader = new \App\Services\ImageDownloader();
+
+    expect(fn () => $downloader->store('http://127.0.0.1/a.png', 'resources'))->toThrow(InvalidArgumentException::class)
+        ->and(fn () => $downloader->store('ftp://example.com/a.png', 'resources'))->toThrow(InvalidArgumentException::class);
+
+    \Illuminate\Support\Facades\Http::fake(['*' => \Illuminate\Support\Facades\Http::response('<html>no</html>')]);
+    \Illuminate\Support\Facades\Storage::fake('public');
+
+    expect(fn () => $downloader->store('https://1.1.1.1/not-image', 'resources'))->toThrow(InvalidArgumentException::class);
+});

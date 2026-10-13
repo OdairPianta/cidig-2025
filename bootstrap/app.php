@@ -32,5 +32,23 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // Database integrity errors (duplicates, records still in use) from the admin panel
+        // are shown as a notification instead of a 500 page that also loses the session context.
+        $exceptions->render(function (\Illuminate\Database\UniqueConstraintViolationException|\Illuminate\Database\QueryException $e, \Illuminate\Http\Request $request) {
+            if (! $request->is('admin*', 'livewire*') || $e->getCode() !== '23000') {
+                return null;
+            }
+
+            report($e);
+
+            $message = str_contains($e->getMessage(), '1062')
+                ? 'Já existe um registro com estes dados. Verifique se não está duplicado.'
+                : 'Este registro está vinculado a outros conteúdos e não pôde ser salvo ou removido.';
+
+            if ($request->hasHeader('X-Livewire')) {
+                return response()->json(['message' => $message], 422);
+            }
+
+            return redirect()->back()->withInput()->with('error', $message);
+        });
     })->create();

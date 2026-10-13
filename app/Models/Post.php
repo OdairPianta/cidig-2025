@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Mews\Purifier\Facades\Purifier;
 
 class Post extends Model
 {
@@ -23,6 +24,21 @@ class Post extends Model
         'published_at' => 'datetime',
         'archived_at' => 'datetime',
     ];
+
+    /**
+     * Post body cleaned of scripts/unsafe attributes; links open in a new tab.
+     */
+    public function getSafeContentAttribute(): string
+    {
+        return Purifier::clean((string) $this->content, [
+            'HTML.Allowed' => 'p,br,strong,b,em,i,u,s,h1,h2,h3,h4,ul,ol,li,blockquote,pre,code,hr,a[href|title|target|rel],img[src|alt|width|height],figure,figcaption,table,thead,tbody,tr,th,td,span,div',
+            'Attr.AllowedFrameTargets' => ['_blank'],
+            'HTML.TargetBlank' => true,
+            'HTML.Nofollow' => false,
+            'URI.AllowedSchemes' => ['http' => true, 'https' => true, 'mailto' => true],
+            'AutoFormat.RemoveEmpty' => false,
+        ]);
+    }
 
     public function scopePublished($query)
     {

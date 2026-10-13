@@ -43,6 +43,7 @@ class SponsorResource extends Resource
                         
                         Forms\Components\FileUpload::make('image')
                             ->label('Logo')
+                            ->helperText('Orientações: fundo transparente (PNG) ou branco, formato horizontal de aproximadamente 400 x 200 px, até 10 MB. Envie a versão que deve aparecer no site.')
                             ->image()
                             ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/gif', 'image/webp', 'image/bmp'])
                             ->disk('public')

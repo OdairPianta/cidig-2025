@@ -20,7 +20,9 @@ class ResourceResource extends FilamentResourceBase
 
     protected static ?string $navigationIcon = 'heroicon-o-document-duplicate';
 
-    protected static ?string $modelLabel = 'Conteúdos';
+    protected static ?string $modelLabel = 'Conteúdo de Verbete';
+
+    protected static ?string $pluralModelLabel = 'Conteúdos de Verbetes';
 
     protected static ?string $navigationGroup = 'Conteúdos';
 
@@ -38,7 +40,11 @@ class ResourceResource extends FilamentResourceBase
     ->label('Assunto')
     ->placeholder('Selecione um assunto')
     ->relationship('subject', 'name')
-    ->options(auth()->user()->subjects()->pluck('name', 'id'))
+    ->options(fn () => auth()->user()->isAdmin()
+        ? \App\Models\Subject::query()->orderBy('name')->pluck('name', 'id')
+        : auth()->user()->subjects()->orderBy('name')->pluck('name', 'id'))
+    ->searchable()
+    ->helperText('Verbete ao qual este conteúdo pertence. Para criar um novo verbete, use o menu "Verbetes".')
     ->required()
     ->validationMessages([
         'required' => 'O assunto é obrigatório.',
@@ -52,9 +58,18 @@ class ResourceResource extends FilamentResourceBase
                         Forms\Components\Select::make('tags')
                             ->label('Relações (Tags Relacionadas)')
                             ->placeholder('Selecione as tags relacionadas')
+                            ->relationship('tags', 'name', fn ($query) => $query->isActive()->orderBy('name'))
+                            ->helperText('Digite para buscar ou criar uma tag (Enter). Tags repetidas são reaproveitadas automaticamente.')
                             ->multiple()
-                            ->relationship('tags', 'name')
-                            ->options(Tag::query()->isActive()->orderBy('name')->pluck('name', 'id'))
+                            ->searchable()
+                            ->preload()
+                            ->createOptionForm([
+                                Forms\Components\TextInput::make('name')
+                                    ->label('Nova tag')
+                                    ->required()
+                                    ->maxLength(255),
+                            ])
+                            ->createOptionUsing(fn (array $data) => Tag::findOrCreate(['name' => $data['name'], 'is_active' => true])->getKey())
                             ->columns()
                             ->required(),
 Forms\Components\TextInput::make('title')

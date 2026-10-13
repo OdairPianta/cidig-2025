@@ -66,8 +66,28 @@ Forms\Components\Textarea::make('description')
                     ->preload(),
                 Forms\Components\Checkbox::make('is_active')
                     ->label('Ativo'),
+                Forms\Components\TextInput::make('thumbnail_url')
+                    ->label('Thumbnail a partir de um link')
+                    ->helperText('Opcional: cole o link de uma imagem da internet (JPG, PNG, GIF ou WebP). Ela será baixada e preencherá o campo "Thumbnail" abaixo.')
+                    ->url()
+                    ->dehydrated(false)
+                    ->live(onBlur: true)
+                    ->afterStateUpdated(function (?string $state, \Filament\Forms\Set $set) {
+                        if (blank($state)) {
+                            return;
+                        }
+
+                        try {
+                            $path = app(\App\Services\ImageDownloader::class)->store($state, 'resources');
+                            $set('thumbnail', [$path]);
+                            $set('thumbnail_url', null);
+                        } catch (\InvalidArgumentException $e) {
+                            \Filament\Notifications\Notification::make()->danger()->title($e->getMessage())->send();
+                        }
+                    }),
                 Forms\Components\FileUpload::make('thumbnail')
                     ->label('Thumbnail')
+                    ->helperText('Formato recomendado: 1280 x 720 px (16:9), JPG ou PNG, até 10 MB.')
                     ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/gif', 'image/webp', 'image/bmp'])
                     ->disk('public')
                     ->directory('resources')

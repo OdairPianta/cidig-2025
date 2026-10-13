@@ -66,7 +66,7 @@
                     @endif
                     
                     <div class="post-content">
-                        {!! $post->content !!}
+                        {!! $post->safe_content !!}
                     </div>
                 </div>
 
