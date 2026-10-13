@@ -8,6 +8,7 @@ use App\Models\Subject;
 use App\Models\User;
 use App\Models\University;
 use Filament\Forms;
+use Filament\Infolists;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -62,7 +63,7 @@ Forms\Components\TextInput::make('password')
     ->dehydrateStateUsing(fn ($state) => \Hash::make($state))
     ->dehydrated(fn ($state) => filled($state))
     ->same('password_confirmation')
-    ->required()
+    ->required(fn (string $operation): bool => $operation === 'create')
     ->validationMessages([
         'required' => 'A senha é obrigatória.',
         'same' => 'A confirmação de senha deve ser igual à senha.',
@@ -71,7 +72,8 @@ Forms\Components\TextInput::make('password_confirmation')
     ->label('Confirmar Senha')
     ->password()
     ->same('password')
-    ->required()
+    ->dehydrated(false)
+    ->required(fn (string $operation): bool => $operation === 'create')
     ->validationMessages([
         'required' => 'Confirmar a senha é obrigatório.',
         'same' => 'A confirmação de senha deve ser igual à senha.',
@@ -100,14 +102,23 @@ Forms\Components\TextInput::make('password_confirmation')
                     ->collapsible()
                     ->schema([
                         Forms\Components\Select::make('university_id')
-                            ->label('Universidade')
-                            ->placeholder('Selecione uma universidade')
-                            ->options(University::query()->where('is_active', true)->pluck('name', 'id')),
+                            ->label('Instituição')
+                            ->placeholder('Selecione ou cadastre uma instituição')
+                            ->helperText('Não encontrou? Use o "+" para cadastrar uma nova instituição.')
+                            ->options(fn () => University::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id'))
+                            ->searchable()
+                            ->createOptionForm([
+                                Forms\Components\TextInput::make('name')
+                                    ->label('Nome da instituição')
+                                    ->required()
+                                    ->maxLength(255),
+                            ])
+                            ->createOptionUsing(fn (array $data) => University::findOrCreateByName($data['name'])->getKey()),
                         
                         Forms\Components\FileUpload::make('picture_url')
                             ->label('Foto de perfil')
                             ->image()
-                            ->acceptedFileTypes(['image/bmp','image/jpeg', 'image/x-png', 'image/png', 'image/gif'])
+                            ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/gif', 'image/webp', 'image/bmp'])
                             ->directory('images/team')
                             ->visibility('public')
                             ->preserveFilenames()
@@ -147,13 +158,14 @@ Forms\Components\TextInput::make('orcid_url')
     ->label('Mini Bio')
     ->rows(3)
     ->minLength(90)
-    ->helperText('Mínimo de 90 caracteres')
+    ->helperText('Resumo curto (mínimo de 90 caracteres), exibido nos cartões e listas da equipe.')
     ->validationMessages([
         'min' => 'A mini bio deve ter pelo menos 90 caracteres.',
     ]),
                         
                         Forms\Components\Textarea::make('description')
                             ->label('Descrição')
+                            ->helperText('Texto completo e opcional, exibido na página de perfil.')
                             ->rows(3),
                         
                         Forms\Components\TextInput::make('title')
@@ -186,11 +198,23 @@ Forms\Components\TextInput::make('website')
                 Tables\Columns\TextColumn::make('email')
                     ->label('E-mail')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('information.university.name')
-                    ->label('Universidade')
+                    ->label('Instituição')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Criado em')
+                    ->dateTime('d/m/Y')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Atualizado em')
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('information.roles')
                     ->label('Funções')
                     ->formatStateUsing(function ($state) {
@@ -208,13 +232,40 @@ Forms\Components\TextInput::make('website')
                         return implode(', ', $roleNames);
                     })
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\CheckboxColumn::make('is_active')
                     ->label('Ativo')
                     ->disabled(fn (User $record) => !auth()->user()->isAdmin() || $record->id === auth()->id())
                     ->sortable(),
             ])
+            ->defaultSort('name')
             ->filters([
+                Tables\Filters\Filter::make('order')
+                    ->label('Ordenar por')
+                    ->form([
+                        Forms\Components\Select::make('order_by')
+                            ->label('Ordenar por')
+                            ->placeholder('Padrão (ordem alfabética)')
+                            ->options([
+                                'name_asc' => 'Ordem alfabética (A–Z)',
+                                'name_desc' => 'Ordem alfabética (Z–A)',
+                                'created_desc' => 'Perfis criados recentemente',
+                                'created_asc' => 'Perfis mais antigos',
+                                'updated_desc' => 'Atualizados recentemente',
+                            ]),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return match ($data['order_by'] ?? null) {
+                            'name_asc' => $query->reorder('name'),
+                            'name_desc' => $query->reorder('name', 'desc'),
+                            'created_desc' => $query->reorder('created_at', 'desc'),
+                            'created_asc' => $query->reorder('created_at'),
+                            'updated_desc' => $query->reorder('updated_at', 'desc'),
+                            default => $query,
+                        };
+                    })
+                    ->indicateUsing(fn (array $data): ?string => ($data['order_by'] ?? null) ? 'Ordenação personalizada' : null),
                 Tables\Filters\TernaryFilter::make('is_active')
                     ->label('Ativo')
                     ->placeholder('Todos')
@@ -242,11 +293,35 @@ Forms\Components\TextInput::make('website')
         ];
     }
 
+    public static function infolist(\Filament\Infolists\Infolist $infolist): \Filament\Infolists\Infolist
+    {
+        return $infolist->schema([
+            Infolists\Components\Section::make('Dados Básicos')->columns(2)->schema([
+                Infolists\Components\TextEntry::make('name')->label('Nome')->copyable(),
+                Infolists\Components\TextEntry::make('email')->label('Email')->copyable(),
+                Infolists\Components\IconEntry::make('is_active')->label('Ativo')->boolean(),
+                Infolists\Components\TextEntry::make('subjects.name')->label('Temas')->badge(),
+            ]),
+            Infolists\Components\Section::make('Informações Adicionais')->columns(2)->schema([
+                Infolists\Components\ImageEntry::make('information.picture_link')->label('Foto de perfil')->circular(),
+                Infolists\Components\TextEntry::make('information.university.name')->label('Instituição')->copyable(),
+                Infolists\Components\TextEntry::make('information.title')->label('Título')->copyable(),
+                Infolists\Components\TextEntry::make('information.website')->label('Website')->copyable(),
+                Infolists\Components\TextEntry::make('information.lattes_url')->label('Lattes')->copyable(),
+                Infolists\Components\TextEntry::make('information.orcid_url')->label('ORCID')->copyable(),
+                Infolists\Components\TextEntry::make('information.linkedin_url')->label('LinkedIn')->copyable(),
+                Infolists\Components\TextEntry::make('information.minibio')->label('Minibio')->columnSpanFull()->copyable(),
+                Infolists\Components\TextEntry::make('information.description')->label('Descrição')->columnSpanFull()->copyable(),
+            ]),
+        ]);
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListUsers::route('/'),
             'create' => Pages\CreateUser::route('/create'),
+            'view' => Pages\ViewUser::route('/{record}'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
     }

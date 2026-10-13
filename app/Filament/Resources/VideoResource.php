@@ -39,11 +39,30 @@ class VideoResource extends Resource
                             ->preload(),
                         
 Forms\Components\TextInput::make('video_id')
-    ->label('ID do Vídeo (YouTube)')
+    ->label('Link ou ID do Vídeo (YouTube)')
     ->required()
-    ->helperText('Ex: dQw4w9WgXcQ (apenas o ID, não a URL completa)')
+    ->helperText('Cole o link completo do YouTube ou apenas o ID (ex: dQw4w9WgXcQ).')
+    ->dehydrateStateUsing(fn (?string $state) => Video::extractYoutubeId($state) ?? $state)
+    ->rules([
+        fn (?Video $record) => function (string $attribute, $value, \Closure $fail) use ($record) {
+            $id = Video::extractYoutubeId($value);
+
+            if ($id === null) {
+                $fail('Link ou ID do YouTube inválido.');
+                return;
+            }
+
+            $exists = Video::where('video_id', $id)
+                ->when($record, fn ($query) => $query->whereKeyNot($record->getKey()))
+                ->exists();
+
+            if ($exists) {
+                $fail('Este vídeo já está cadastrado.');
+            }
+        },
+    ])
     ->validationMessages([
-        'required' => 'O ID do vídeo é obrigatório.',
+        'required' => 'O link ou ID do vídeo é obrigatório.',
     ]),
                         
 

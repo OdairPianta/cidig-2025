@@ -27,41 +27,87 @@ class TagResource extends FilamentResourceBase
 Forms\Components\TextInput::make('name')
     ->required()
     ->label('Nome')
+    ->maxLength(255)
+    ->helperText('Escreva a tag no singular e sem abreviações. Tags repetidas (maiúsculas/minúsculas, plural, acentos) são bloqueadas.')
+    ->rules([
+        fn (?Tag $record) => function (string $attribute, $value, \Closure $fail) use ($record) {
+            $duplicate = Tag::findDuplicateOf((string) $value, $record?->getKey());
+
+            if ($duplicate) {
+                $fail("Já existe uma tag parecida: \"{$duplicate->name}\".");
+            }
+        },
+    ])
     ->validationMessages([
         'required' => 'O nome da tag é obrigatório.',
     ]),
+                Forms\Components\Checkbox::make('is_active')
+                    ->label('Ativa')
+                    ->default(true),
             ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query) => $query->withCount(['resources', 'subjects']))
+            ->defaultSort('name')
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nome')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Criado em')
-                    ->dateTime()
+                Tables\Columns\TextColumn::make('resources_count')
+                    ->label('Conteúdos')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Atualizado em')
-                    ->dateTime()
+                Tables\Columns\TextColumn::make('subjects_count')
+                    ->label('Verbetes')
                     ->sortable(),
                 Tables\Columns\CheckboxColumn::make('is_active')
                     ->label('Ativo')
                     ->sortable(),
             ])
             ->filters([
-                Tables\Filters\Filter::make('active')->query(fn (Builder $query) => $query->where('is_active', true)),
+                Tables\Filters\Filter::make('active')
+                    ->label('Somente ativas')
+                    ->query(fn (Builder $query) => $query->where('is_active', true)),
+                Tables\Filters\Filter::make('duplicates')
+                    ->label('Possíveis duplicatas')
+                    ->query(fn (Builder $query) => $query->whereIn(
+                        'normalized_name',
+                        Tag::query()->select('normalized_name')->whereNotNull('normalized_name')->groupBy('normalized_name')->havingRaw('count(*) > 1')
+                    )->orderBy('normalized_name')),
             ])
-            ->actions([])
+            ->actions([
+                Tables\Actions\EditAction::make()->label('Editar'),
+            ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\BulkAction::make('merge')
+                        ->label('Mesclar tags selecionadas')
+                        ->icon('heroicon-o-arrows-pointing-in')
+                        ->requiresConfirmation()
+                        ->modalDescription('Os conteúdos, verbetes e séries das demais tags passarão para a tag escolhida, e as demais serão removidas.')
+                        ->form(fn (\Illuminate\Support\Collection $records) => [
+                            Forms\Components\Select::make('keep_id')
+                                ->label('Manter a tag')
+                                ->options($records->pluck('name', 'id'))
+                                ->required(),
+                        ])
+                        ->action(function (\Illuminate\Support\Collection $records, array $data) {
+                            $keep = $records->firstWhere('id', $data['keep_id']);
+                            $merged = $keep->mergeFrom($records);
+
+                            \Filament\Notifications\Notification::make()
+                                ->success()
+                                ->title("{$merged} tag(s) mesclada(s) em \"{$keep->name}\".")
+                                ->send();
+                        })
+                        ->deselectRecordsAfterCompletion()
+                        ->hidden(fn (): bool => !auth()->user()->isAdmin()),
                     Tables\Actions\DeleteBulkAction::make()
-    ->label('Excluir')
-                    ->hidden(fn (): bool => !auth()->user()->isAdmin()),
+                        ->label('Excluir')
+                        ->hidden(fn (): bool => !auth()->user()->isAdmin()),
                 ]),
             ]);
     }

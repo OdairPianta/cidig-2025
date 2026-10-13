@@ -26,6 +26,30 @@ class Video extends Model
         'updated_at' => 'datetime',
     ];
 
+    /**
+     * Accepts a full YouTube URL (watch, youtu.be, embed, shorts) or a bare ID
+     * and returns only the 11-character video ID.
+     */
+    public static function extractYoutubeId(?string $value): ?string
+    {
+        $value = trim((string) $value);
+
+        if ($value === '') {
+            return null;
+        }
+
+        if (preg_match('~(?:youtu\.be/|youtube\.com/(?:watch\?(?:.*&)?v=|embed/|shorts/|live/|v/))([A-Za-z0-9_-]{11})~', $value, $matches)) {
+            return $matches[1];
+        }
+
+        return preg_match('/^[A-Za-z0-9_-]{11}$/', $value) ? $value : null;
+    }
+
+    public function setVideoIdAttribute($value): void
+    {
+        $this->attributes['video_id'] = self::extractYoutubeId($value) ?? trim((string) $value);
+    }
+
     public function subject(): BelongsTo
     {
         return $this->belongsTo(Subject::class);

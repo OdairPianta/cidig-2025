@@ -13,6 +13,7 @@
         "laravel/tinker": "^2.10.1",
         "livewire/flux": "^2.1.1",
         "livewire/volt": "^1.7.0",
+        "mews/purifier": "^3.4",
         "mll-lab/laravel-graphiql": "^4.0",
         "nuwave/lighthouse": "^6.63"
     },

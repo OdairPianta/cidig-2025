@@ -34,7 +34,7 @@ class EditProfile extends BaseEditProfile
                 Forms\Components\FileUpload::make('picture_url')
                     ->label('Foto de perfil')
                     ->image()
-                    ->acceptedFileTypes(['image/bmp','image/jpeg', 'image/x-png', 'image/png', 'image/gif'])
+                    ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/gif', 'image/webp', 'image/bmp'])
                     ->directory('images/team')
                     ->visibility('public')
                     ->preserveFilenames()

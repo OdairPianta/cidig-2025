@@ -7,10 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 
 class Resource extends Model
 {
+    use SoftDeletes;
+
     const FORMAT_TEXT = 1;
     const FORMAT_VIDEO = 2;
     const FORMAT_AUDIO = 3;
@@ -55,6 +58,35 @@ class Resource extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * All metadata as plain text, ready to paste elsewhere ("easy copy").
+     */
+    public function toCopyText(): string
+    {
+        $lines = [
+            'Título' => $this->title,
+            'Verbete' => $this->subject?->name,
+            'Tipo de conteúdo' => self::FORMAT_TYPES[$this->format_id] ?? null,
+            'Tags' => $this->tags->pluck('name')->join(', '),
+            'Descrição' => $this->description,
+            'Fonte (link)' => $this->source ? $this->getSourceLink() : null,
+            'Cobertura' => $this->coverage,
+            'Autor' => $this->author,
+            'Editora ou canal de publicação' => $this->publisher,
+            'Co-autor ou contribuidor' => $this->contributor,
+            'Direitos' => $this->copy_rights,
+            'Data' => $this->original_date,
+            'Formato' => $this->format,
+            'Identificador' => $this->identifier,
+            'Idioma' => $this->language,
+        ];
+
+        return collect($lines)
+            ->filter(fn ($value) => filled($value))
+            ->map(fn ($value, $label) => "{$label}: {$value}")
+            ->implode("\n");
     }
 
     /**

@@ -2,8 +2,12 @@
 
 @section('title', $post->title)
 
+@push('css')
+<link href="{{ asset('css/blog.css') }}" rel="stylesheet">
+@endpush
+
 @section('content')
-<div class="container content-home pt-5 pb-5">
+<div id="post-page" class="container content-home pt-5 pb-5">
     <div class="row">
         <div class="col-12">
             <!-- Navegação -->
@@ -47,7 +51,7 @@
                     
                     @if($post->image_url)
                         <div class="text-center mb-4">
-                            <img src="{{ Storage::url($post->image_url) }}" 
+                            <img src="{{ $post->image_link }}" 
                                  alt="{{ $post->title }}" 
                                  class="img-fluid rounded"
                                  style="max-height: 400px; width: auto;">
@@ -55,7 +59,7 @@
                     @endif
                     
                     <div class="post-content">
-                        {!! $post->content !!}
+                        {!! $post->safe_content !!}
                     </div>
                 </div>
 
@@ -111,4 +115,13 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('inline_scripts')
+<script>
+    document.querySelectorAll('.post-content a[href]').forEach(function (link) {
+        link.setAttribute('target', '_blank');
+        link.setAttribute('rel', 'noopener noreferrer');
+    });
+</script>
 @endsection

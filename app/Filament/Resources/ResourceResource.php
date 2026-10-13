@@ -8,6 +8,7 @@ use App\Models\Resource as ResourceModel;
 use App\Models\Tag;
 use App\Models\User;
 use Filament\Forms;
+use Filament\Infolists;
 use Filament\Forms\Form;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -20,7 +21,9 @@ class ResourceResource extends FilamentResourceBase
 
     protected static ?string $navigationIcon = 'heroicon-o-document-duplicate';
 
-    protected static ?string $modelLabel = 'Conteúdos';
+    protected static ?string $modelLabel = 'Conteúdo de Verbete';
+
+    protected static ?string $pluralModelLabel = 'Conteúdos de Verbetes';
 
     protected static ?string $navigationGroup = 'Conteúdos';
 
@@ -38,7 +41,11 @@ class ResourceResource extends FilamentResourceBase
     ->label('Assunto')
     ->placeholder('Selecione um assunto')
     ->relationship('subject', 'name')
-    ->options(auth()->user()->subjects()->pluck('name', 'id'))
+    ->options(fn () => auth()->user()->isAdmin()
+        ? \App\Models\Subject::query()->orderBy('name')->pluck('name', 'id')
+        : auth()->user()->subjects()->orderBy('name')->pluck('name', 'id'))
+    ->searchable()
+    ->helperText('Verbete ao qual este conteúdo pertence. Para criar um novo verbete, use o menu "Verbetes".')
     ->required()
     ->validationMessages([
         'required' => 'O assunto é obrigatório.',
@@ -52,9 +59,18 @@ class ResourceResource extends FilamentResourceBase
                         Forms\Components\Select::make('tags')
                             ->label('Relações (Tags Relacionadas)')
                             ->placeholder('Selecione as tags relacionadas')
+                            ->relationship('tags', 'name', fn ($query) => $query->isActive()->orderBy('name'))
+                            ->helperText('Digite para buscar ou criar uma tag (Enter). Tags repetidas são reaproveitadas automaticamente.')
                             ->multiple()
-                            ->relationship('tags', 'name')
-                            ->options(Tag::query()->isActive()->orderBy('name')->pluck('name', 'id'))
+                            ->searchable()
+                            ->preload()
+                            ->createOptionForm([
+                                Forms\Components\TextInput::make('name')
+                                    ->label('Nova tag')
+                                    ->required()
+                                    ->maxLength(255),
+                            ])
+                            ->createOptionUsing(fn (array $data) => Tag::findOrCreate(['name' => $data['name'], 'is_active' => true])->getKey())
                             ->columns()
                             ->required(),
 Forms\Components\TextInput::make('title')
@@ -112,7 +128,7 @@ Forms\Components\TextInput::make('publisher')
     ]),
                         Forms\Components\TextInput::make('contributor')
                             ->label('Co-Autor ou Contribuidor'),
-                        Forms\Components\TextInput::make('Direitos')
+                        Forms\Components\TextInput::make('copy_rights')
                             ->label('Direitos'),
                     ]),
                 Forms\Components\Section::make('Instanciação')
@@ -191,12 +207,51 @@ Forms\Components\TextInput::make('language')
         ];
     }
 
+    public static function infolist(\Filament\Infolists\Infolist $infolist): \Filament\Infolists\Infolist
+    {
+        return $infolist->schema([
+            Infolists\Components\Section::make('Conteúdo')->columns(2)->schema([
+                Infolists\Components\TextEntry::make('title')->label('Título')->copyable()->columnSpanFull(),
+                Infolists\Components\TextEntry::make('subject.name')->label('Verbete')->copyable(),
+                Infolists\Components\TextEntry::make('format_id')->label('Tipo de conteúdo')
+                    ->formatStateUsing(fn ($state) => ResourceModel::FORMAT_TYPES[$state] ?? '—'),
+                Infolists\Components\TextEntry::make('tags.name')->label('Tags')->badge()->placeholder('—'),
+                Infolists\Components\TextEntry::make('published_at')->label('Publicado em')->dateTime('d/m/Y H:i')->placeholder('Não publicado'),
+                Infolists\Components\TextEntry::make('description')->label('Descrição')->copyable()->columnSpanFull(),
+                Infolists\Components\TextEntry::make('source')->label('Fonte (link)')->copyable()
+                    ->url(fn (ResourceModel $record) => filled($record->source) ? $record->getSourceLink() : null, true)
+                    ->columnSpanFull(),
+                Infolists\Components\TextEntry::make('uploadedFile.original_name')->label('Arquivo (PDF)')
+                    ->url(fn (ResourceModel $record) => $record->uploadedFile ? Storage::disk('public')->url($record->uploadedFile->path) : null, true)
+                    ->placeholder('Nenhum arquivo enviado'),
+                Infolists\Components\TextEntry::make('coverage')->label('Cobertura (tempo/espacial)')->copyable()->placeholder('—'),
+            ]),
+            Infolists\Components\Section::make('Propriedade Intelectual')->columns(2)->schema([
+                Infolists\Components\TextEntry::make('author')->label('Autor')->copyable()->placeholder('—'),
+                Infolists\Components\TextEntry::make('publisher')->label('Editora ou canal de publicação')->copyable()->placeholder('—'),
+                Infolists\Components\TextEntry::make('contributor')->label('Co-autor ou contribuidor')->copyable()->placeholder('—'),
+                Infolists\Components\TextEntry::make('copy_rights')->label('Direitos')->copyable()->placeholder('—'),
+            ]),
+            Infolists\Components\Section::make('Instanciação')->columns(2)->schema([
+                Infolists\Components\TextEntry::make('original_date')->label('Data')->date('d/m/Y')->placeholder('—'),
+                Infolists\Components\TextEntry::make('format')->label('Formato')->copyable()->placeholder('—'),
+                Infolists\Components\TextEntry::make('identifier')->label('Identificador')->copyable()->placeholder('—'),
+                Infolists\Components\TextEntry::make('language')->label('Idioma do conteúdo')->copyable()->placeholder('—'),
+            ]),
+            Infolists\Components\Section::make('Registro')->columns(3)->collapsed()->schema([
+                Infolists\Components\TextEntry::make('user.name')->label('Criado por')->placeholder('—'),
+                Infolists\Components\TextEntry::make('created_at')->label('Criado em')->dateTime('d/m/Y H:i'),
+                Infolists\Components\TextEntry::make('updated_at')->label('Atualizado em')->dateTime('d/m/Y H:i'),
+            ]),
+        ]);
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListResources::route('/'),
             'create' => Pages\CreateResource::route('/create'),
-            'show' => Pages\ViewResource::route('/{record}'),
+            'view' => Pages\ViewResource::route('/{record}'),
             'edit' => Pages\EditResource::route('/{record}/edit'),
         ];
     }
