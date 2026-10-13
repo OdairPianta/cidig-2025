@@ -124,3 +124,10 @@ it('filters and sorts verbetes in the simplified list', function () {
         ->filterTable('order', ['order_by' => 'posts_desc'])
         ->assertSuccessful();
 });
+
+it('builds a clean excerpt without html entities', function () {
+    $author = User::factory()->create();
+    $post = Post::create(['user_id' => $author->id, 'title' => 'T', 'content' => '<p>Testando&nbsp;a&nbsp;criação &amp; mais&nbsp;</p>', 'is_published' => true]);
+
+    expect($post->excerpt)->toBe('Testando a criação & mais');
+});

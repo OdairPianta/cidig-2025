@@ -1,5 +1,9 @@
 @extends('layouts.v2.app')
 
+@push('css')
+<link href="{{ asset('css/blog.css') }}" rel="stylesheet">
+@endpush
+
 @section('content')
     <div id="posts-page" class="container content-home pt-5 pb-5 p-0">
         <div class="row mb-4">
@@ -16,7 +20,7 @@
                         @foreach($posts->items() as $post)
                             <div class="card mb-4">
                                 @if($post->image_url)
-                                    <img class="card-img-top" src="{{ Storage::url($post->image_url) }}" alt="{{ $post->title }}" style="height: 200px; object-fit: cover;">
+                                    <img class="card-img-top" src="{{ $post->image_link }}" alt="{{ $post->title }}" style="height: 200px; object-fit: cover;">
                                 @endif
                                 
                                 <div class="card-header">
@@ -51,7 +55,7 @@
                                     </div>
 
                                     <div class="card-text">
-                                        <p>{{ Str::limit(strip_tags($post->content), 150) }}</p>
+                                        <p>{{ $post->excerpt }}</p>
                                     </div>
 
                                     <div class="float-right">
