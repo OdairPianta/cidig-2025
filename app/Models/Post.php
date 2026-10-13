@@ -54,7 +54,7 @@ class Post extends Model
 
     public function getImageLinkAttribute(): ?string
     {
-        return $this->image_url ? Storage::disk('public')->url($this->image_url) : null;
+        return $this->image_url ? \App\Support\Uploads::url($this->image_url) : null;
     }
 
     public function scopePublished($query)

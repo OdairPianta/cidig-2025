@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Model;
 
 class UserInformation extends Model
@@ -45,12 +44,6 @@ class UserInformation extends Model
             return '';
         }
 
-        // Pictures uploaded through the admin live on the public disk;
-        // legacy pictures are committed under public/images/team.
-        if (Storage::disk('public')->exists($this->picture_url)) {
-            return Storage::disk('public')->url($this->picture_url);
-        }
-
-        return url($this->picture_url);
+        return \App\Support\Uploads::url($this->picture_url);
     }
 }

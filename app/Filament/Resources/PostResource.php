@@ -60,7 +60,7 @@ Forms\Components\FileUpload::make('image_url')
     ->label('Imagem Destacada')
     ->helperText('Tamanho recomendado: 1200 x 630 px (proporção 1,91:1), JPG, PNG ou WebP, até 10 MB. A imagem é exibida com altura máxima de 400 px, sem distorção.')
     ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/gif', 'image/webp', 'image/bmp'])
-    ->disk('public')
+    ->disk(\App\Support\Uploads::disk())
     ->directory('posts')
     ->visibility('public')
     ->preserveFilenames()
@@ -193,7 +193,7 @@ Forms\Components\FileUpload::make('image_url')
                 \Filament\Infolists\Components\TextEntry::make('public_url')->label('Link público')->copyable()->url(fn (Post $record) => $record->public_url, true),
                 \Filament\Infolists\Components\TextEntry::make('published_at')->label('Publicado em')->dateTime(),
                 \Filament\Infolists\Components\TextEntry::make('archived_at')->label('Arquivado em')->dateTime()->placeholder('—'),
-                \Filament\Infolists\Components\ImageEntry::make('image_url')->label('Imagem destacada')->disk('public'),
+                \Filament\Infolists\Components\ImageEntry::make('image_url')->label('Imagem destacada')->disk(\App\Support\Uploads::disk()),
                 \Filament\Infolists\Components\TextEntry::make('content')->label('Conteúdo')->html()->columnSpanFull(),
             ]),
         ]);

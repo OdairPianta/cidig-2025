@@ -24,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Uploads: public disk, 10 MB max per image (server allows 50 MB) and clear messages.
         FileUpload::configureUsing(fn (FileUpload $component) => $component
-            ->disk('public')
+            ->disk(\App\Support\Uploads::disk())
             ->maxSize(10240)
             ->validationMessages([
                 'max' => 'O arquivo é muito grande. O tamanho máximo é 10 MB.',

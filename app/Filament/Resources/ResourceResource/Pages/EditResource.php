@@ -49,15 +49,15 @@ class EditResource extends EditRecord
         // Delete old file if exists
         $oldFile = $resource->uploadedFile;
         if ($oldFile) {
-            Storage::disk('public')->delete($oldFile->path);
+            \App\Support\Uploads::storage()->delete($oldFile->path);
             $oldFile->delete();
         }
 
         UploadedFile::create([
             'path' => $uploadedFilePath,
             'original_name' => basename($uploadedFilePath),
-            'mimeType' => Storage::disk('public')->mimeType($uploadedFilePath),
-            'size' => Storage::disk('public')->size($uploadedFilePath),
+            'mimeType' => \App\Support\Uploads::storage()->mimeType($uploadedFilePath),
+            'size' => \App\Support\Uploads::storage()->size($uploadedFilePath),
             'uploaded_by' => auth()->id(),
             'resource_id' => $this->record->id,
         ]);

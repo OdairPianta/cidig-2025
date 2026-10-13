@@ -61,7 +61,7 @@ class ImageDownloader
         }
 
         $path = trim($directory, '/') . '/' . Str::uuid() . '.' . self::EXTENSIONS[$mime];
-        Storage::disk('public')->put($path, $body, 'public');
+        \App\Support\Uploads::storage()->put($path, $body, 'public');
 
         return $path;
     }

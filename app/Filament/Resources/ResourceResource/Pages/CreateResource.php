@@ -34,8 +34,8 @@ class CreateResource extends CreateRecord
         UploadedFile::create([
             'path' => $uploadedFilePath,
             'original_name' => basename($uploadedFilePath),
-            'mimeType' => Storage::disk('public')->mimeType($uploadedFilePath),
-            'size' => Storage::disk('public')->size($uploadedFilePath),
+            'mimeType' => \App\Support\Uploads::storage()->mimeType($uploadedFilePath),
+            'size' => \App\Support\Uploads::storage()->size($uploadedFilePath),
             'uploaded_by' => auth()->id(),
             'resource_id' => $this->record->id,
         ]);
