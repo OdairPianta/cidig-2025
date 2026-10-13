@@ -6,6 +6,7 @@ use App\Filament\Resources\SponsorResource\Pages;
 use App\Filament\Resources\SponsorResource\RelationManagers;
 use App\Models\Sponsor;
 use Filament\Forms;
+use Filament\Infolists;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -43,7 +44,7 @@ class SponsorResource extends Resource
                         Forms\Components\FileUpload::make('image')
                             ->label('Logo')
                             ->image()
-                            ->acceptedFileTypes(['image/bmp','image/jpeg', 'image/x-png', 'image/png', 'image/gif'])
+                            ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/gif', 'image/webp', 'image/bmp'])
                             ->disk('public')
                             ->directory('sponsors')
                             ->visibility('public')
@@ -83,6 +84,7 @@ class SponsorResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make()->label('Visualizar'),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
@@ -100,11 +102,22 @@ class SponsorResource extends Resource
         ];
     }
 
+    public static function infolist(\Filament\Infolists\Infolist $infolist): \Filament\Infolists\Infolist
+    {
+        return $infolist->schema([
+            Infolists\Components\Section::make('Patrocinador')->columns(2)->schema([
+                Infolists\Components\TextEntry::make('name')->label('Nome')->copyable(),
+                Infolists\Components\ImageEntry::make('image')->label('Logo')->disk('public'),
+            ]),
+        ]);
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListSponsors::route('/'),
             'create' => Pages\CreateSponsor::route('/create'),
+            'view' => Pages\ViewSponsor::route('/{record}'),
             'edit' => Pages\EditSponsor::route('/{record}/edit'),
         ];
     }

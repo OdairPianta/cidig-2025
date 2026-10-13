@@ -2,6 +2,17 @@
 
 @section('title', $post->title)
 
+@push('css')
+<style>
+    .post-content { line-height: 1.7; overflow-wrap: anywhere; }
+    .post-content a { color: #17a2b8; text-decoration: underline; }
+    .post-content img, .post-content figure img { max-width: 100%; height: auto; display: block; margin: 1rem auto; }
+    .post-content figure { margin: 1rem 0; }
+    .post-content blockquote { border-left: 4px solid #ddd; padding-left: 1rem; color: #555; }
+    .post-content ul, .post-content ol { padding-left: 1.5rem; }
+</style>
+@endpush
+
 @section('content')
 <div class="container content-home pt-5 pb-5">
     <div class="row">
@@ -111,4 +122,13 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('inline_scripts')
+<script>
+    document.querySelectorAll('.post-content a[href]').forEach(function (link) {
+        link.setAttribute('target', '_blank');
+        link.setAttribute('rel', 'noopener noreferrer');
+    });
+</script>
 @endsection

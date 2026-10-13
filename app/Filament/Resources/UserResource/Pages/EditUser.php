@@ -13,7 +13,10 @@ class EditUser extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-
+            Actions\DeleteAction::make()
+                ->label('Excluir')
+                ->modalDescription('O perfil será arquivado e deixará de aparecer no site, mas os conteúdos vinculados são preservados.')
+                ->visible(fn (): bool => auth()->user()?->isAdmin() ?? false),
         ];
     }
 

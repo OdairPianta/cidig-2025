@@ -53,7 +53,7 @@ Forms\Components\RichEditor::make('content')
     ]),
 Forms\Components\FileUpload::make('image_url')
     ->label('Imagem Destacada')
-    ->acceptedFileTypes(['image/bmp','image/jpeg', 'image/x-png', 'image/png', 'image/gif'])
+    ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/gif', 'image/webp', 'image/bmp'])
     ->disk('public')
     ->directory('posts')
     ->visibility('public')

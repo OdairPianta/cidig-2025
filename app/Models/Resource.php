@@ -7,10 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 
 class Resource extends Model
 {
+    use SoftDeletes;
+
     const FORMAT_TEXT = 1;
     const FORMAT_VIDEO = 2;
     const FORMAT_AUDIO = 3;

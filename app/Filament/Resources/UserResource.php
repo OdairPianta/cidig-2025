@@ -8,6 +8,7 @@ use App\Models\Subject;
 use App\Models\User;
 use App\Models\University;
 use Filament\Forms;
+use Filament\Infolists;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -62,7 +63,7 @@ Forms\Components\TextInput::make('password')
     ->dehydrateStateUsing(fn ($state) => \Hash::make($state))
     ->dehydrated(fn ($state) => filled($state))
     ->same('password_confirmation')
-    ->required()
+    ->required(fn (string $operation): bool => $operation === 'create')
     ->validationMessages([
         'required' => 'A senha é obrigatória.',
         'same' => 'A confirmação de senha deve ser igual à senha.',
@@ -71,7 +72,8 @@ Forms\Components\TextInput::make('password_confirmation')
     ->label('Confirmar Senha')
     ->password()
     ->same('password')
-    ->required()
+    ->dehydrated(false)
+    ->required(fn (string $operation): bool => $operation === 'create')
     ->validationMessages([
         'required' => 'Confirmar a senha é obrigatório.',
         'same' => 'A confirmação de senha deve ser igual à senha.',
@@ -107,7 +109,7 @@ Forms\Components\TextInput::make('password_confirmation')
                         Forms\Components\FileUpload::make('picture_url')
                             ->label('Foto de perfil')
                             ->image()
-                            ->acceptedFileTypes(['image/bmp','image/jpeg', 'image/x-png', 'image/png', 'image/gif'])
+                            ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/gif', 'image/webp', 'image/bmp'])
                             ->directory('images/team')
                             ->visibility('public')
                             ->preserveFilenames()
@@ -242,11 +244,35 @@ Forms\Components\TextInput::make('website')
         ];
     }
 
+    public static function infolist(\Filament\Infolists\Infolist $infolist): \Filament\Infolists\Infolist
+    {
+        return $infolist->schema([
+            Infolists\Components\Section::make('Dados Básicos')->columns(2)->schema([
+                Infolists\Components\TextEntry::make('name')->label('Nome')->copyable(),
+                Infolists\Components\TextEntry::make('email')->label('Email')->copyable(),
+                Infolists\Components\IconEntry::make('is_active')->label('Ativo')->boolean(),
+                Infolists\Components\TextEntry::make('subjects.name')->label('Temas')->badge(),
+            ]),
+            Infolists\Components\Section::make('Informações Adicionais')->columns(2)->schema([
+                Infolists\Components\ImageEntry::make('information.picture_link')->label('Foto de perfil')->circular(),
+                Infolists\Components\TextEntry::make('information.university.name')->label('Instituição')->copyable(),
+                Infolists\Components\TextEntry::make('information.title')->label('Título')->copyable(),
+                Infolists\Components\TextEntry::make('information.website')->label('Website')->copyable(),
+                Infolists\Components\TextEntry::make('information.lattes_url')->label('Lattes')->copyable(),
+                Infolists\Components\TextEntry::make('information.orcid_url')->label('ORCID')->copyable(),
+                Infolists\Components\TextEntry::make('information.linkedin_url')->label('LinkedIn')->copyable(),
+                Infolists\Components\TextEntry::make('information.minibio')->label('Minibio')->columnSpanFull()->copyable(),
+                Infolists\Components\TextEntry::make('information.description')->label('Descrição')->columnSpanFull()->copyable(),
+            ]),
+        ]);
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListUsers::route('/'),
             'create' => Pages\CreateUser::route('/create'),
+            'view' => Pages\ViewUser::route('/{record}'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
     }

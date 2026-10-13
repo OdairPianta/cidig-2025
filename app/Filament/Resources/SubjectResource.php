@@ -8,6 +8,7 @@ use App\Filament\Resources\SubjectResource\RelationManagers;
 use App\Models\Subject;
 use App\Models\Video;
 use Filament\Forms;
+use Filament\Infolists;
 use Filament\Forms\Form;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -54,7 +55,7 @@ Forms\Components\Textarea::make('description')
                         Forms\Components\FileUpload::make('image')
                             ->label('Imagem')
                             ->image()
-                            ->acceptedFileTypes(['image/bmp','image/jpeg', 'image/x-png', 'image/png', 'image/gif'])
+                            ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/gif', 'image/webp', 'image/bmp'])
                             ->directory('images/team')
                             ->visibility('public')
                             ->preserveFilenames()
@@ -63,7 +64,7 @@ Forms\Components\Textarea::make('description')
                         Forms\Components\FileUpload::make('background-image')
                             ->label('Imagem de Fundo')
                             ->image()
-                            ->acceptedFileTypes(['image/bmp','image/jpeg', 'image/x-png', 'image/png', 'image/gif'])
+                            ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/gif', 'image/webp', 'image/bmp'])
                             ->directory('images/team')
                             ->visibility('public')
                             ->preserveFilenames()
@@ -157,11 +158,27 @@ Tables\Actions\ViewAction::make()->label('Visualizar'),
         ];
     }
 
+    public static function infolist(\Filament\Infolists\Infolist $infolist): \Filament\Infolists\Infolist
+    {
+        return $infolist->schema([
+            Infolists\Components\Section::make('Verbete')->columns(2)->schema([
+                Infolists\Components\TextEntry::make('name')->label('Nome')->copyable(),
+                Infolists\Components\TextEntry::make('slug')->label('Endereço (URL)')->copyable(),
+                Infolists\Components\IconEntry::make('is_active')->label('Ativo')->boolean(),
+                Infolists\Components\TextEntry::make('video.video_id')->label('Vídeo (YouTube)')->copyable(),
+                Infolists\Components\TextEntry::make('description')->label('Descrição')->columnSpanFull()->copyable(),
+                Infolists\Components\ImageEntry::make('image')->label('Imagem')->disk('public'),
+                Infolists\Components\TextEntry::make('background-credit')->label('Crédito da imagem de fundo')->copyable(),
+            ]),
+        ]);
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListSubjects::route('/'),
             'create' => Pages\CreateSubject::route('/create'),
+            'view' => Pages\ViewSubject::route('/{record}'),
             'edit' => Pages\EditSubject::route('/{record}/edit'),
         ];
     }

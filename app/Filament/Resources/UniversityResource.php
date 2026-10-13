@@ -6,6 +6,7 @@ use App\Filament\Resources\UniversityResource\Pages;
 use App\Filament\Resources\UniversityResource\RelationManagers;
 use App\Models\University;
 use Filament\Forms;
+use Filament\Infolists;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -81,11 +82,22 @@ class UniversityResource extends Resource
         ];
     }
 
+    public static function infolist(\Filament\Infolists\Infolist $infolist): \Filament\Infolists\Infolist
+    {
+        return $infolist->schema([
+            Infolists\Components\Section::make('Instituição')->columns(2)->schema([
+                Infolists\Components\TextEntry::make('name')->label('Nome')->copyable(),
+                Infolists\Components\IconEntry::make('is_active')->label('Ativo')->boolean(),
+            ]),
+        ]);
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListUniversities::route('/'),
             'create' => Pages\CreateUniversity::route('/create'),
+            'view' => Pages\ViewUniversity::route('/{record}'),
             'edit' => Pages\EditUniversity::route('/{record}/edit'),
         ];
     }
