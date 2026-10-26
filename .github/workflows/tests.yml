@@ -51,4 +51,7 @@ jobs:
         run: npm run build
 
       - name: Run Tests
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'
         run: ./vendor/bin/pest
