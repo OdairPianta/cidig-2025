@@ -218,14 +218,74 @@ it('shows every content metadata field on the view page and offers easy copy', f
 it('saves the copyright field of a content', function () {
     $subject = Subject::create(['name' => 'Verbete X', 'slug' => 'x']);
     $tag = Tag::create(['name' => 'T']);
+    $author = \App\Models\Author::findOrCreateByName('Ana Souza');
 
     Livewire::test(\App\Filament\Resources\ResourceResource\Pages\CreateResource::class)
         ->fillForm([
             'subject_id' => $subject->id, 'format_id' => 1, 'tags' => [$tag->id], 'title' => 'T', 'description' => 'D',
-            'source' => 'https://example.com', 'author' => 'A', 'publisher' => 'P', 'language' => 'pt', 'copy_rights' => 'CC-BY',
+            'source' => 'https://example.com', 'authors' => [$author->id], 'publisher' => 'P', 'language' => 'pt', 'copy_rights' => 'CC-BY',
         ])
         ->call('create')
         ->assertHasNoFormErrors();
 
-    expect(\App\Models\Resource::first()->copy_rights)->toBe('CC-BY');
+    $resource = \App\Models\Resource::first();
+
+    expect($resource->copy_rights)->toBe('CC-BY')
+        ->and($resource->author)->toBe('Ana Souza')
+        ->and($resource->authors->pluck('id')->all())->toBe([$author->id]);
+});
+
+it('only shows professors their own tickets', function () {
+    $professor = User::factory()->create(['is_admin' => false, 'is_active' => true]);
+    $other = User::factory()->create(['is_admin' => false, 'is_active' => true]);
+    $mine = \App\Models\Ticket::create(['ticket_type' => 1, 'title' => 'Meu', 'description' => 'x', 'status' => 0, 'created_by' => $professor->id, 'responsible_id' => $other->id]);
+    $theirs = \App\Models\Ticket::create(['ticket_type' => 1, 'title' => 'Alheio', 'description' => 'x', 'status' => 0, 'created_by' => $other->id, 'responsible_id' => $other->id]);
+
+    $this->actingAs($professor);
+
+    $ids = \App\Filament\Resources\TicketResource::getEloquentQuery()->pluck('id');
+
+    expect($ids)->toContain($mine->id)->not->toContain($theirs->id);
+});
+
+it('keeps the menu admin only', function () {
+    $this->actingAs(User::factory()->create(['is_admin' => false, 'is_active' => true]));
+
+    expect(\App\Filament\Resources\MenuResource::canAccess())->toBeFalse();
+});
+
+it('stores the source metadata and uploader of a video', function () {
+    Livewire::test(\App\Filament\Resources\VideoResource\Pages\CreateVideo::class)
+        ->fillForm([
+            'video_id' => 'https://youtu.be/8w9NrNSliuI',
+            'source_author' => 'Canal Exemplo',
+            'source_title' => 'Título original',
+            'source_channel' => 'Exemplo TV',
+            'source_year' => 2021,
+            'title' => 'Título na plataforma',
+        ])
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    $video = \App\Models\Video::firstOrFail();
+
+    expect($video->video_id)->toBe('8w9NrNSliuI')
+        ->and($video->source_author)->toBe('Canal Exemplo')
+        ->and($video->source_year)->toBe(2021)
+        ->and($video->created_by)->toBe($this->admin->id);
+});
+
+it('reuses authors regardless of case, accents and spacing', function () {
+    $first = \App\Models\Author::findOrCreateByName('José da  Silva');
+    $second = \App\Models\Author::findOrCreateByName('jose da silva.');
+
+    expect($second->id)->toBe($first->id)
+        ->and(\App\Models\Author::count())->toBe(1);
+});
+
+it('keeps the plain-text author column in sync with the linked authors', function () {
+    $ana = \App\Models\Author::findOrCreateByName('Ana Souza');
+    $bruno = \App\Models\Author::findOrCreateByName('Bruno Lima');
+
+    expect(\App\Models\Resource::authorText([$bruno->id, $ana->id]))->toBe('Ana Souza; Bruno Lima');
 });

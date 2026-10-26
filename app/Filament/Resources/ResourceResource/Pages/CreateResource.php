@@ -14,6 +14,7 @@ class CreateResource extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $data['created_by'] = auth()->id();
+        $data['author'] = \App\Models\Resource::authorText($this->data['authors'] ?? []);
         $data['published_at'] = $data['published_at'] !== null ? now() : null;
 
         return $data;
