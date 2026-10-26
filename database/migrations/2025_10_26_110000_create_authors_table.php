@@ -24,9 +24,9 @@ return new class extends Migration
             $table->unique(['author_id', 'resource_id']);
         });
 
-        // Existing free-text authors ("Ana; Bruno") become author records linked to their content.
+        // Existing free-text authors ("Ana; Bruno", "Haraway, Donna") become author records linked to their content.
         DB::table('resources')->select('id', 'author')->orderBy('id')->each(function ($resource) {
-            foreach (preg_split('/\s*[;\n]\s*/', (string) $resource->author) as $name) {
+            foreach (Author::parseNames((string) $resource->author) as $name) {
                 if (trim($name) === '') {
                     continue;
                 }

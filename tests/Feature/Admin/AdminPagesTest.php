@@ -289,3 +289,15 @@ it('keeps the plain-text author column in sync with the linked authors', functio
 
     expect(\App\Models\Resource::authorText([$bruno->id, $ana->id]))->toBe('Ana Souza; Bruno Lima');
 });
+
+it('splits free-text author fields into individual names', function () {
+    $parse = fn (string $text) => \App\Models\Author::parseNames($text);
+
+    expect($parse('Ana Souza; Bruno Lima;'))->toBe(['Ana Souza', 'Bruno Lima'])
+        ->and($parse('Evandro Medeiros Laia, Lara Linhalis Guimarães'))->toBe(['Evandro Medeiros Laia', 'Lara Linhalis Guimarães'])
+        ->and($parse('Haraway, Donna'))->toBe(['Donna Haraway'])
+        ->and($parse('DI FELICE, Massimo e MOREIRA, Fernanda Cristina,'))->toBe(['Massimo Di Felice', 'Fernanda Cristina Moreira'])
+        ->and($parse('Herton Escobar(Texto) e Cleber Siquette (Diagramação)'))->toBe(['Herton Escobar', 'Cleber Siquette'])
+        ->and($parse('Dominguez, Guilherme D.F.'))->toBe(['Guilherme D.F. Dominguez'])
+        ->and($parse('Controladoria-Geral da União - CGU'))->toBe(['Controladoria-Geral da União - CGU']);
+});
