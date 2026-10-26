@@ -51,4 +51,9 @@ jobs:
         run: npm run build
 
       - name: Run Tests
+        env:
+          # .env.example holds ${...} placeholders that only DigitalOcean fills in
+          APP_URL: http://localhost
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'
         run: ./vendor/bin/pest

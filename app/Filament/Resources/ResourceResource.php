@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\FilamentResourceBase;
 use App\Filament\Resources\ResourceResource\Pages;
 use App\Models\Resource as ResourceModel;
+use App\Models\Author;
 use App\Models\Tag;
 use App\Models\User;
 use Filament\Forms;
@@ -114,11 +115,24 @@ Forms\Components\TextInput::make('source')
                     ->columns()
                     ->collapsible()
                     ->schema([
-Forms\Components\TextInput::make('author')
-    ->label('Autor')
+Forms\Components\Select::make('authors')
+    ->label('Autoria')
+    ->placeholder('Selecione ou crie os autores')
+    ->relationship('authors', 'name')
+    ->helperText('Digite para buscar ou criar um autor. Autores repetidos são reaproveitados automaticamente.')
+    ->multiple()
+    ->searchable()
+    ->preload()
+    ->createOptionForm([
+        Forms\Components\TextInput::make('name')
+            ->label('Novo autor')
+            ->required()
+            ->maxLength(255),
+    ])
+    ->createOptionUsing(fn (array $data) => Author::findOrCreateByName($data['name'])->getKey())
     ->required()
     ->validationMessages([
-        'required' => 'O autor é obrigatório.',
+        'required' => 'Informe ao menos um autor.',
     ]),
 Forms\Components\TextInput::make('publisher')
     ->label('Editora ou Canal de Publicação')

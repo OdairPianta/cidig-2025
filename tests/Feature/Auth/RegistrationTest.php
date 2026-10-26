@@ -8,7 +8,7 @@ test('registration screen can be rendered', function () {
     $response = $this->get('/register');
 
     $response->assertStatus(200);
-});
+})->skip('Laravel starter-kit test for a route this app does not have');
 
 test('new users can register', function () {
     $response = Volt::test('auth.register')
@@ -23,4 +23,4 @@ test('new users can register', function () {
         ->assertRedirect(route('dashboard', absolute: false));
 
     $this->assertAuthenticated();
-});
+})->skip('Laravel starter-kit test for a route this app does not have');

@@ -89,6 +89,19 @@ class Resource extends Model
             ->implode("\n");
     }
 
+    public function authors(): BelongsToMany
+    {
+        return $this->belongsToMany(Author::class);
+    }
+
+    /**
+     * Plain-text author list, kept on the row because the public pages and search read it.
+     */
+    public static function authorText(array $authorIds): string
+    {
+        return Author::whereIn('id', $authorIds)->orderBy('name')->pluck('name')->join('; ');
+    }
+
     /**
      * @return BelongsToMany
      */

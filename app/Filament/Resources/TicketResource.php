@@ -79,19 +79,9 @@ Forms\Components\Textarea::make('description')
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('title')->label('Título')->searchable()->sortable(),
-                Tables\Columns\TextColumn::make('responsible.name')
-                    ->label('Responsável')
+                Tables\Columns\TextColumn::make('createdBy.name')
+                    ->label('Criado por')
                     ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Criado em')
-                    ->description(fn (Ticket $record) => 'por ' . $record->createdBy->name)
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Atualizado em')
-                    ->description(fn (Ticket $record) => 'por ' . ($record->updatedBy?->name ?? 'N/A'))
-                    ->dateTime()
                     ->sortable(),
                 Tables\Columns\IconColumn::make('status')
                     ->label('Status')
@@ -107,6 +97,20 @@ Forms\Components\Textarea::make('description')
                         default => 'gray',
                     })
                     ->tooltip(fn (int $state) => Ticket::STATUSES_TEXTS[$state])
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('responsible.name')
+                    ->label('Responsável')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Criado em')
+                    ->description(fn (Ticket $record) => 'por ' . $record->createdBy->name)
+                    ->dateTime()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Atualizado em')
+                    ->description(fn (Ticket $record) => 'por ' . ($record->updatedBy?->name ?? 'N/A'))
+                    ->dateTime()
                     ->sortable(),
             ])
             ->filters([
@@ -162,6 +166,20 @@ Forms\Components\Textarea::make('description')
             'comments' => Pages\ManageTicketReplies::route('/{record}/comments'),
             'edit' => Pages\EditTicket::route('/{record}/edit'),
         ];
+    }
+
+    /** Non-admins only see the tickets they created or are responsible for. */
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        if (auth()->user()->isAdmin()) {
+            return $query;
+        }
+
+        return $query->where(fn ($q) => $q
+            ->where('created_by', auth()->id())
+            ->orWhere('responsible_id', auth()->id()));
     }
 
     public static function shouldRegisterNavigation(): bool

@@ -27,6 +27,7 @@ class EditResource extends EditRecord
     protected function mutateFormDataBeforeSave(array $data): array
     {
         $data['updated_by'] = auth()->id();
+        $data['author'] = \App\Models\Resource::authorText($this->data['authors'] ?? []);
 
         if ($data['published_at'] == 1) {
             $data['published_at'] = now();
