@@ -26,8 +26,8 @@ class EditProfile extends BaseEditProfile
                 $this->getPasswordConfirmationFormComponent(),
 
                 Forms\Components\Select::make('university_id')
-                    ->label('Universidade')
-                    ->placeholder('Selecione uma universidade')
+                    ->label('Vínculo Institucional')
+                    ->placeholder('Selecione um vínculo institucional')
                     ->options(University::query()->where('is_active', true)->pluck('name', 'id'))
                     ->required(),
                     

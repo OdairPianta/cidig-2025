@@ -44,9 +44,10 @@
                         <span class="text-primary-500">
                             <x-heroicon-o-document class="w-6 h-6" />
                         </span>
-                        <span class="text-gray-900 dark:text-gray-100">Novo verbete</span>
+                        <span class="text-gray-900 dark:text-gray-100">Verbete</span>
                     </a>
                     
+                    @if(auth()->user()->isAdmin())
                     <a href="{{ route('filament.admin.resources.series.create') }}?format_id=2" class="p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center space-x-3">
                         <span class="text-primary-500">
                             <x-heroicon-o-film class="w-6 h-6" />
@@ -60,6 +61,7 @@
                         </span>
                         <span class="text-gray-900 dark:text-gray-100">Nova postagem</span>
                     </a>
+                    @endif
                 </div>
             </div>
         </x-filament::section>

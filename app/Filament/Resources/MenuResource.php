@@ -131,4 +131,9 @@ Tables\Actions\ViewAction::make()->label('Visualizar'),
             'edit' => Pages\EditMenu::route('/{record}/edit'),
         ];
     }
+
+    public static function canAccess(): bool
+    {
+        return auth()->check() && auth()->user()->isAdmin();
+    }
 }
