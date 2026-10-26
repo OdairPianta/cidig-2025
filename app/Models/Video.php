@@ -13,10 +13,15 @@ class Video extends Model
     protected $fillable = [
         'subject_id',
         'video_id',
+        'source_author',
+        'source_title',
+        'source_channel',
+        'source_year',
         'title',
         'description',
         'is_featured',
         'is_active',
+        'created_by',
     ];
 
     protected $casts = [
@@ -58,6 +63,11 @@ class Video extends Model
     public function series()
     {
         return $this->belongsToMany(Serie::class, 'series_videos', 'video_id', 'serie_id');
+    }
+
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function users(): BelongsToMany

@@ -7,6 +7,7 @@ use App\Filament\Resources\VideoResource\RelationManagers;
 use App\Models\Video;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -29,15 +30,9 @@ class VideoResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Informações do Vídeo')
+                Forms\Components\Section::make('Sobre o vídeo (origem)')
+                    ->description('Dados do vídeo original, independentes do uso na plataforma.')
                     ->schema([
-                        Forms\Components\Select::make('subject_id')
-                            ->label('Assunto')
-                            ->placeholder('Selecione um assunto')
-                            ->relationship('subject', 'name')
-                            ->searchable()
-                            ->preload(),
-                        
 Forms\Components\TextInput::make('video_id')
     ->label('Link ou ID do Vídeo (YouTube)')
     ->required()
@@ -66,8 +61,38 @@ Forms\Components\TextInput::make('video_id')
     ]),
                         
 
+Forms\Components\TextInput::make('source_author')
+    ->label('Autoria')
+    ->helperText('Pessoa física ou organização responsável pelo vídeo.')
+    ->maxLength(255),
+
+Forms\Components\TextInput::make('source_title')
+    ->label('Título do vídeo')
+    ->maxLength(255),
+
+Forms\Components\TextInput::make('source_channel')
+    ->label('Canal de publicação')
+    ->maxLength(255),
+
+Forms\Components\TextInput::make('source_year')
+    ->label('Ano de publicação')
+    ->numeric()
+    ->minValue(1900)
+    ->maxValue((int) date('Y') + 1),
+                    ])
+                    ->columns(2),
+
+                Forms\Components\Section::make('Uso na plataforma')
+                    ->schema([
+                        Forms\Components\Select::make('subject_id')
+                            ->label('Verbete')
+                            ->placeholder('Selecione um verbete')
+                            ->relationship('subject', 'name')
+                            ->searchable()
+                            ->preload(),
+
 Forms\Components\TextInput::make('title')
-    ->label('Título')
+    ->label('Título na plataforma')
     ->maxLength(255)
     ->columnSpanFull()
     ->validationMessages([
@@ -75,13 +100,13 @@ Forms\Components\TextInput::make('title')
     ]),
                         
                         Forms\Components\Textarea::make('description')
-                            ->label('Descrição')
+                            ->label('Descrição na plataforma')
                             ->rows(4)
                             ->columnSpanFull(),
                     ])
                     ->columns(2),
                 
-                Forms\Components\Section::make('Configurações')
+                Forms\Components\Section::make('Configurações de exibição')
                     ->schema([
                         Forms\Components\Checkbox::make('is_featured')
                             ->label('Vídeo em Destaque')
@@ -94,11 +119,11 @@ Forms\Components\TextInput::make('title')
                     ])
                     ->columns(2),
                 
-                Forms\Components\Section::make('Autores')
+                Forms\Components\Section::make('Responsáveis')
                     ->schema([
                         Forms\Components\Select::make('users')
-                            ->label('Autores do Vídeo')
-                            ->placeholder('Selecione os autores')
+                            ->label('Professores/pesquisadores vinculados')
+                            ->placeholder('Selecione os professores ou pesquisadores')
                             ->relationship('users', 'name')
                             ->multiple()
                             ->searchable()
@@ -113,13 +138,25 @@ Forms\Components\TextInput::make('title')
             ->columns([
                 Tables\Columns\TextColumn::make('title')
                     ->label('Título')
-                    ->searchable()
+                    ->getStateUsing(fn (Video $record) => $record->title ?: $record->source_title ?: $record->video_id)
+                    ->searchable(['title', 'source_title', 'video_id'])
                     ->sortable()
                     ->limit(50)
-                    ->tooltip(fn (Video $record) => $record->title),
+                    ->tooltip(fn (Video $record) => $record->title ?: $record->source_title),
+
+                Tables\Columns\TextColumn::make('source_author')
+                    ->label('Autoria')
+                    ->searchable()
+                    ->placeholder('—')
+                    ->limit(30),
+
+                Tables\Columns\TextColumn::make('subject.name')
+                    ->label('Verbete')
+                    ->placeholder('—')
+                    ->limit(30),
                 
                 Tables\Columns\TextColumn::make('users.name')
-                    ->label('Autores')
+                    ->label('Vinculados')
                     ->badge()
                     ->separator(',')
                     ->limit(2),
@@ -156,9 +193,26 @@ Forms\Components\TextInput::make('title')
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
-                    ->url(fn (Video $record) => "https://www.youtube.com/watch?v={$record->video_id}")
-                    ->openUrlInNewTab()
-                    ->icon('heroicon-o-play'),
+                    ->label('Visualizar')
+                    ->modalHeading(fn (Video $record) => $record->title ?: $record->source_title ?: 'Vídeo')
+                    ->infolist([
+                        Infolists\Components\TextEntry::make('source_author')->label('Autoria')->copyable()->placeholder('—'),
+                        Infolists\Components\TextEntry::make('source_title')->label('Título do vídeo')->copyable()->placeholder('—'),
+                        Infolists\Components\TextEntry::make('source_channel')->label('Canal de publicação')->copyable()->placeholder('—'),
+                        Infolists\Components\TextEntry::make('source_year')->label('Ano de publicação')->copyable()->placeholder('—'),
+                        Infolists\Components\TextEntry::make('title')->label('Título na plataforma')->copyable()->placeholder('—'),
+                        Infolists\Components\TextEntry::make('video_id')
+                            ->label('Link do vídeo')
+                            ->formatStateUsing(fn (string $state) => "https://www.youtube.com/watch?v={$state}")
+                            ->url(fn (Video $record) => "https://www.youtube.com/watch?v={$record->video_id}", true)
+                            ->copyable(),
+                        Infolists\Components\TextEntry::make('description')->label('Descrição na plataforma')->copyable()->placeholder('—'),
+                        Infolists\Components\TextEntry::make('subject.name')->label('Verbete')->placeholder('—'),
+                        Infolists\Components\TextEntry::make('users.name')->label('Professores/pesquisadores')->badge()->placeholder('—'),
+                        Infolists\Components\TextEntry::make('createdBy.name')->label('Cadastrado por')->placeholder('—'),
+                        Infolists\Components\IconEntry::make('is_featured')->label('Em destaque')->boolean(),
+                        Infolists\Components\IconEntry::make('is_active')->label('Ativo')->boolean(),
+                    ]),
                 
                 Tables\Actions\EditAction::make()->label('Editar'),
             ])
