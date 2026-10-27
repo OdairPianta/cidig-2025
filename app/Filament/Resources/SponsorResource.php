@@ -106,16 +106,8 @@ class SponsorResource extends Resource
                     ->searchable()
                     ->toggleable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Criado em')
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Atualizado em')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggledHiddenByDefault(),
             ])
+            ->defaultSort('name')
             ->filters([
                 //
             ])
@@ -149,6 +141,8 @@ class SponsorResource extends Resource
                     Infolists\Components\TextEntry::make('label')->label('Descrição')->placeholder('—'),
                     Infolists\Components\IconEntry::make('is_active')->label('Em uso')->boolean(),
                 ])->columns(3),
+                Infolists\Components\TextEntry::make('created_at')->label('Criado em')->dateTime('d/m/Y H:i'),
+                Infolists\Components\TextEntry::make('updated_at')->label('Atualizado em')->dateTime('d/m/Y H:i'),
             ]),
         ]);
     }

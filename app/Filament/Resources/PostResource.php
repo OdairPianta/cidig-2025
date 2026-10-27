@@ -109,26 +109,18 @@ Forms\Components\FileUpload::make('image_url')
                     ->label('Autor')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Criado em')
-                    ->dateTime()
-                    ->sortable(),
                 Tables\Columns\IconColumn::make('is_published')
                     ->label('Status')
                     ->icon(fn (Post $record) => $record->is_published ? 'heroicon-o-check-circle' : 'heroicon-o-pencil')
                     ->color(fn (Post $record) => $record->is_published ? 'success' : 'warning')
                     ->tooltip(fn (Post $record) => $record->is_published ? 'Publicado' : 'Rascunho'),
-                Tables\Columns\TextColumn::make('published_at')
-                    ->label('Publicado em')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(),
                 Tables\Columns\TextColumn::make('archived_at')
                     ->label('Arquivado em')
                     ->dateTime()
                     ->placeholder('—')
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('published_at', 'desc')
             ->filters([
                 Tables\Filters\TernaryFilter::make('archived')
                     ->label('Arquivadas')
