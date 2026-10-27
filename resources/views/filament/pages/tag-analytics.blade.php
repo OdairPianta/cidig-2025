@@ -23,7 +23,7 @@
             <table class="w-full text-sm">
                 <thead>
                     <tr class="text-left text-gray-500">
-                        <th class="py-1">Tag</th><th>Verbetes</th><th>Conteúdos</th><th>Séries</th><th>Total</th>
+                        <th class="py-1">Tag</th><th>Linhas de Pesquisa</th><th>Conteúdos</th><th>Séries</th><th>Total</th>
                     </tr>
                 </thead>
                 <tbody>

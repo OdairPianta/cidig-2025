@@ -66,37 +66,12 @@ Forms\Components\Textarea::make('description')
                     ->preload(),
                 Forms\Components\Checkbox::make('is_active')
                     ->label('Ativo'),
-                Forms\Components\TextInput::make('thumbnail_url')
-                    ->label('Thumbnail a partir de um link')
-                    ->helperText('Opcional: cole o link de uma imagem da internet (JPG, PNG, GIF ou WebP). Ela será baixada e preencherá o campo "Thumbnail" abaixo.')
-                    ->url()
-                    ->dehydrated(false)
-                    ->live(onBlur: true)
-                    ->afterStateUpdated(function (?string $state, \Filament\Forms\Set $set) {
-                        if (blank($state)) {
-                            return;
-                        }
-
-                        try {
-                            $path = app(\App\Services\ImageDownloader::class)->store($state, 'resources');
-                            $set('thumbnail', [$path]);
-                            $set('thumbnail_url', null);
-                        } catch (\InvalidArgumentException $e) {
-                            \Filament\Notifications\Notification::make()->danger()->title($e->getMessage())->send();
-                        }
-                    }),
                 Forms\Components\FileUpload::make('thumbnail')
-                    ->label('Thumbnail')
-                    ->helperText('Formato recomendado: 1280 x 720 px (16:9), JPG ou PNG, até 10 MB.')
-                    ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/gif', 'image/webp', 'image/bmp'])
-                    ->disk(\App\Support\Uploads::disk())
-                    ->directory('resources')
-                    ->visibility('public')
-                    ->preserveFilenames()
-                    ->downloadable()
-                    ->openable(),
-                Forms\Components\FileUpload::make('thumbnail_novo')
-                    ->label('Thumbnail Novo')
+                    ->label('Miniatura')
+                    ->helperText('Arraste a imagem para cá ou clique para escolher. Formato recomendado: 1280 x 720 px (16:9), JPG ou PNG, até 10 MB.')
+                    ->image()
+                    ->imageEditor()
+                    ->imageEditorAspectRatios(['16:9', '4:3'])
                     ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/gif', 'image/webp', 'image/bmp'])
                     ->disk(\App\Support\Uploads::disk())
                     ->directory('resources')
@@ -106,15 +81,10 @@ Forms\Components\Textarea::make('description')
                     ->openable(),
                 Forms\Components\FileUpload::make('background_image')
                     ->label('Imagem de Fundo')
-                    ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/gif', 'image/webp', 'image/bmp'])
-                    ->disk(\App\Support\Uploads::disk())
-                    ->directory('resources')
-                    ->visibility('public')
-                    ->preserveFilenames()
-                    ->downloadable()
-                    ->openable(),
-                Forms\Components\FileUpload::make('background_img')
-                    ->label('Background Img')
+                    ->helperText('Formato recomendado: 1920 x 1080 px (16:9), JPG ou PNG, até 10 MB.')
+                    ->image()
+                    ->imageEditor()
+                    ->imageEditorAspectRatios(['16:9', '4:3'])
                     ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/gif', 'image/webp', 'image/bmp'])
                     ->disk(\App\Support\Uploads::disk())
                     ->directory('resources')
@@ -123,40 +93,85 @@ Forms\Components\Textarea::make('description')
                     ->downloadable()
                     ->openable(),
                 Forms\Components\TextInput::make('background_credit')
-                    ->label('Crédito do Background'),
-                Forms\Components\Select::make('videos')
+                    ->label('Crédito da Imagem de Fundo'),
+                Forms\Components\Repeater::make('episodes')
                     ->label('Vídeos da Série')
-                    ->placeholder('Selecione os vídeos')
-                    ->relationship('videos', 'title')
-                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->title . ($record->video_id ? " ({$record->video_id})" : ''))
-                    ->searchable(['title', 'video_id'])
-                    ->multiple()
-                    ->preload()
-                    ->createOptionForm([
-                        Forms\Components\TextInput::make('video_id')
+                    ->helperText('Cada vídeo é um bloco com título e descrição. Use a descrição para contextualizar o episódio e indicar o professor responsável, quando houver.')
+                    ->addActionLabel('Adicionar vídeo')
+                    ->defaultItems(0)
+                    ->columnSpanFull()
+                    ->collapsible()
+                    ->reorderableWithButtons()
+                    ->itemLabel(fn (array $state): ?string => $state['title'] ?? null)
+                    ->dehydrated(false)
+                    ->saveRelationshipsUsing(fn (Serie $record, ?array $state) => static::syncEpisodes($record, $state ?? []))
+                    ->schema([
+                        Forms\Components\TextInput::make('video')
                             ->label('Link ou ID do Vídeo (YouTube)')
                             ->required()
                             ->helperText('Cole o link completo do YouTube ou apenas o ID.')
                             ->rules([
                                 fn () => function (string $attribute, $value, \Closure $fail) {
-                                    $id = Video::extractYoutubeId($value);
-
-                                    if ($id === null) {
+                                    if (Video::extractYoutubeId($value) === null) {
                                         $fail('Link ou ID do YouTube inválido.');
-                                    } elseif (Video::where('video_id', $id)->exists()) {
-                                        $fail('Este vídeo já está cadastrado. Selecione-o na lista.');
                                     }
                                 },
-                            ]),
+                            ])
+                            ->validationMessages(['required' => 'Informe o link ou o ID do vídeo.']),
                         Forms\Components\TextInput::make('title')
                             ->label('Título')
-                            ->maxLength(255),
+                            ->required()
+                            ->maxLength(255)
+                            ->live(onBlur: true)
+                            ->validationMessages(['required' => 'Informe o título do vídeo.']),
+                        Forms\Components\Textarea::make('description')
+                            ->label('Descrição')
+                            ->rows(3)
+                            ->columnSpanFull(),
                     ])
-                    ->createOptionUsing(fn (array $data) => Video::create([
-                        'video_id' => $data['video_id'],
-                        'title' => $data['title'] ?? null,
-                    ])->getKey()),
+                    ->columns(2),
             ]);
+    }
+
+    /** @return array<int, array{video: string, title: ?string, description: ?string}> */
+    public static function episodesFor(Serie $serie): array
+    {
+        return $serie->videos->map(fn ($video) => [
+            'video' => $video->video_id,
+            'title' => $video->pivot->title ?: $video->title,
+            'description' => $video->pivot->description ?: $video->description,
+        ])->all();
+    }
+
+    /**
+     * Attaches the form's video blocks in order, creating the video record the first time a
+     * YouTube id is used so the same link can never trigger a duplicate-key error.
+     *
+     * @param  array<int, array{video: string, title: string, description: ?string}>  $blocks
+     */
+    public static function syncEpisodes(Serie $serie, array $blocks): void
+    {
+        $sync = [];
+
+        foreach (array_values($blocks) as $position => $block) {
+            $youtubeId = Video::extractYoutubeId($block['video'] ?? null);
+            if ($youtubeId === null) {
+                continue;
+            }
+
+            $video = Video::firstOrCreate(
+                ['video_id' => $youtubeId],
+                ['title' => $block['title'] ?? null, 'description' => $block['description'] ?? null, 'is_active' => true, 'created_by' => auth()->id()],
+            );
+
+            $sync[$video->getKey()] = [
+                'title' => $block['title'] ?? null,
+                'description' => $block['description'] ?? null,
+                'position' => $position + 1,
+            ];
+        }
+
+        $serie->videos()->sync($sync);
     }
 
     public static function table(Table $table): Table
@@ -185,7 +200,7 @@ Forms\Components\Textarea::make('description')
                 //
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()->label('Visualizar'),
+                Tables\Actions\ViewAction::make()->label('Visualizar')->url(null)->modalWidth('4xl'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -212,8 +227,12 @@ Forms\Components\Textarea::make('description')
                 Infolists\Components\IconEntry::make('is_active')->label('Ativo')->boolean(),
                 Infolists\Components\TextEntry::make('users.name')->label('Responsáveis')->badge(),
                 Infolists\Components\TextEntry::make('description')->label('Descrição')->columnSpanFull()->copyable(),
-                Infolists\Components\TextEntry::make('videos.video_id')->label('Vídeos (YouTube)')->badge()->copyable(),
-                Infolists\Components\ImageEntry::make('thumbnail')->label('Thumbnail')->disk(\App\Support\Uploads::disk()),
+                Infolists\Components\RepeatableEntry::make('videos')->label('Vídeos')->columnSpanFull()->schema([
+                    Infolists\Components\TextEntry::make('pivot.title')->label('Título')->copyable(),
+                    Infolists\Components\TextEntry::make('video_id')->label('YouTube')->copyable(),
+                    Infolists\Components\TextEntry::make('pivot.description')->label('Descrição')->columnSpanFull()->placeholder('—'),
+                ])->columns(2),
+                Infolists\Components\ImageEntry::make('thumbnail')->label('Miniatura')->disk(\App\Support\Uploads::disk()),
             ]),
         ]);
     }

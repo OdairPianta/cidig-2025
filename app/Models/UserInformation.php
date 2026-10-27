@@ -19,6 +19,7 @@ class UserInformation extends Model
         'description',
         'title',
         'website',
+        'recovery_email',
         'roles',
     ];
 

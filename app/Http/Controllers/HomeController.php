@@ -80,7 +80,7 @@ class HomeController extends Controller
             'title' => $serieRecord->title,
             'description' => $serieRecord->description,
             'tags' => $serieRecord->tags,
-            'thumbnail' => url($serieRecord->thumbnail_novo ?? $serieRecord->thumbnail ?? '/images/default.jpg'),
+            'thumbnail' => url($serieRecord->thumbnail ?? '/images/default.jpg'),
             'url' => route('v2.showSpecialPage', $serieRecord->slug),
         ];
     }

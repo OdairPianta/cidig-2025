@@ -8,9 +8,13 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditUser extends EditRecord
 {
+    use \App\Filament\Resources\Concerns\DeleteAtBottom;
+
+    use SavesUserInformation;
+
     protected static string $resource = UserResource::class;
 
-    protected function getHeaderActions(): array
+    protected function getBottomDeleteActions(): array
     {
         return [
             Actions\DeleteAction::make()
@@ -18,6 +22,21 @@ class EditUser extends EditRecord
                 ->modalDescription('O perfil será arquivado e deixará de aparecer no site, mas os conteúdos vinculados são preservados.')
                 ->visible(fn (): bool => auth()->user()?->isAdmin() ?? false),
         ];
+    }
+
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        return array_merge($data, $this->record->information?->only(self::INFORMATION_FIELDS) ?? []);
+    }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        return $this->extractInformation($data);
+    }
+
+    protected function afterSave(): void
+    {
+        $this->persistInformation();
     }
 
     protected function getRedirectUrl(): string

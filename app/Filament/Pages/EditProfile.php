@@ -6,10 +6,12 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Pages\Auth\EditProfile as BaseEditProfile;
 use App\Models\University;
+use App\Support\ProfileLinks;
 
 class EditProfile extends BaseEditProfile
 {
     private const ROLES = [
+        "professor" => "Professor",
         "researcher" => "Pesquisador",
         "designer" => "Designer",
         "coordinator" => "Coordenador",
@@ -34,6 +36,10 @@ class EditProfile extends BaseEditProfile
                 Forms\Components\FileUpload::make('picture_url')
                     ->label('Foto de perfil')
                     ->image()
+                    ->disk(\App\Support\Uploads::disk())
+                    ->imageEditor()
+                    ->imageEditorAspectRatios(['1:1'])
+                    ->helperText('Foto quadrada (1:1), JPG ou PNG, até 10 MB. Use o editor para recortar.')
                     ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/gif', 'image/webp', 'image/bmp'])
                     ->directory('images/team')
                     ->visibility('public')
@@ -45,23 +51,20 @@ class EditProfile extends BaseEditProfile
                     ->columns(3)
                     ->collapsible()
                     ->schema([
-                        Forms\Components\TextInput::make('linkedin_url')
-                            ->label('LinkedIn')
-                            ->url(),
-                        Forms\Components\TextInput::make('lattes_url')
-                            ->label('Lattes')
-                            ->url(),
-                        Forms\Components\TextInput::make('orcid_url')
-                            ->label('ORCID')
-                            ->url(),
+                        ...ProfileLinks::fields(),
                     ]),
                     
+                Forms\Components\TextInput::make('recovery_email')
+                    ->label('E-mail de recuperação')
+                    ->email()
+                    ->helperText('E-mail pessoal usado, além do e-mail de acesso, para recuperar a senha.'),
+
                 Forms\Components\Textarea::make('minibio')
                     ->label('Mini Bio')
                     ->rows(3),
                     
                 Forms\Components\Textarea::make('description')
-                    ->label('Descrição')
+                    ->label('Currículo Completo')
                     ->rows(3),
                 
 Forms\Components\Select::make('roles')
@@ -101,7 +104,7 @@ Forms\Components\TextInput::make('website')
     {
         $informationFields = [
             'university_id', 'picture_url', 'linkedin_url', 'lattes_url', 
-            'orcid_url', 'minibio', 'description', 'title', 'roles', 'website'
+            'orcid_url', 'recovery_email', 'minibio', 'description', 'title', 'roles', 'website'
         ];
 
         $informationData = [];

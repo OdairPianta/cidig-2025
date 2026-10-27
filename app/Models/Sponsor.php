@@ -11,6 +11,11 @@ class Sponsor extends Model
     public $fillable = [
         'id',
         'name',
+        'contact_name',
+        'email',
+        'landline',
+        'mobile',
+        'address',
         'image',
     ];
 

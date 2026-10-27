@@ -20,9 +20,9 @@ class SubjectResource extends FilamentResourceBase
 
     protected static ?string $navigationIcon = 'heroicon-o-bookmark';
 
-    protected static ?string $modelLabel = 'Verbete';
+    protected static ?string $modelLabel = 'Linha de Pesquisa';
 
-    protected static ?string $pluralModelLabel = 'Verbetes';
+    protected static ?string $pluralModelLabel = 'Linhas de Pesquisa';
 
     protected static ?string $navigationGroup = 'Conteúdos';
 
@@ -40,47 +40,51 @@ Forms\Components\TextInput::make('name')
     ]),
                         Forms\Components\TextInput::make('slug')
                             ->label('Endereço (URL)')
-                            ->helperText('Parte final do link do verbete. Use letras minúsculas, números e hífens (ex.: "ecologia-da-informacao").')
+                            ->helperText('Parte final do link da linha de pesquisa. Use letras minúsculas, números e hífens (ex.: "ecologia-da-informacao").')
                             ->unique(ignoreRecord: true)
                             ->alphaDash()
-                            ->validationMessages(['unique' => 'Já existe um verbete com este endereço.']),
+                            ->validationMessages(['unique' => 'Já existe uma linha de pesquisa com este endereço.']),
                         Forms\Components\Checkbox::make('is_active')
-                            ->label('Ativo'),
+                            ->label('Ativo')
+                            ->helperText('Desmarcado, a linha de pesquisa é um rascunho e os campos abaixo são opcionais. Ativa, exige descrição, miniatura e imagem de fundo.')
+                            ->live(),
 Forms\Components\Textarea::make('description')
     ->label('Descrição')
     ->rows(5)
     ->autosize()
     ->columnSpanFull()
-    ->required()
+    ->required(fn (Forms\Get $get): bool => (bool) $get('is_active'))
     ->validationMessages([
-        'required' => 'A descrição é obrigatória.',
+        'required' => 'Linhas de pesquisa ativas precisam de uma descrição.',
     ]),
+                        Forms\Components\Select::make('users')
+                            ->label('Responsáveis')
+                            ->relationship('users', 'name')
+                            ->multiple()
+                            ->searchable()
+                            ->preload()
+                            ->columnSpanFull()
+                            ->helperText(new \Illuminate\Support\HtmlString('Professores ou pesquisadores responsáveis. Ainda não está cadastrado? <a href="' . e(UserResource::getUrl('create')) . '" target="_blank" class="underline">Cadastre o perfil em uma nova aba</a> e volte aqui sem perder o que já preencheu.'))
+                            ->noSearchResultsMessage(new \Illuminate\Support\HtmlString('Esse nome ainda não está cadastrado na plataforma. <a href="' . e(UserResource::getUrl('create')) . '" target="_blank" class="underline">Deseja incluí-lo?</a>')),
                     ])
                     ->columns(2),
 
                 Forms\Components\Section::make('Tags')
                     ->schema([
-                        Forms\Components\Select::make('tags')
-                            ->label('Tags do verbete')
-                            ->relationship('tags', 'name', fn ($query) => $query->isActive()->orderBy('name'))
-                            ->helperText('Digite para buscar ou criar uma tag (Enter). Tags repetidas são reaproveitadas automaticamente.')
-                            ->multiple()
-                            ->searchable()
-                            ->preload()
-                            ->createOptionForm([
-                                Forms\Components\TextInput::make('name')
-                                    ->label('Nova tag')
-                                    ->required()
-                                    ->maxLength(255),
-                            ])
-                            ->createOptionUsing(fn (array $data) => Tag::findOrCreate(['name' => $data['name'], 'is_active' => true])->getKey()),
+                        \App\Filament\Support\TagNames::make('Tags da linha de pesquisa')
                     ]),
 
                 Forms\Components\Section::make('Imagens')
                     ->schema([
                         Forms\Components\FileUpload::make('image')
-                            ->label('Imagem')
+                            ->label('Miniatura')
+                            ->helperText('Tamanho recomendado: 1280 x 720 px (16:9), JPG ou PNG, até 10 MB. Use o editor para recortar.')
                             ->image()
+                            ->imageEditor()
+                            ->imageEditorAspectRatios(['16:9', '4:3', '1:1'])
+                            ->disk(\App\Support\Uploads::disk())
+                            ->required(fn (Forms\Get $get): bool => (bool) $get('is_active'))
+                            ->validationMessages(['required' => 'Linhas de pesquisa ativas precisam de uma miniatura.'])
                             ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/gif', 'image/webp', 'image/bmp'])
                             ->directory('images/team')
                             ->visibility('public')
@@ -89,7 +93,13 @@ Forms\Components\Textarea::make('description')
                             ->openable(),
                         Forms\Components\FileUpload::make('background-image')
                             ->label('Imagem de Fundo')
+                            ->helperText('Tamanho recomendado: 1920 x 1080 px (16:9), JPG ou PNG, até 10 MB. Use o editor para recortar.')
                             ->image()
+                            ->imageEditor()
+                            ->imageEditorAspectRatios(['16:9', '4:3'])
+                            ->disk(\App\Support\Uploads::disk())
+                            ->required(fn (Forms\Get $get): bool => (bool) $get('is_active'))
+                            ->validationMessages(['required' => 'Linhas de pesquisa ativas precisam de uma imagem de fundo.'])
                             ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/gif', 'image/webp', 'image/bmp'])
                             ->directory('images/team')
                             ->visibility('public')
@@ -124,7 +134,7 @@ Forms\Components\Textarea::make('description')
                                     ->label('Ativo')
                                     ->default(true),
                             ])
-                            ->helperText('Selecione o vídeo que será usado para apresentar este verbete'),
+                            ->helperText('Selecione o vídeo que será usado para apresentar esta linha de pesquisa'),
                     ])
                     ->columns(2),
             ]);
@@ -136,7 +146,7 @@ Forms\Components\Textarea::make('description')
             ->defaultSort('name')
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Verbete')
+                    ->label('Linha de Pesquisa')
                     ->sortable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('slug')
@@ -149,14 +159,6 @@ Forms\Components\Textarea::make('description')
                     ->limit(30)
                     ->tooltip(fn ($record) => $record->video?->title)
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Criado em')
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Atualizado em')
-                    ->dateTime()
-                    ->sortable(),
                 Tables\Columns\IconColumn::make('is_active')
                     ->label('Ativo')
                     ->boolean()
@@ -171,7 +173,7 @@ Forms\Components\Textarea::make('description')
                             ->label('Ordenar por')
                             ->placeholder('Ordem alfabética')
                             ->options([
-                                'created_desc' => 'Últimos verbetes adicionados',
+                                'created_desc' => 'Últimas linhas de pesquisa adicionadas',
                                 'updated_desc' => 'Atualizados recentemente',
                                 'content_desc' => 'Últimos conteúdos acrescentados',
                                 'posts_desc' => 'Últimas postagens dos responsáveis',
@@ -197,7 +199,12 @@ Forms\Components\Textarea::make('description')
             ])
             ->actions([
 Tables\Actions\EditAction::make()->label('Editar'),
-Tables\Actions\ViewAction::make()->label('Visualizar'),
+Tables\Actions\ViewAction::make()->label('Visualizar')->url(null)->modalWidth('4xl'),
+                Tables\Actions\Action::make('openPage')
+                    ->label('Abrir página')
+                    ->icon('heroicon-o-arrow-top-right-on-square')
+                    ->color('gray')
+                    ->url(fn (Subject $record) => route('v2.searchBySubject', $record->id), true),
 
             ])
             ->bulkActions([
@@ -219,7 +226,7 @@ Tables\Actions\ViewAction::make()->label('Visualizar'),
     public static function infolist(\Filament\Infolists\Infolist $infolist): \Filament\Infolists\Infolist
     {
         return $infolist->schema([
-            Infolists\Components\Section::make('Verbete')->columns(2)->schema([
+            Infolists\Components\Section::make('Linha de Pesquisa')->columns(2)->schema([
                 Infolists\Components\TextEntry::make('name')->label('Nome')->copyable(),
                 Infolists\Components\TextEntry::make('slug')->label('Endereço (URL)')->copyable(),
                 Infolists\Components\IconEntry::make('is_active')->label('Ativo')->boolean(),
@@ -227,6 +234,8 @@ Tables\Actions\ViewAction::make()->label('Visualizar'),
                 Infolists\Components\TextEntry::make('description')->label('Descrição')->columnSpanFull()->copyable(),
                 Infolists\Components\ImageEntry::make('image')->label('Imagem')->disk(\App\Support\Uploads::disk()),
                 Infolists\Components\TextEntry::make('background-credit')->label('Crédito da imagem de fundo')->copyable(),
+                Infolists\Components\TextEntry::make('created_at')->label('Criado em')->dateTime('d/m/Y H:i'),
+                Infolists\Components\TextEntry::make('updated_at')->label('Atualizado em')->dateTime('d/m/Y H:i'),
             ]),
         ]);
     }

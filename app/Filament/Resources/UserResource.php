@@ -6,6 +6,7 @@ use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\Subject;
 use App\Models\User;
+use App\Support\ProfileLinks;
 use App\Models\University;
 use Filament\Forms;
 use Filament\Infolists;
@@ -19,6 +20,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class UserResource extends Resource
 {
     private const ROLES = [
+        "professor" => "Professor",
         "researcher" => "Pesquisador",
         "designer" => "Designer",
         "coordinator" => "Coordenador",
@@ -101,6 +103,10 @@ Forms\Components\TextInput::make('password_confirmation')
                     ->columns(2)
                     ->collapsible()
                     ->schema([
+                        Forms\Components\TextInput::make('recovery_email')
+                            ->label('E-mail de recuperação')
+                            ->email()
+                            ->helperText('E-mail pessoal usado, além do e-mail de acesso, para recuperar a senha.'),
                         Forms\Components\Select::make('university_id')
                             ->label('Instituição')
                             ->placeholder('Selecione ou cadastre uma instituição')
@@ -118,6 +124,10 @@ Forms\Components\TextInput::make('password_confirmation')
                         Forms\Components\FileUpload::make('picture_url')
                             ->label('Foto de perfil')
                             ->image()
+                            ->disk(\App\Support\Uploads::disk())
+                            ->imageEditor()
+                            ->imageEditorAspectRatios(['1:1'])
+                            ->helperText('Foto quadrada (1:1), JPG ou PNG, até 10 MB. Use o editor para recortar.')
                             ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/gif', 'image/webp', 'image/bmp'])
                             ->directory('images/team')
                             ->visibility('public')
@@ -130,27 +140,10 @@ Forms\Components\TextInput::make('password_confirmation')
                     ->columns(3)
                     ->collapsible()
                     ->schema([
-Forms\Components\TextInput::make('linkedin_url')
-    ->label('LinkedIn')
-    ->url()
-    ->validationMessages([
-        'url' => 'O LinkedIn deve ser uma URL válida.',
-    ]),
-Forms\Components\TextInput::make('lattes_url')
-    ->label('Lattes')
-    ->url()
-    ->validationMessages([
-        'url' => 'O Lattes deve ser uma URL válida.',
-    ]),
-Forms\Components\TextInput::make('orcid_url')
-    ->label('ORCID')
-    ->url()
-    ->validationMessages([
-        'url' => 'O ORCID deve ser uma URL válida.',
-    ]),
+...ProfileLinks::fields(),
                     ]),
                     
-                Forms\Components\Section::make('Biografia e Descrição')
+                Forms\Components\Section::make('Biografia e Currículo')
                     ->columns(1)
                     ->collapsible()
                     ->schema([
@@ -164,7 +157,7 @@ Forms\Components\TextInput::make('orcid_url')
     ]),
                         
                         Forms\Components\Textarea::make('description')
-                            ->label('Descrição')
+                            ->label('Currículo Completo')
                             ->helperText('Texto completo e opcional, exibido na página de perfil.')
                             ->rows(3),
                         
@@ -274,7 +267,7 @@ Forms\Components\TextInput::make('website')
                     ->nullable(),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()->label('Visualizar'),
+                Tables\Actions\ViewAction::make()->label('Visualizar')->url(null)->modalWidth('4xl'),
                 Tables\Actions\EditAction::make()->label('Editar'),
             ])
             ->bulkActions([
@@ -311,7 +304,7 @@ Forms\Components\TextInput::make('website')
                 Infolists\Components\TextEntry::make('information.orcid_url')->label('ORCID')->copyable(),
                 Infolists\Components\TextEntry::make('information.linkedin_url')->label('LinkedIn')->copyable(),
                 Infolists\Components\TextEntry::make('information.minibio')->label('Minibio')->columnSpanFull()->copyable(),
-                Infolists\Components\TextEntry::make('information.description')->label('Descrição')->columnSpanFull()->copyable(),
+                Infolists\Components\TextEntry::make('information.description')->label('Currículo Completo')->columnSpanFull()->copyable(),
             ]),
         ]);
     }

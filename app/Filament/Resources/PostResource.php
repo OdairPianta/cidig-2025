@@ -49,16 +49,44 @@ Forms\Components\TextInput::make('title')
                             ->validationMessages([
                                 'unique' => 'Já existe uma postagem com este endereço.',
                             ]),
-Forms\Components\RichEditor::make('content')
-    ->label('Conteúdo')
+Forms\Components\Tabs::make('Conteúdo')
     ->columnSpanFull()
-    ->required()
-    ->validationMessages([
-        'required' => 'O conteúdo do post é obrigatório.',
+    ->tabs([
+        Forms\Components\Tabs\Tab::make('Escrever')
+            ->icon('heroicon-o-pencil-square')
+            ->schema([
+                Forms\Components\MarkdownEditor::make('content')
+                    ->label('Conteúdo')
+                    ->helperText('Escreva em Markdown (títulos com #, **negrito**, [texto](link), ![descrição](endereço da imagem)). Para incorporar um vídeo, cole o código <iframe> do YouTube ou do Vimeo. Veja o resultado na aba "Pré-visualizar".')
+                    ->minHeight('24rem')
+                    ->toolbarButtons(['bold', 'italic', 'strike', 'link', 'heading', 'bulletList', 'orderedList', 'blockquote', 'codeBlock', 'attachFiles', 'undo', 'redo'])
+                    ->fileAttachmentsDisk(\App\Support\Uploads::disk())
+                    ->fileAttachmentsDirectory('posts/body')
+                    ->fileAttachmentsVisibility('public')
+                    ->live(onBlur: true)
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'O conteúdo do post é obrigatório.',
+                    ]),
+            ]),
+        Forms\Components\Tabs\Tab::make('Pré-visualizar')
+            ->icon('heroicon-o-eye')
+            ->schema([
+                Forms\Components\Placeholder::make('preview')
+                    ->hiddenLabel()
+                    ->content(fn (Forms\Get $get) => new \Illuminate\Support\HtmlString(
+                        '<div class="prose max-w-none dark:prose-invert">' .
+                        (filled($get('content')) ? Post::renderContent($get('content')) : '<p><em>Nada para mostrar ainda. Escreva o texto na aba "Escrever".</em></p>') .
+                        '</div>'
+                    )),
+            ]),
     ]),
 Forms\Components\FileUpload::make('image_url')
     ->label('Imagem Destacada')
     ->helperText('Tamanho recomendado: 1200 x 630 px (proporção 1,91:1), JPG, PNG ou WebP, até 10 MB. A imagem é exibida com altura máxima de 400 px, sem distorção.')
+    ->image()
+    ->imageEditor()
+    ->imageEditorAspectRatios(['1.91:1', '16:9', '4:3'])
     ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/gif', 'image/webp', 'image/bmp'])
     ->disk(\App\Support\Uploads::disk())
     ->directory('posts')
@@ -87,9 +115,17 @@ Forms\Components\FileUpload::make('image_url')
                                 ->validationMessages([
         'required' => 'O autor do post é obrigatório.',
     ]),
+                        Forms\Components\TagsInput::make('author_names')
+                            ->label('Autoria (opcional)')
+                            ->helperText('Para dar crédito a mais de uma pessoa. Digite o nome e pressione Enter (ou ";") para confirmar cada autor; nomes já cadastrados aparecem como sugestão.')
+                            ->placeholder('Nome do autor')
+                            ->splitKeys([';'])
+                            ->suggestions(fn () => \App\Models\Author::query()->orderBy('name')->limit(200)->pluck('name')->all())
+                            ->dehydrated(false)
+                            ->columnSpanFull(),
                         Forms\Components\DateTimePicker::make('published_at')
                             ->label('Data de Publicação')
-                            ->helperText('Deixe vazio para usar a data atual'),
+                            ->helperText('Deixe vazio para usar a data atual. Uma data futura agenda a publicação: o post só aparece no site a partir dela.'),
                     ]),
             ]);
     }
@@ -109,26 +145,18 @@ Forms\Components\FileUpload::make('image_url')
                     ->label('Autor')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Criado em')
-                    ->dateTime()
-                    ->sortable(),
                 Tables\Columns\IconColumn::make('is_published')
                     ->label('Status')
                     ->icon(fn (Post $record) => $record->is_published ? 'heroicon-o-check-circle' : 'heroicon-o-pencil')
                     ->color(fn (Post $record) => $record->is_published ? 'success' : 'warning')
                     ->tooltip(fn (Post $record) => $record->is_published ? 'Publicado' : 'Rascunho'),
-                Tables\Columns\TextColumn::make('published_at')
-                    ->label('Publicado em')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(),
                 Tables\Columns\TextColumn::make('archived_at')
                     ->label('Arquivado em')
                     ->dateTime()
                     ->placeholder('—')
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('published_at', 'desc')
             ->filters([
                 Tables\Filters\TernaryFilter::make('archived')
                     ->label('Arquivadas')
@@ -154,7 +182,7 @@ Forms\Components\FileUpload::make('image_url')
                     ->searchable(),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()->label('Visualizar'),
+                Tables\Actions\ViewAction::make()->label('Visualizar')->url(null)->modalWidth('4xl'),
                 Tables\Actions\EditAction::make()->label('Editar'),
                 Tables\Actions\Action::make('publicView')
                     ->label('Ver no site')

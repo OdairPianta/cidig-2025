@@ -222,7 +222,7 @@ it('saves the copyright field of a content', function () {
 
     Livewire::test(\App\Filament\Resources\ResourceResource\Pages\CreateResource::class)
         ->fillForm([
-            'subject_id' => $subject->id, 'format_id' => 1, 'tags' => [$tag->id], 'title' => 'T', 'description' => 'D',
+            'subject_id' => $subject->id, 'format_id' => 1, 'tag_names' => [$tag->name], 'title' => 'T', 'description' => 'D',
             'source' => 'https://example.com', 'authors' => [$author->id], 'publisher' => 'P', 'language' => 'pt', 'copy_rights' => 'CC-BY',
         ])
         ->call('create')
@@ -300,4 +300,78 @@ it('splits free-text author fields into individual names', function () {
         ->and($parse('Herton Escobar(Texto) e Cleber Siquette (Diagramação)'))->toBe(['Herton Escobar', 'Cleber Siquette'])
         ->and($parse('Dominguez, Guilherme D.F.'))->toBe(['Guilherme D.F. Dominguez'])
         ->and($parse('Controladoria-Geral da União - CGU'))->toBe(['Controladoria-Geral da União - CGU']);
+});
+
+it('stores partner contact details and shows them in the view', function () {
+    Livewire::test(\App\Filament\Resources\SponsorResource\Pages\CreateSponsor::class)
+        ->fillForm([
+            'name' => 'Instituto Exemplo',
+            'logos' => [],
+            'contact_name' => 'Ana Souza',
+            'email' => 'ana@exemplo.org',
+            'landline' => '(11) 3333-4444',
+            'mobile' => '(11) 99999-8888',
+            'address' => 'Rua A, 10 - São Paulo/SP',
+        ])
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    $sponsor = Sponsor::where('name', 'Instituto Exemplo')->first();
+    expect($sponsor->contact_name)->toBe('Ana Souza')
+        ->and($sponsor->email)->toBe('ana@exemplo.org')
+        ->and($sponsor->address)->toBe('Rua A, 10 - São Paulo/SP');
+
+    Livewire::test(ViewSponsor::class, ['record' => $sponsor->getRouteKey()])->assertSee('ana@exemplo.org');
+});
+
+it('treats an inactive research line as a draft and requires full data once active', function () {
+    $responsible = User::factory()->create();
+
+    Livewire::test(\App\Filament\Resources\SubjectResource\Pages\CreateSubject::class)
+        ->fillForm(['name' => 'Rascunho', 'is_active' => false, 'users' => [$responsible->id]])
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    expect(Subject::where('name', 'Rascunho')->first()->users->pluck('id')->all())->toBe([$responsible->id]);
+
+    Livewire::test(\App\Filament\Resources\SubjectResource\Pages\CreateSubject::class)
+        ->fillForm(['name' => 'Publicada', 'is_active' => true])
+        ->call('create')
+        ->assertHasFormErrors(['description' => 'required', 'image' => 'required', 'background-image' => 'required']);
+});
+
+it('keeps save at the top of edit pages and delete at the bottom', function () {
+    $sponsor = Sponsor::create(['name' => 'Parceiro']);
+
+    $component = Livewire::test(\App\Filament\Resources\SponsorResource\Pages\EditSponsor::class, ['record' => $sponsor->getRouteKey()]);
+
+    $header = collect($component->instance()->getCachedHeaderActions())->map->getName()->all();
+    $footer = collect($component->instance()->getCachedFormActions())->map->getName()->all();
+    expect($header)->toBe(['saveTop'])
+        ->and($footer)->toBe(['save', 'cancel', 'delete']);
+
+    $component->callAction('delete')->assertSuccessful();
+    expect(Sponsor::find($sponsor->id))->toBeNull();
+});
+
+it('creates tags typed with Enter and reuses existing ones regardless of case', function () {
+    $existing = Tag::create(['name' => 'Cidadania Digital', 'is_active' => true]);
+
+    Livewire::test(\App\Filament\Resources\SubjectResource\Pages\CreateSubject::class)
+        ->fillForm(['name' => 'Rascunho de tags', 'is_active' => false, 'tag_names' => ['cidadania digital', 'Netivismo']])
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    $subject = Subject::where('name', 'Rascunho de tags')->first();
+    expect($subject->tags->pluck('name')->sort()->values()->all())->toBe(['Cidadania Digital', 'Netivismo'])
+        ->and(Tag::where('name', 'like', 'cidadania digital')->count())->toBe(1)
+        ->and($subject->tags->contains($existing))->toBeTrue();
+});
+
+it('shows the current tags when editing', function () {
+    $subject = Subject::create(['name' => 'S', 'slug' => 's', 'is_active' => false]);
+    $subject->tags()->attach(Tag::create(['name' => 'Redes', 'is_active' => true]));
+
+    Livewire::test(\App\Filament\Resources\SubjectResource\Pages\EditSubject::class, ['record' => $subject->getRouteKey()])
+        ->assertFormSet(['tag_names' => ['Redes']]);
 });

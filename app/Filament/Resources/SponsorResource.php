@@ -20,9 +20,9 @@ class SponsorResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    protected static ?string $modelLabel = 'Patrocinador';
+    protected static ?string $modelLabel = 'Parceiro';
 
-    protected static ?string $pluralModelLabel = 'Patrocinadores';
+    protected static ?string $pluralModelLabel = 'Parceiros';
 
     protected static ?string $navigationGroup = 'Conteúdos';
 
@@ -30,17 +30,47 @@ class SponsorResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Informações do Patrocinador')
+                Forms\Components\Section::make('Informações do Parceiro')
                     ->schema([
                         Forms\Components\TextInput::make('name')
                             ->label('Nome')
                             ->required()
                             ->maxLength(255)
                             ->validationMessages([
-                                'required' => 'O nome do patrocinador é obrigatório.',
+                                'required' => 'O nome do parceiro é obrigatório.',
                                 'max' => 'O nome não pode ter mais que 255 caracteres.',
                             ]),
                         
+                    ])
+                    ->columns(1),
+
+                Forms\Components\Section::make('Contato')
+                    ->description('Dados institucionais do parceiro. Não registre dados sensíveis, como o CNPJ.')
+                    ->columns(2)
+                    ->schema([
+                        Forms\Components\TextInput::make('contact_name')
+                            ->label('Contato institucional / representante')
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('email')
+                            ->label('E-mail')
+                            ->email()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('landline')
+                            ->label('Telefone fixo')
+                            ->tel()
+                            ->maxLength(30),
+                        Forms\Components\TextInput::make('mobile')
+                            ->label('Celular')
+                            ->tel()
+                            ->maxLength(30),
+                        Forms\Components\Textarea::make('address')
+                            ->label('Endereço completo')
+                            ->rows(2)
+                            ->columnSpanFull(),
+                    ]),
+
+                Forms\Components\Section::make('Logos')
+                    ->schema([
                         Forms\Components\Repeater::make('logos')
                             ->label('Logos')
                             ->relationship('logos')
@@ -48,7 +78,7 @@ class SponsorResource extends Resource
                             ->addActionLabel('Adicionar versão do logo')
                             ->reorderable(false)
                             ->collapsible()
-                            ->itemLabel(fn (array $state): ?string => ($state['label'] ?? null) ?: 'Logo')
+                            ->itemLabel(fn (array $state): ?string => ((($state['label'] ?? null) ?: 'Logo') . (($state['is_active'] ?? false) ? '  ★ em uso' : '')))
                             ->columns(2)
                             ->schema([
                                 Forms\Components\TextInput::make('label')
@@ -77,7 +107,7 @@ class SponsorResource extends Resource
                                     ->label('Arquivo')
                                     ->required()
                                     ->image()
-                                    ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/gif', 'image/webp', 'image/bmp'])
+                                    ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/gif', 'image/webp', 'image/bmp', 'image/svg+xml'])
                                     ->disk(\App\Support\Uploads::disk())
                                     ->directory('sponsors')
                                     ->visibility('public')
@@ -106,21 +136,13 @@ class SponsorResource extends Resource
                     ->searchable()
                     ->toggleable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Criado em')
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Atualizado em')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggledHiddenByDefault(),
             ])
+            ->defaultSort('name')
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()->label('Visualizar'),
+                Tables\Actions\ViewAction::make()->label('Visualizar')->url(null)->modalWidth('4xl'),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
@@ -141,14 +163,21 @@ class SponsorResource extends Resource
     public static function infolist(\Filament\Infolists\Infolist $infolist): \Filament\Infolists\Infolist
     {
         return $infolist->schema([
-            Infolists\Components\Section::make('Patrocinador')->columns(2)->schema([
+            Infolists\Components\Section::make('Parceiro')->columns(2)->schema([
                 Infolists\Components\TextEntry::make('name')->label('Nome')->copyable(),
+                Infolists\Components\TextEntry::make('contact_name')->label('Contato institucional')->copyable()->placeholder('—'),
+                Infolists\Components\TextEntry::make('email')->label('E-mail')->copyable()->placeholder('—'),
+                Infolists\Components\TextEntry::make('landline')->label('Telefone fixo')->copyable()->placeholder('—'),
+                Infolists\Components\TextEntry::make('mobile')->label('Celular')->copyable()->placeholder('—'),
+                Infolists\Components\TextEntry::make('address')->label('Endereço')->copyable()->placeholder('—')->columnSpanFull(),
                 Infolists\Components\ImageEntry::make('image')->label('Logo em uso')->disk(\App\Support\Uploads::disk()),
                 Infolists\Components\RepeatableEntry::make('logos')->label('Versões do logo')->columnSpanFull()->schema([
                     Infolists\Components\ImageEntry::make('url')->label('')->height(60),
                     Infolists\Components\TextEntry::make('label')->label('Descrição')->placeholder('—'),
                     Infolists\Components\IconEntry::make('is_active')->label('Em uso')->boolean(),
                 ])->columns(3),
+                Infolists\Components\TextEntry::make('created_at')->label('Criado em')->dateTime('d/m/Y H:i'),
+                Infolists\Components\TextEntry::make('updated_at')->label('Atualizado em')->dateTime('d/m/Y H:i'),
             ]),
         ]);
     }

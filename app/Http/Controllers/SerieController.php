@@ -29,8 +29,8 @@ class SerieController extends Controller
         $videosArray = $videos->map(function($video) {
             return [
                 'id' => $video->video_id,
-                'title' => $video->title,
-                'description' => $video->description,
+                'title' => $video->pivot->title ?: $video->title,
+                'description' => $video->pivot->description ?: $video->description,
             ];
         })->toArray();
         
@@ -84,8 +84,8 @@ class SerieController extends Controller
         $videosArray = $videos->map(function($video) {
             return [
                 'id' => $video->video_id,
-                'title' => $video->title,
-                'description' => $video->description,
+                'title' => $video->pivot->title ?: $video->title,
+                'description' => $video->pivot->description ?: $video->description,
             ];
         })->toArray();
         
@@ -106,9 +106,9 @@ class SerieController extends Controller
             'title' => $serie->title,
             'description' => $serie->description,
             'background-image' => $serie->background_image,
-            'background-img' => $serie->background_img,
+            'background-img' => $serie->background_image,
             'background-credit' => $serie->background_credit,
-            'thumbnail' => $serie->thumbnail_novo ?? $serie->thumbnail,
+            'thumbnail' => $serie->thumbnail,
             'videos' => $videosArray,
             'researchers' => $researchers,
             'subjects' => [],

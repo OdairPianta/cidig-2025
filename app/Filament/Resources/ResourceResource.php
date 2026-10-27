@@ -22,9 +22,9 @@ class ResourceResource extends FilamentResourceBase
 
     protected static ?string $navigationIcon = 'heroicon-o-document-duplicate';
 
-    protected static ?string $modelLabel = 'Conteúdo de Verbete';
+    protected static ?string $modelLabel = 'Conteúdo de Linha de Pesquisa';
 
-    protected static ?string $pluralModelLabel = 'Conteúdos de Verbetes';
+    protected static ?string $pluralModelLabel = 'Conteúdos de Linhas de Pesquisa';
 
     protected static ?string $navigationGroup = 'Conteúdos';
 
@@ -46,7 +46,7 @@ class ResourceResource extends FilamentResourceBase
         ? \App\Models\Subject::query()->orderBy('name')->pluck('name', 'id')
         : auth()->user()->subjects()->orderBy('name')->pluck('name', 'id'))
     ->searchable()
-    ->helperText('Verbete ao qual este conteúdo pertence. Para criar um novo verbete, use o menu "Verbetes".')
+    ->helperText('Linha de pesquisa à qual este conteúdo pertence. Para criar uma nova linha de pesquisa, use o menu "Linhas de Pesquisa".')
     ->required()
     ->validationMessages([
         'required' => 'O assunto é obrigatório.',
@@ -57,21 +57,7 @@ class ResourceResource extends FilamentResourceBase
                             ->options(ResourceModel::FORMAT_TYPES)
                             ->columns()
                             ->required(),
-                        Forms\Components\Select::make('tags')
-                            ->label('Relações (Tags Relacionadas)')
-                            ->placeholder('Selecione as tags relacionadas')
-                            ->relationship('tags', 'name', fn ($query) => $query->isActive()->orderBy('name'))
-                            ->helperText('Digite para buscar ou criar uma tag (Enter). Tags repetidas são reaproveitadas automaticamente.')
-                            ->multiple()
-                            ->searchable()
-                            ->preload()
-                            ->createOptionForm([
-                                Forms\Components\TextInput::make('name')
-                                    ->label('Nova tag')
-                                    ->required()
-                                    ->maxLength(255),
-                            ])
-                            ->createOptionUsing(fn (array $data) => Tag::findOrCreate(['name' => $data['name'], 'is_active' => true])->getKey())
+                        \App\Filament\Support\TagNames::make('Relações (Tags Relacionadas)')
                             ->columns()
                             ->required(),
 Forms\Components\TextInput::make('title')
@@ -177,17 +163,13 @@ Forms\Components\TextInput::make('language')
                     ->searchable()
                     ->toggleable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Criado em')
-                    ->description(fn (ResourceModel $record) => 'por ' . $record->user->name)
-                    ->dateTime()
-                    ->sortable(),
                 Tables\Columns\IconColumn::make('id')
                     ->label('Status')
                     ->icon(fn (ResourceModel $record) => $record->published_at ? 'heroicon-o-check-circle' : 'heroicon-o-pencil')
                     ->color(fn (ResourceModel $record) => $record->published_at ? 'success' : 'warning')
                     ->tooltip(fn (ResourceModel $record) => $record->published_at ? 'Publicado' : 'Rasgunho'),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TernaryFilter::make('published_at')
                     ->label('Publicado')
@@ -203,7 +185,7 @@ Forms\Components\TextInput::make('language')
                     ->searchable(),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()->label('Visualizar'),
+                Tables\Actions\ViewAction::make()->label('Visualizar')->url(null)->modalWidth('4xl'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -226,7 +208,7 @@ Forms\Components\TextInput::make('language')
         return $infolist->schema([
             Infolists\Components\Section::make('Conteúdo')->columns(2)->schema([
                 Infolists\Components\TextEntry::make('title')->label('Título')->copyable()->columnSpanFull(),
-                Infolists\Components\TextEntry::make('subject.name')->label('Verbete')->copyable(),
+                Infolists\Components\TextEntry::make('subject.name')->label('Linha de Pesquisa')->copyable(),
                 Infolists\Components\TextEntry::make('format_id')->label('Tipo de conteúdo')
                     ->formatStateUsing(fn ($state) => ResourceModel::FORMAT_TYPES[$state] ?? '—'),
                 Infolists\Components\TextEntry::make('tags.name')->label('Tags')->badge()->placeholder('—'),

@@ -10,9 +10,11 @@ use Illuminate\Support\Facades\Storage;
 
 class EditResource extends EditRecord
 {
+    use \App\Filament\Resources\Concerns\DeleteAtBottom;
+
     protected static string $resource = ResourceResource::class;
 
-    protected function getHeaderActions(): array
+    protected function getBottomDeleteActions(): array
     {
         return [
             Actions\DeleteAction::make(),

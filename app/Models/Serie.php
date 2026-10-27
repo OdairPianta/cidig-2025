@@ -14,9 +14,7 @@ class Serie extends Model
         'title',
         'description',
         'thumbnail',
-        'thumbnail_novo',
         'background_image',
-        'background_img',
         'background_credit',
         'is_active',
     ];
@@ -32,7 +30,11 @@ class Serie extends Model
 
     public function videos()
     {
-        return $this->belongsToMany(Video::class, 'series_videos', 'serie_id', 'video_id');
+        return $this->belongsToMany(Video::class, 'series_videos', 'serie_id', 'video_id')
+            ->withPivot(['title', 'description', 'position'])
+            ->withTimestamps()
+            ->orderBy('series_videos.position')
+            ->orderBy('series_videos.created_at');
     }
 
     public function addVideo(int $videoId)
