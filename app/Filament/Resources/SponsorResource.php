@@ -37,10 +37,40 @@ class SponsorResource extends Resource
                             ->required()
                             ->maxLength(255)
                             ->validationMessages([
-                                'required' => 'O nome do patrocinador é obrigatório.',
+                                'required' => 'O nome do parceiro é obrigatório.',
                                 'max' => 'O nome não pode ter mais que 255 caracteres.',
                             ]),
                         
+                    ])
+                    ->columns(1),
+
+                Forms\Components\Section::make('Contato')
+                    ->description('Dados institucionais do parceiro. Não registre dados sensíveis, como o CNPJ.')
+                    ->columns(2)
+                    ->schema([
+                        Forms\Components\TextInput::make('contact_name')
+                            ->label('Contato institucional / representante')
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('email')
+                            ->label('E-mail')
+                            ->email()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('landline')
+                            ->label('Telefone fixo')
+                            ->tel()
+                            ->maxLength(30),
+                        Forms\Components\TextInput::make('mobile')
+                            ->label('Celular')
+                            ->tel()
+                            ->maxLength(30),
+                        Forms\Components\Textarea::make('address')
+                            ->label('Endereço completo')
+                            ->rows(2)
+                            ->columnSpanFull(),
+                    ]),
+
+                Forms\Components\Section::make('Logos')
+                    ->schema([
                         Forms\Components\Repeater::make('logos')
                             ->label('Logos')
                             ->relationship('logos')
@@ -48,7 +78,7 @@ class SponsorResource extends Resource
                             ->addActionLabel('Adicionar versão do logo')
                             ->reorderable(false)
                             ->collapsible()
-                            ->itemLabel(fn (array $state): ?string => ($state['label'] ?? null) ?: 'Logo')
+                            ->itemLabel(fn (array $state): ?string => ((($state['label'] ?? null) ?: 'Logo') . (($state['is_active'] ?? false) ? '  ★ em uso' : '')))
                             ->columns(2)
                             ->schema([
                                 Forms\Components\TextInput::make('label')
@@ -77,7 +107,7 @@ class SponsorResource extends Resource
                                     ->label('Arquivo')
                                     ->required()
                                     ->image()
-                                    ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/gif', 'image/webp', 'image/bmp'])
+                                    ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/gif', 'image/webp', 'image/bmp', 'image/svg+xml'])
                                     ->disk(\App\Support\Uploads::disk())
                                     ->directory('sponsors')
                                     ->visibility('public')
@@ -135,6 +165,11 @@ class SponsorResource extends Resource
         return $infolist->schema([
             Infolists\Components\Section::make('Parceiro')->columns(2)->schema([
                 Infolists\Components\TextEntry::make('name')->label('Nome')->copyable(),
+                Infolists\Components\TextEntry::make('contact_name')->label('Contato institucional')->copyable()->placeholder('—'),
+                Infolists\Components\TextEntry::make('email')->label('E-mail')->copyable()->placeholder('—'),
+                Infolists\Components\TextEntry::make('landline')->label('Telefone fixo')->copyable()->placeholder('—'),
+                Infolists\Components\TextEntry::make('mobile')->label('Celular')->copyable()->placeholder('—'),
+                Infolists\Components\TextEntry::make('address')->label('Endereço')->copyable()->placeholder('—')->columnSpanFull(),
                 Infolists\Components\ImageEntry::make('image')->label('Logo em uso')->disk(\App\Support\Uploads::disk()),
                 Infolists\Components\RepeatableEntry::make('logos')->label('Versões do logo')->columnSpanFull()->schema([
                     Infolists\Components\ImageEntry::make('url')->label('')->height(60),
