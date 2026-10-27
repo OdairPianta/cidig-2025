@@ -20,9 +20,9 @@ class UniversityResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
 
-    protected static ?string $modelLabel = 'Universidade';
+    protected static ?string $modelLabel = 'Instituição';
 
-    protected static ?string $pluralModelLabel = 'Universidades';
+    protected static ?string $pluralModelLabel = 'Instituições';
 
     protected static ?string $navigationGroup = 'Conteúdos';
 
@@ -56,7 +56,7 @@ class UniversityResource extends Resource
                     ]),
                 Forms\Components\TagsInput::make('aliases')
                     ->label('Nomes alternativos')
-                    ->helperText('Outros nomes ou idiomas, ex.: "Politecnico di Torino" para "Universidade Politécnica de Turim". Pressione Enter após cada nome.'),
+                    ->helperText('Outros nomes ou idiomas, ex.: "Politecnico di Torino" para "Instituição Politécnica de Turim". Pressione Enter após cada nome.'),
                 Forms\Components\Checkbox::make('is_active')
                     ->label('Ativo')
                     ->default(true),

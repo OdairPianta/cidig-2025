@@ -10,6 +10,7 @@ use App\Models\University;
 class EditProfile extends BaseEditProfile
 {
     private const ROLES = [
+        "professor" => "Professor",
         "researcher" => "Pesquisador",
         "designer" => "Designer",
         "coordinator" => "Coordenador",
@@ -61,7 +62,7 @@ class EditProfile extends BaseEditProfile
                     ->rows(3),
                     
                 Forms\Components\Textarea::make('description')
-                    ->label('Descrição')
+                    ->label('Currículo Completo')
                     ->rows(3),
                 
 Forms\Components\Select::make('roles')

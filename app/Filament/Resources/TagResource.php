@@ -61,7 +61,7 @@ Forms\Components\TextInput::make('name')
                     ->label('Conteúdos')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('subjects_count')
-                    ->label('Verbetes')
+                    ->label('Linhas de Pesquisa')
                     ->sortable(),
                 Tables\Columns\CheckboxColumn::make('is_active')
                     ->label('Ativo')
@@ -87,7 +87,7 @@ Forms\Components\TextInput::make('name')
                         ->label('Mesclar tags selecionadas')
                         ->icon('heroicon-o-arrows-pointing-in')
                         ->requiresConfirmation()
-                        ->modalDescription('Os conteúdos, verbetes e séries das demais tags passarão para a tag escolhida, e as demais serão removidas.')
+                        ->modalDescription('Os conteúdos, linhas de pesquisa e séries das demais tags passarão para a tag escolhida, e as demais serão removidas.')
                         ->form(fn (\Illuminate\Support\Collection $records) => [
                             Forms\Components\Select::make('keep_id')
                                 ->label('Manter a tag')

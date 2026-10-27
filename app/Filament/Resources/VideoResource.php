@@ -85,8 +85,8 @@ Forms\Components\TextInput::make('source_year')
                 Forms\Components\Section::make('Uso na plataforma')
                     ->schema([
                         Forms\Components\Select::make('subject_id')
-                            ->label('Verbete')
-                            ->placeholder('Selecione um verbete')
+                            ->label('Linha de Pesquisa')
+                            ->placeholder('Selecione uma linha de pesquisa')
                             ->relationship('subject', 'name')
                             ->searchable()
                             ->preload(),
@@ -151,7 +151,7 @@ Forms\Components\TextInput::make('title')
                     ->limit(30),
 
                 Tables\Columns\TextColumn::make('subject.name')
-                    ->label('Verbete')
+                    ->label('Linha de Pesquisa')
                     ->placeholder('—')
                     ->limit(30),
                 
@@ -207,7 +207,7 @@ Forms\Components\TextInput::make('title')
                             ->url(fn (Video $record) => "https://www.youtube.com/watch?v={$record->video_id}", true)
                             ->copyable(),
                         Infolists\Components\TextEntry::make('description')->label('Descrição na plataforma')->copyable()->placeholder('—'),
-                        Infolists\Components\TextEntry::make('subject.name')->label('Verbete')->placeholder('—'),
+                        Infolists\Components\TextEntry::make('subject.name')->label('Linha de Pesquisa')->placeholder('—'),
                         Infolists\Components\TextEntry::make('users.name')->label('Professores/pesquisadores')->badge()->placeholder('—'),
                         Infolists\Components\TextEntry::make('createdBy.name')->label('Cadastrado por')->placeholder('—'),
                         Infolists\Components\IconEntry::make('is_featured')->label('Em destaque')->boolean(),
