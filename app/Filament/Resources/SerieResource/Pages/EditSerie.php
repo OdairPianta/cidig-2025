@@ -10,6 +10,13 @@ class EditSerie extends EditRecord
 {
     protected static string $resource = SerieResource::class;
 
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        $data['episodes'] = SerieResource::episodesFor($this->record);
+
+        return $data;
+    }
+
     protected function getHeaderActions(): array
     {
         return [
