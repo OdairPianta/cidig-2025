@@ -45,16 +45,27 @@ Forms\Components\TextInput::make('name')
                             ->alphaDash()
                             ->validationMessages(['unique' => 'Já existe uma linha de pesquisa com este endereço.']),
                         Forms\Components\Checkbox::make('is_active')
-                            ->label('Ativo'),
+                            ->label('Ativo')
+                            ->helperText('Desmarcado, a linha de pesquisa é um rascunho e os campos abaixo são opcionais. Ativa, exige descrição, miniatura e imagem de fundo.')
+                            ->live(),
 Forms\Components\Textarea::make('description')
     ->label('Descrição')
     ->rows(5)
     ->autosize()
     ->columnSpanFull()
-    ->required()
+    ->required(fn (Forms\Get $get): bool => (bool) $get('is_active'))
     ->validationMessages([
-        'required' => 'A descrição é obrigatória.',
+        'required' => 'Linhas de pesquisa ativas precisam de uma descrição.',
     ]),
+                        Forms\Components\Select::make('users')
+                            ->label('Responsáveis')
+                            ->relationship('users', 'name')
+                            ->multiple()
+                            ->searchable()
+                            ->preload()
+                            ->columnSpanFull()
+                            ->helperText(new \Illuminate\Support\HtmlString('Professores ou pesquisadores responsáveis. Ainda não está cadastrado? <a href="' . e(UserResource::getUrl('create')) . '" target="_blank" class="underline">Cadastre o perfil em uma nova aba</a> e volte aqui sem perder o que já preencheu.'))
+                            ->noSearchResultsMessage(new \Illuminate\Support\HtmlString('Esse nome ainda não está cadastrado na plataforma. <a href="' . e(UserResource::getUrl('create')) . '" target="_blank" class="underline">Deseja incluí-lo?</a>')),
                     ])
                     ->columns(2),
 
@@ -79,8 +90,14 @@ Forms\Components\Textarea::make('description')
                 Forms\Components\Section::make('Imagens')
                     ->schema([
                         Forms\Components\FileUpload::make('image')
-                            ->label('Imagem')
+                            ->label('Miniatura')
+                            ->helperText('Tamanho recomendado: 1280 x 720 px (16:9), JPG ou PNG, até 10 MB. Use o editor para recortar.')
                             ->image()
+                            ->imageEditor()
+                            ->imageEditorAspectRatios(['16:9', '4:3', '1:1'])
+                            ->disk(\App\Support\Uploads::disk())
+                            ->required(fn (Forms\Get $get): bool => (bool) $get('is_active'))
+                            ->validationMessages(['required' => 'Linhas de pesquisa ativas precisam de uma miniatura.'])
                             ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/gif', 'image/webp', 'image/bmp'])
                             ->directory('images/team')
                             ->visibility('public')
@@ -89,7 +106,13 @@ Forms\Components\Textarea::make('description')
                             ->openable(),
                         Forms\Components\FileUpload::make('background-image')
                             ->label('Imagem de Fundo')
+                            ->helperText('Tamanho recomendado: 1920 x 1080 px (16:9), JPG ou PNG, até 10 MB. Use o editor para recortar.')
                             ->image()
+                            ->imageEditor()
+                            ->imageEditorAspectRatios(['16:9', '4:3'])
+                            ->disk(\App\Support\Uploads::disk())
+                            ->required(fn (Forms\Get $get): bool => (bool) $get('is_active'))
+                            ->validationMessages(['required' => 'Linhas de pesquisa ativas precisam de uma imagem de fundo.'])
                             ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/gif', 'image/webp', 'image/bmp'])
                             ->directory('images/team')
                             ->visibility('public')

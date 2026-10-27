@@ -323,3 +323,19 @@ it('stores partner contact details and shows them in the view', function () {
 
     Livewire::test(ViewSponsor::class, ['record' => $sponsor->getRouteKey()])->assertSee('ana@exemplo.org');
 });
+
+it('treats an inactive research line as a draft and requires full data once active', function () {
+    $responsible = User::factory()->create();
+
+    Livewire::test(\App\Filament\Resources\SubjectResource\Pages\CreateSubject::class)
+        ->fillForm(['name' => 'Rascunho', 'is_active' => false, 'users' => [$responsible->id]])
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    expect(Subject::where('name', 'Rascunho')->first()->users->pluck('id')->all())->toBe([$responsible->id]);
+
+    Livewire::test(\App\Filament\Resources\SubjectResource\Pages\CreateSubject::class)
+        ->fillForm(['name' => 'Publicada', 'is_active' => true])
+        ->call('create')
+        ->assertHasFormErrors(['description' => 'required', 'image' => 'required', 'background-image' => 'required']);
+});
