@@ -149,14 +149,6 @@ Forms\Components\Textarea::make('description')
                     ->limit(30)
                     ->tooltip(fn ($record) => $record->video?->title)
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Criado em')
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Atualizado em')
-                    ->dateTime()
-                    ->sortable(),
                 Tables\Columns\IconColumn::make('is_active')
                     ->label('Ativo')
                     ->boolean()
@@ -227,6 +219,8 @@ Tables\Actions\ViewAction::make()->label('Visualizar'),
                 Infolists\Components\TextEntry::make('description')->label('Descrição')->columnSpanFull()->copyable(),
                 Infolists\Components\ImageEntry::make('image')->label('Imagem')->disk(\App\Support\Uploads::disk()),
                 Infolists\Components\TextEntry::make('background-credit')->label('Crédito da imagem de fundo')->copyable(),
+                Infolists\Components\TextEntry::make('created_at')->label('Criado em')->dateTime('d/m/Y H:i'),
+                Infolists\Components\TextEntry::make('updated_at')->label('Atualizado em')->dateTime('d/m/Y H:i'),
             ]),
         ]);
     }

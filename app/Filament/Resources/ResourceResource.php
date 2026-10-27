@@ -177,17 +177,13 @@ Forms\Components\TextInput::make('language')
                     ->searchable()
                     ->toggleable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Criado em')
-                    ->description(fn (ResourceModel $record) => 'por ' . $record->user->name)
-                    ->dateTime()
-                    ->sortable(),
                 Tables\Columns\IconColumn::make('id')
                     ->label('Status')
                     ->icon(fn (ResourceModel $record) => $record->published_at ? 'heroicon-o-check-circle' : 'heroicon-o-pencil')
                     ->color(fn (ResourceModel $record) => $record->published_at ? 'success' : 'warning')
                     ->tooltip(fn (ResourceModel $record) => $record->published_at ? 'Publicado' : 'Rasgunho'),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\TernaryFilter::make('published_at')
                     ->label('Publicado')
