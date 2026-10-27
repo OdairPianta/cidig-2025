@@ -57,21 +57,7 @@ class ResourceResource extends FilamentResourceBase
                             ->options(ResourceModel::FORMAT_TYPES)
                             ->columns()
                             ->required(),
-                        Forms\Components\Select::make('tags')
-                            ->label('Relações (Tags Relacionadas)')
-                            ->placeholder('Selecione as tags relacionadas')
-                            ->relationship('tags', 'name', fn ($query) => $query->isActive()->orderBy('name'))
-                            ->helperText('Digite para buscar ou criar uma tag (Enter). Tags repetidas são reaproveitadas automaticamente.')
-                            ->multiple()
-                            ->searchable()
-                            ->preload()
-                            ->createOptionForm([
-                                Forms\Components\TextInput::make('name')
-                                    ->label('Nova tag')
-                                    ->required()
-                                    ->maxLength(255),
-                            ])
-                            ->createOptionUsing(fn (array $data) => Tag::findOrCreate(['name' => $data['name'], 'is_active' => true])->getKey())
+                        \App\Filament\Support\TagNames::make('Relações (Tags Relacionadas)')
                             ->columns()
                             ->required(),
 Forms\Components\TextInput::make('title')
