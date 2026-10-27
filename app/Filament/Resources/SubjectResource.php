@@ -71,20 +71,7 @@ Forms\Components\Textarea::make('description')
 
                 Forms\Components\Section::make('Tags')
                     ->schema([
-                        Forms\Components\Select::make('tags')
-                            ->label('Tags da linha de pesquisa')
-                            ->relationship('tags', 'name', fn ($query) => $query->isActive()->orderBy('name'))
-                            ->helperText('Digite para buscar ou criar uma tag (Enter). Tags repetidas são reaproveitadas automaticamente.')
-                            ->multiple()
-                            ->searchable()
-                            ->preload()
-                            ->createOptionForm([
-                                Forms\Components\TextInput::make('name')
-                                    ->label('Nova tag')
-                                    ->required()
-                                    ->maxLength(255),
-                            ])
-                            ->createOptionUsing(fn (array $data) => Tag::findOrCreate(['name' => $data['name'], 'is_active' => true])->getKey()),
+                        \App\Filament\Support\TagNames::make('Tags da linha de pesquisa')
                     ]),
 
                 Forms\Components\Section::make('Imagens')

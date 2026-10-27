@@ -222,7 +222,7 @@ it('saves the copyright field of a content', function () {
 
     Livewire::test(\App\Filament\Resources\ResourceResource\Pages\CreateResource::class)
         ->fillForm([
-            'subject_id' => $subject->id, 'format_id' => 1, 'tags' => [$tag->id], 'title' => 'T', 'description' => 'D',
+            'subject_id' => $subject->id, 'format_id' => 1, 'tag_names' => [$tag->name], 'title' => 'T', 'description' => 'D',
             'source' => 'https://example.com', 'authors' => [$author->id], 'publisher' => 'P', 'language' => 'pt', 'copy_rights' => 'CC-BY',
         ])
         ->call('create')
@@ -352,4 +352,26 @@ it('keeps save at the top of edit pages and delete at the bottom', function () {
 
     $component->callAction('delete')->assertSuccessful();
     expect(Sponsor::find($sponsor->id))->toBeNull();
+});
+
+it('creates tags typed with Enter and reuses existing ones regardless of case', function () {
+    $existing = Tag::create(['name' => 'Cidadania Digital', 'is_active' => true]);
+
+    Livewire::test(\App\Filament\Resources\SubjectResource\Pages\CreateSubject::class)
+        ->fillForm(['name' => 'Rascunho de tags', 'is_active' => false, 'tag_names' => ['cidadania digital', 'Netivismo']])
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    $subject = Subject::where('name', 'Rascunho de tags')->first();
+    expect($subject->tags->pluck('name')->sort()->values()->all())->toBe(['Cidadania Digital', 'Netivismo'])
+        ->and(Tag::where('name', 'like', 'cidadania digital')->count())->toBe(1)
+        ->and($subject->tags->contains($existing))->toBeTrue();
+});
+
+it('shows the current tags when editing', function () {
+    $subject = Subject::create(['name' => 'S', 'slug' => 's', 'is_active' => false]);
+    $subject->tags()->attach(Tag::create(['name' => 'Redes', 'is_active' => true]));
+
+    Livewire::test(\App\Filament\Resources\SubjectResource\Pages\EditSubject::class, ['record' => $subject->getRouteKey()])
+        ->assertFormSet(['tag_names' => ['Redes']]);
 });
