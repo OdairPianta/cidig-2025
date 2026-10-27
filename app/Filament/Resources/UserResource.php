@@ -6,6 +6,7 @@ use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\Subject;
 use App\Models\User;
+use App\Support\ProfileLinks;
 use App\Models\University;
 use Filament\Forms;
 use Filament\Infolists;
@@ -102,6 +103,10 @@ Forms\Components\TextInput::make('password_confirmation')
                     ->columns(2)
                     ->collapsible()
                     ->schema([
+                        Forms\Components\TextInput::make('recovery_email')
+                            ->label('E-mail de recuperação')
+                            ->email()
+                            ->helperText('E-mail pessoal usado, além do e-mail de acesso, para recuperar a senha.'),
                         Forms\Components\Select::make('university_id')
                             ->label('Instituição')
                             ->placeholder('Selecione ou cadastre uma instituição')
@@ -131,24 +136,7 @@ Forms\Components\TextInput::make('password_confirmation')
                     ->columns(3)
                     ->collapsible()
                     ->schema([
-Forms\Components\TextInput::make('linkedin_url')
-    ->label('LinkedIn')
-    ->url()
-    ->validationMessages([
-        'url' => 'O LinkedIn deve ser uma URL válida.',
-    ]),
-Forms\Components\TextInput::make('lattes_url')
-    ->label('Lattes')
-    ->url()
-    ->validationMessages([
-        'url' => 'O Lattes deve ser uma URL válida.',
-    ]),
-Forms\Components\TextInput::make('orcid_url')
-    ->label('ORCID')
-    ->url()
-    ->validationMessages([
-        'url' => 'O ORCID deve ser uma URL válida.',
-    ]),
+...ProfileLinks::fields(),
                     ]),
                     
                 Forms\Components\Section::make('Biografia e Currículo')

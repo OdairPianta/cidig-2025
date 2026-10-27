@@ -6,6 +6,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Pages\Auth\EditProfile as BaseEditProfile;
 use App\Models\University;
+use App\Support\ProfileLinks;
 
 class EditProfile extends BaseEditProfile
 {
@@ -46,17 +47,14 @@ class EditProfile extends BaseEditProfile
                     ->columns(3)
                     ->collapsible()
                     ->schema([
-                        Forms\Components\TextInput::make('linkedin_url')
-                            ->label('LinkedIn')
-                            ->url(),
-                        Forms\Components\TextInput::make('lattes_url')
-                            ->label('Lattes')
-                            ->url(),
-                        Forms\Components\TextInput::make('orcid_url')
-                            ->label('ORCID')
-                            ->url(),
+                        ...ProfileLinks::fields(),
                     ]),
                     
+                Forms\Components\TextInput::make('recovery_email')
+                    ->label('E-mail de recuperação')
+                    ->email()
+                    ->helperText('E-mail pessoal usado, além do e-mail de acesso, para recuperar a senha.'),
+
                 Forms\Components\Textarea::make('minibio')
                     ->label('Mini Bio')
                     ->rows(3),
@@ -102,7 +100,7 @@ Forms\Components\TextInput::make('website')
     {
         $informationFields = [
             'university_id', 'picture_url', 'linkedin_url', 'lattes_url', 
-            'orcid_url', 'minibio', 'description', 'title', 'roles', 'website'
+            'orcid_url', 'recovery_email', 'minibio', 'description', 'title', 'roles', 'website'
         ];
 
         $informationData = [];

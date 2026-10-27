@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\PasswordRecovery;
 use Illuminate\Support\Facades\Password;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
@@ -16,9 +17,23 @@ new #[Layout('components.layouts.auth')] class extends Component {
             'email' => ['required', 'string', 'email'],
         ]);
 
-        Password::sendResetLink($this->only('email'));
+        $status = Password::sendResetLink([
+            'email' => PasswordRecovery::accountEmailFor($this->email) ?? $this->email,
+        ]);
 
-        session()->flash('status', __('A reset link will be sent if the account exists.'));
+        if ($status === Password::INVALID_USER) {
+            $this->addError('email', PasswordRecovery::NOT_FOUND);
+
+            return;
+        }
+
+        if ($status !== Password::RESET_LINK_SENT) {
+            $this->addError('email', PasswordRecovery::THROTTLED);
+
+            return;
+        }
+
+        session()->flash('status', PasswordRecovery::SENT);
     }
 }; ?>
 
