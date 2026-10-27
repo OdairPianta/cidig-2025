@@ -41,4 +41,34 @@ class Uploads
 
         return self::storage()->url($path);
     }
+
+    /** Parses PHP ini sizes such as "2M" or "50M" into bytes. */
+    public static function iniBytes(string $value): int
+    {
+        $value = trim($value);
+        $number = (int) $value;
+
+        return match (strtolower(substr($value, -1))) {
+            'g' => $number * 1024 ** 3,
+            'm' => $number * 1024 ** 2,
+            'k' => $number * 1024,
+            default => $number,
+        };
+    }
+
+    /** Largest single upload PHP will accept on this server (the smaller of the two ini limits). */
+    public static function serverLimitBytes(): int
+    {
+        $limits = array_filter([
+            self::iniBytes((string) ini_get('upload_max_filesize')),
+            self::iniBytes((string) ini_get('post_max_size')),
+        ]);
+
+        return $limits ? min($limits) : PHP_INT_MAX;
+    }
+
+    public static function humanBytes(int $bytes): string
+    {
+        return $bytes >= 1024 ** 2 ? round($bytes / 1024 ** 2, 1) . ' MB' : round($bytes / 1024) . ' KB';
+    }
 }

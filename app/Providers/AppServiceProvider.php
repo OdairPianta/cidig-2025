@@ -28,6 +28,8 @@ class AppServiceProvider extends ServiceProvider
             ->maxSize(10240)
             ->validationMessages([
                 'max' => 'O arquivo é muito grande. O tamanho máximo é 10 MB.',
+                // PHP rejected the file before the app saw it (usually bigger than the server limit).
+                'uploaded' => 'O envio falhou. O arquivo pode ser maior que o limite do servidor (' . \App\Support\Uploads::humanBytes(\App\Support\Uploads::serverLimitBytes()) . ') ou a conexão foi interrompida. Tente uma imagem menor ou avise a coordenação da plataforma.',
                 'mimetypes' => 'Formato não suportado. Use JPG, PNG, GIF ou WebP.',
                 'image' => 'O arquivo precisa ser uma imagem (JPG, PNG, GIF ou WebP).',
             ]));
