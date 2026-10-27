@@ -8,9 +8,11 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditSponsor extends EditRecord
 {
+    use \App\Filament\Resources\Concerns\DeleteAtBottom;
+
     protected static string $resource = SponsorResource::class;
 
-    protected function getHeaderActions(): array
+    protected function getBottomDeleteActions(): array
     {
         return [
             Actions\DeleteAction::make(),

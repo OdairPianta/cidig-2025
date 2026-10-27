@@ -37,6 +37,9 @@
                             <small class="text-muted">
                                 Publicado em {{ $post->published_at ? $post->published_at->format('d/m/Y H:i') : $post->created_at->format('d/m/Y H:i') }}
                             </small>
+                            @if($post->authors->isNotEmpty())
+                                <div class="small">Autoria: {{ $post->byline }}</div>
+                            @endif
                         </div>
                         <div class="col-auto">
                             <a href="{{ route('v2.authorPage', Str::slug($user->name)) }}" class="btn btn-outline-info btn-sm">

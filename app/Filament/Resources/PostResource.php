@@ -49,12 +49,37 @@ Forms\Components\TextInput::make('title')
                             ->validationMessages([
                                 'unique' => 'Já existe uma postagem com este endereço.',
                             ]),
-Forms\Components\RichEditor::make('content')
-    ->label('Conteúdo')
+Forms\Components\Tabs::make('Conteúdo')
     ->columnSpanFull()
-    ->required()
-    ->validationMessages([
-        'required' => 'O conteúdo do post é obrigatório.',
+    ->tabs([
+        Forms\Components\Tabs\Tab::make('Escrever')
+            ->icon('heroicon-o-pencil-square')
+            ->schema([
+                Forms\Components\MarkdownEditor::make('content')
+                    ->label('Conteúdo')
+                    ->helperText('Escreva em Markdown (títulos com #, **negrito**, [texto](link), ![descrição](endereço da imagem)). Para incorporar um vídeo, cole o código <iframe> do YouTube ou do Vimeo. Veja o resultado na aba "Pré-visualizar".')
+                    ->minHeight('24rem')
+                    ->toolbarButtons(['bold', 'italic', 'strike', 'link', 'heading', 'bulletList', 'orderedList', 'blockquote', 'codeBlock', 'attachFiles', 'undo', 'redo'])
+                    ->fileAttachmentsDisk(\App\Support\Uploads::disk())
+                    ->fileAttachmentsDirectory('posts/body')
+                    ->fileAttachmentsVisibility('public')
+                    ->live(onBlur: true)
+                    ->required()
+                    ->validationMessages([
+                        'required' => 'O conteúdo do post é obrigatório.',
+                    ]),
+            ]),
+        Forms\Components\Tabs\Tab::make('Pré-visualizar')
+            ->icon('heroicon-o-eye')
+            ->schema([
+                Forms\Components\Placeholder::make('preview')
+                    ->hiddenLabel()
+                    ->content(fn (Forms\Get $get) => new \Illuminate\Support\HtmlString(
+                        '<div class="prose max-w-none dark:prose-invert">' .
+                        (filled($get('content')) ? Post::renderContent($get('content')) : '<p><em>Nada para mostrar ainda. Escreva o texto na aba "Escrever".</em></p>') .
+                        '</div>'
+                    )),
+            ]),
     ]),
 Forms\Components\FileUpload::make('image_url')
     ->label('Imagem Destacada')
@@ -90,9 +115,17 @@ Forms\Components\FileUpload::make('image_url')
                                 ->validationMessages([
         'required' => 'O autor do post é obrigatório.',
     ]),
+                        Forms\Components\TagsInput::make('author_names')
+                            ->label('Autoria (opcional)')
+                            ->helperText('Para dar crédito a mais de uma pessoa. Digite o nome e pressione Enter (ou ";") para confirmar cada autor; nomes já cadastrados aparecem como sugestão.')
+                            ->placeholder('Nome do autor')
+                            ->splitKeys([';'])
+                            ->suggestions(fn () => \App\Models\Author::query()->orderBy('name')->limit(200)->pluck('name')->all())
+                            ->dehydrated(false)
+                            ->columnSpanFull(),
                         Forms\Components\DateTimePicker::make('published_at')
                             ->label('Data de Publicação')
-                            ->helperText('Deixe vazio para usar a data atual'),
+                            ->helperText('Deixe vazio para usar a data atual. Uma data futura agenda a publicação: o post só aparece no site a partir dela.'),
                     ]),
             ]);
     }

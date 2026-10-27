@@ -8,9 +8,11 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditVideo extends EditRecord
 {
+    use \App\Filament\Resources\Concerns\DeleteAtBottom;
+
     protected static string $resource = VideoResource::class;
 
-    protected function getHeaderActions(): array
+    protected function getBottomDeleteActions(): array
     {
         return [
             Actions\DeleteAction::make(),

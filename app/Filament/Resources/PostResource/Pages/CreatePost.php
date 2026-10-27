@@ -7,6 +7,8 @@ use Filament\Resources\Pages\CreateRecord;
 
 class CreatePost extends CreateRecord
 {
+    use HandlesPostAuthors;
+
     protected static string $resource = PostResource::class;
 
     protected function getRedirectUrl(): string
@@ -17,6 +19,8 @@ class CreatePost extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
+        $this->rememberAuthorNames();
+
         $data['user_id'] = $data['user_id'] ?? auth()->id();
         
         if ($data['is_published'] && empty($data['published_at'])) {
@@ -24,5 +28,10 @@ class CreatePost extends CreateRecord
         }
 
         return $data;
+    }
+
+    protected function afterCreate(): void
+    {
+        $this->persistAuthorNames();
     }
 }
