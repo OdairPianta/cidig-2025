@@ -8,6 +8,8 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListResources extends ListRecords
 {
+    use \App\Filament\Resources\Concerns\OpensViewInModal;
+
     protected static string $resource = ResourceResource::class;
 
     protected function getHeaderActions(): array

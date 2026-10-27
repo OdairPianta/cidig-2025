@@ -8,6 +8,8 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListSponsors extends ListRecords
 {
+    use \App\Filament\Resources\Concerns\OpensViewInModal;
+
     protected static string $resource = SponsorResource::class;
 
     protected function getHeaderActions(): array

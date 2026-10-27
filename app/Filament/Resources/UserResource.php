@@ -263,7 +263,7 @@ Forms\Components\TextInput::make('website')
                     ->nullable(),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()->label('Visualizar'),
+                Tables\Actions\ViewAction::make()->label('Visualizar')->url(null)->modalWidth('4xl'),
                 Tables\Actions\EditAction::make()->label('Editar'),
             ])
             ->bulkActions([
