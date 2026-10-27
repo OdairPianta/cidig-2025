@@ -8,9 +8,12 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditPost extends EditRecord
 {
+    use \App\Filament\Resources\Concerns\DeleteAtBottom;
+    use HandlesPostAuthors;
+
     protected static string $resource = PostResource::class;
 
-    protected function getHeaderActions(): array
+    protected function getBottomDeleteActions(): array
     {
         return [
             Actions\DeleteAction::make(),
@@ -24,6 +27,8 @@ class EditPost extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
+        $this->rememberAuthorNames();
+
         if ($data['is_published'] && empty($data['published_at'])) {
             $data['published_at'] = now();
         } elseif (!$data['is_published']) {
@@ -31,5 +36,10 @@ class EditPost extends EditRecord
         }
 
         return $data;
+    }
+
+    protected function afterSave(): void
+    {
+        $this->persistAuthorNames();
     }
 }

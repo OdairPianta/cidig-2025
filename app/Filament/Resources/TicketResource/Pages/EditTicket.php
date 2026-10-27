@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class EditTicket extends EditRecord
 {
+    use \App\Filament\Resources\Concerns\DeleteAtBottom;
+
     protected static string $resource = TicketResource::class;
 
     public static function getNavigationLabel(): string
@@ -23,7 +25,7 @@ class EditTicket extends EditRecord
         return 'Editar Ticket';
     }
 
-    protected function getHeaderActions(): array
+    protected function getBottomDeleteActions(): array
     {
         return [
             Actions\DeleteAction::make()->label('Excluir'),

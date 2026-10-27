@@ -339,3 +339,17 @@ it('treats an inactive research line as a draft and requires full data once acti
         ->call('create')
         ->assertHasFormErrors(['description' => 'required', 'image' => 'required', 'background-image' => 'required']);
 });
+
+it('keeps save at the top of edit pages and delete at the bottom', function () {
+    $sponsor = Sponsor::create(['name' => 'Parceiro']);
+
+    $component = Livewire::test(\App\Filament\Resources\SponsorResource\Pages\EditSponsor::class, ['record' => $sponsor->getRouteKey()]);
+
+    $header = collect($component->instance()->getCachedHeaderActions())->map->getName()->all();
+    $footer = collect($component->instance()->getCachedFormActions())->map->getName()->all();
+    expect($header)->toBe(['saveTop'])
+        ->and($footer)->toBe(['save', 'cancel', 'delete']);
+
+    $component->callAction('delete')->assertSuccessful();
+    expect(Sponsor::find($sponsor->id))->toBeNull();
+});

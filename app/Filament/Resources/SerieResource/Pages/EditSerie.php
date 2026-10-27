@@ -8,6 +8,8 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditSerie extends EditRecord
 {
+    use \App\Filament\Resources\Concerns\DeleteAtBottom;
+
     protected static string $resource = SerieResource::class;
 
     protected function mutateFormDataBeforeFill(array $data): array
@@ -17,7 +19,7 @@ class EditSerie extends EditRecord
         return $data;
     }
 
-    protected function getHeaderActions(): array
+    protected function getBottomDeleteActions(): array
     {
         return [
             Actions\DeleteAction::make(),

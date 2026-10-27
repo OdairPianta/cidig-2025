@@ -8,11 +8,13 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditUser extends EditRecord
 {
+    use \App\Filament\Resources\Concerns\DeleteAtBottom;
+
     use SavesUserInformation;
 
     protected static string $resource = UserResource::class;
 
-    protected function getHeaderActions(): array
+    protected function getBottomDeleteActions(): array
     {
         return [
             Actions\DeleteAction::make()
