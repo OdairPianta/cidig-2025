@@ -301,3 +301,25 @@ it('splits free-text author fields into individual names', function () {
         ->and($parse('Dominguez, Guilherme D.F.'))->toBe(['Guilherme D.F. Dominguez'])
         ->and($parse('Controladoria-Geral da União - CGU'))->toBe(['Controladoria-Geral da União - CGU']);
 });
+
+it('stores partner contact details and shows them in the view', function () {
+    Livewire::test(\App\Filament\Resources\SponsorResource\Pages\CreateSponsor::class)
+        ->fillForm([
+            'name' => 'Instituto Exemplo',
+            'logos' => [],
+            'contact_name' => 'Ana Souza',
+            'email' => 'ana@exemplo.org',
+            'landline' => '(11) 3333-4444',
+            'mobile' => '(11) 99999-8888',
+            'address' => 'Rua A, 10 - São Paulo/SP',
+        ])
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    $sponsor = Sponsor::where('name', 'Instituto Exemplo')->first();
+    expect($sponsor->contact_name)->toBe('Ana Souza')
+        ->and($sponsor->email)->toBe('ana@exemplo.org')
+        ->and($sponsor->address)->toBe('Rua A, 10 - São Paulo/SP');
+
+    Livewire::test(ViewSponsor::class, ['record' => $sponsor->getRouteKey()])->assertSee('ana@exemplo.org');
+});
