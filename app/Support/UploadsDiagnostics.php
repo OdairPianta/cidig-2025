@@ -66,6 +66,15 @@ class UploadsDiagnostics
             $add('Erro no armazenamento', $e->getMessage(), 'error');
         }
 
+        if (! app()->runningInConsole()) {
+            // Behind a proxy this must be https, otherwise Livewire's signed upload URL is rejected (401).
+            $add(
+                'Conexão vista pela aplicação',
+                request()->isSecure() ? 'https' : 'http — o proxy não está sendo confiado; o envio de arquivos falha com 401',
+                request()->isSecure() ? 'ok' : 'error'
+            );
+        }
+
         $add('Uploads temporários do Livewire', config('livewire.temporary_file_upload.disk') ?? 'padrão (' . config('filesystems.default') . ')');
         $add('APP_URL', (string) config('app.url'));
 
