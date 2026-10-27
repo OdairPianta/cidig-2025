@@ -11,9 +11,7 @@
                         <div class="col-sm-6 col-md-4 mb-4">
                             <div class="card card-body p-0">
                                 <a class="access-link" href="{{ route('v2.series.show', $serie->slug) }}">
-                                    @if($serie->thumbnail_novo)
-                                        <img src="{{ url($serie->thumbnail_novo) }}" alt="{{ $serie->title }}" class="img-fluid">
-                                    @elseif($serie->thumbnail)
+                                    @if($serie->thumbnail)
                                         <img src="{{ url($serie->thumbnail) }}" alt="{{ $serie->title }}" class="img-fluid">
                                     @else
                                         <img src="{{ url('/images/default.jpg') }}" alt="{{ $serie->title }}" class="img-fluid">
