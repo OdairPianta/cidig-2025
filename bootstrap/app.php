@@ -15,6 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // TLS ends at DigitalOcean's proxy: trust its X-Forwarded-* headers so the app sees https.
+        // Without this Livewire's signed upload URL (built with https) fails validation with a 401.
+        $middleware->trustProxies(at: '*');
+
         $middleware->alias([
             'active_user' => ActiveUserMiddleware::class,
             'ai_access' => ValidateAiAccessToken::class,
@@ -27,7 +31,10 @@ return Application::configure(basePath: dirname(__DIR__))
         );
         
         // Register our middleware to ensure it's available
+        // `use` replaces Laravel's whole global stack, so TrustProxies has to be listed explicitly
+        // (it is what makes the trustProxies() setting above take effect).
         $middleware->use([
+            \Illuminate\Http\Middleware\TrustProxies::class,
             ValidateAiAccessToken::class,
         ]);
     })
