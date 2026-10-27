@@ -35,6 +35,20 @@ class User extends Authenticatable implements FilamentUser
         'slug',
     ];
 
+    /**
+     * Password reset links also go to the personal recovery e-mail, when there is one.
+     */
+    public function routeNotificationForMail($notification = null): string|array
+    {
+        $recovery = $this->information?->recovery_email;
+
+        if ($notification instanceof \Illuminate\Auth\Notifications\ResetPassword && filled($recovery)) {
+            return array_values(array_unique([$this->email, $recovery]));
+        }
+
+        return $this->email;
+    }
+
     public function getFullProfile(): array
     {
     return [

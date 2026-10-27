@@ -32,7 +32,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->registration()
-            ->passwordReset()
+            ->passwordReset(\App\Filament\Pages\Auth\RequestPasswordReset::class)
             ->profile(\App\Filament\Pages\EditProfile::class)
             ->colors([
                 'primary' => Color::Rose,

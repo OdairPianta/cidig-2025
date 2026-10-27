@@ -11,7 +11,14 @@ use Throwable;
 
 class CreateUser extends CreateRecord
 {
+    use SavesUserInformation;
+
     protected static string $resource = UserResource::class;
+
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        return $this->extractInformation($data);
+    }
 
     protected function getRedirectUrl(): string
     {
@@ -24,6 +31,8 @@ class CreateUser extends CreateRecord
      */
     protected function afterCreate(): void
     {
+        $this->persistInformation();
+
         try {
             $token = Password::broker()->createToken($this->record);
             $this->record->notify(new WelcomeNewUser($token));
