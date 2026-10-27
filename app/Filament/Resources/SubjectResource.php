@@ -20,9 +20,9 @@ class SubjectResource extends FilamentResourceBase
 
     protected static ?string $navigationIcon = 'heroicon-o-bookmark';
 
-    protected static ?string $modelLabel = 'Verbete';
+    protected static ?string $modelLabel = 'Linha de Pesquisa';
 
-    protected static ?string $pluralModelLabel = 'Verbetes';
+    protected static ?string $pluralModelLabel = 'Linhas de Pesquisa';
 
     protected static ?string $navigationGroup = 'Conteúdos';
 
@@ -40,10 +40,10 @@ Forms\Components\TextInput::make('name')
     ]),
                         Forms\Components\TextInput::make('slug')
                             ->label('Endereço (URL)')
-                            ->helperText('Parte final do link do verbete. Use letras minúsculas, números e hífens (ex.: "ecologia-da-informacao").')
+                            ->helperText('Parte final do link da linha de pesquisa. Use letras minúsculas, números e hífens (ex.: "ecologia-da-informacao").')
                             ->unique(ignoreRecord: true)
                             ->alphaDash()
-                            ->validationMessages(['unique' => 'Já existe um verbete com este endereço.']),
+                            ->validationMessages(['unique' => 'Já existe uma linha de pesquisa com este endereço.']),
                         Forms\Components\Checkbox::make('is_active')
                             ->label('Ativo'),
 Forms\Components\Textarea::make('description')
@@ -61,7 +61,7 @@ Forms\Components\Textarea::make('description')
                 Forms\Components\Section::make('Tags')
                     ->schema([
                         Forms\Components\Select::make('tags')
-                            ->label('Tags do verbete')
+                            ->label('Tags da linha de pesquisa')
                             ->relationship('tags', 'name', fn ($query) => $query->isActive()->orderBy('name'))
                             ->helperText('Digite para buscar ou criar uma tag (Enter). Tags repetidas são reaproveitadas automaticamente.')
                             ->multiple()
@@ -124,7 +124,7 @@ Forms\Components\Textarea::make('description')
                                     ->label('Ativo')
                                     ->default(true),
                             ])
-                            ->helperText('Selecione o vídeo que será usado para apresentar este verbete'),
+                            ->helperText('Selecione o vídeo que será usado para apresentar esta linha de pesquisa'),
                     ])
                     ->columns(2),
             ]);
@@ -136,7 +136,7 @@ Forms\Components\Textarea::make('description')
             ->defaultSort('name')
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Verbete')
+                    ->label('Linha de Pesquisa')
                     ->sortable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('slug')
@@ -171,7 +171,7 @@ Forms\Components\Textarea::make('description')
                             ->label('Ordenar por')
                             ->placeholder('Ordem alfabética')
                             ->options([
-                                'created_desc' => 'Últimos verbetes adicionados',
+                                'created_desc' => 'Últimas linhas de pesquisa adicionadas',
                                 'updated_desc' => 'Atualizados recentemente',
                                 'content_desc' => 'Últimos conteúdos acrescentados',
                                 'posts_desc' => 'Últimas postagens dos responsáveis',
@@ -219,7 +219,7 @@ Tables\Actions\ViewAction::make()->label('Visualizar'),
     public static function infolist(\Filament\Infolists\Infolist $infolist): \Filament\Infolists\Infolist
     {
         return $infolist->schema([
-            Infolists\Components\Section::make('Verbete')->columns(2)->schema([
+            Infolists\Components\Section::make('Linha de Pesquisa')->columns(2)->schema([
                 Infolists\Components\TextEntry::make('name')->label('Nome')->copyable(),
                 Infolists\Components\TextEntry::make('slug')->label('Endereço (URL)')->copyable(),
                 Infolists\Components\IconEntry::make('is_active')->label('Ativo')->boolean(),

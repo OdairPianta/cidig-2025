@@ -20,9 +20,9 @@ class SponsorResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    protected static ?string $modelLabel = 'Patrocinador';
+    protected static ?string $modelLabel = 'Parceiro';
 
-    protected static ?string $pluralModelLabel = 'Patrocinadores';
+    protected static ?string $pluralModelLabel = 'Parceiros';
 
     protected static ?string $navigationGroup = 'Conteúdos';
 
@@ -30,7 +30,7 @@ class SponsorResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Informações do Patrocinador')
+                Forms\Components\Section::make('Informações do Parceiro')
                     ->schema([
                         Forms\Components\TextInput::make('name')
                             ->label('Nome')
@@ -141,7 +141,7 @@ class SponsorResource extends Resource
     public static function infolist(\Filament\Infolists\Infolist $infolist): \Filament\Infolists\Infolist
     {
         return $infolist->schema([
-            Infolists\Components\Section::make('Patrocinador')->columns(2)->schema([
+            Infolists\Components\Section::make('Parceiro')->columns(2)->schema([
                 Infolists\Components\TextEntry::make('name')->label('Nome')->copyable(),
                 Infolists\Components\ImageEntry::make('image')->label('Logo em uso')->disk(\App\Support\Uploads::disk()),
                 Infolists\Components\RepeatableEntry::make('logos')->label('Versões do logo')->columnSpanFull()->schema([

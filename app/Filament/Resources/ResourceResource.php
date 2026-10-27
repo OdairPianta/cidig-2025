@@ -22,9 +22,9 @@ class ResourceResource extends FilamentResourceBase
 
     protected static ?string $navigationIcon = 'heroicon-o-document-duplicate';
 
-    protected static ?string $modelLabel = 'Conteúdo de Verbete';
+    protected static ?string $modelLabel = 'Conteúdo de Linha de Pesquisa';
 
-    protected static ?string $pluralModelLabel = 'Conteúdos de Verbetes';
+    protected static ?string $pluralModelLabel = 'Conteúdos de Linhas de Pesquisa';
 
     protected static ?string $navigationGroup = 'Conteúdos';
 
@@ -46,7 +46,7 @@ class ResourceResource extends FilamentResourceBase
         ? \App\Models\Subject::query()->orderBy('name')->pluck('name', 'id')
         : auth()->user()->subjects()->orderBy('name')->pluck('name', 'id'))
     ->searchable()
-    ->helperText('Verbete ao qual este conteúdo pertence. Para criar um novo verbete, use o menu "Verbetes".')
+    ->helperText('Linha de pesquisa à qual este conteúdo pertence. Para criar uma nova linha de pesquisa, use o menu "Linhas de Pesquisa".')
     ->required()
     ->validationMessages([
         'required' => 'O assunto é obrigatório.',
@@ -226,7 +226,7 @@ Forms\Components\TextInput::make('language')
         return $infolist->schema([
             Infolists\Components\Section::make('Conteúdo')->columns(2)->schema([
                 Infolists\Components\TextEntry::make('title')->label('Título')->copyable()->columnSpanFull(),
-                Infolists\Components\TextEntry::make('subject.name')->label('Verbete')->copyable(),
+                Infolists\Components\TextEntry::make('subject.name')->label('Linha de Pesquisa')->copyable(),
                 Infolists\Components\TextEntry::make('format_id')->label('Tipo de conteúdo')
                     ->formatStateUsing(fn ($state) => ResourceModel::FORMAT_TYPES[$state] ?? '—'),
                 Infolists\Components\TextEntry::make('tags.name')->label('Tags')->badge()->placeholder('—'),

@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class UserResource extends Resource
 {
     private const ROLES = [
+        "professor" => "Professor",
         "researcher" => "Pesquisador",
         "designer" => "Designer",
         "coordinator" => "Coordenador",
@@ -150,7 +151,7 @@ Forms\Components\TextInput::make('orcid_url')
     ]),
                     ]),
                     
-                Forms\Components\Section::make('Biografia e Descrição')
+                Forms\Components\Section::make('Biografia e Currículo')
                     ->columns(1)
                     ->collapsible()
                     ->schema([
@@ -164,7 +165,7 @@ Forms\Components\TextInput::make('orcid_url')
     ]),
                         
                         Forms\Components\Textarea::make('description')
-                            ->label('Descrição')
+                            ->label('Currículo Completo')
                             ->helperText('Texto completo e opcional, exibido na página de perfil.')
                             ->rows(3),
                         
@@ -311,7 +312,7 @@ Forms\Components\TextInput::make('website')
                 Infolists\Components\TextEntry::make('information.orcid_url')->label('ORCID')->copyable(),
                 Infolists\Components\TextEntry::make('information.linkedin_url')->label('LinkedIn')->copyable(),
                 Infolists\Components\TextEntry::make('information.minibio')->label('Minibio')->columnSpanFull()->copyable(),
-                Infolists\Components\TextEntry::make('information.description')->label('Descrição')->columnSpanFull()->copyable(),
+                Infolists\Components\TextEntry::make('information.description')->label('Currículo Completo')->columnSpanFull()->copyable(),
             ]),
         ]);
     }

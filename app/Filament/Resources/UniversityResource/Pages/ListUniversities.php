@@ -13,7 +13,7 @@ class ListUniversities extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()->label('Nova Universidade'),
+            Actions\CreateAction::make()->label('Nova Instituição'),
         ];
     }
 }

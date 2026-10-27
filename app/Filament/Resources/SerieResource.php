@@ -67,8 +67,8 @@ Forms\Components\Textarea::make('description')
                 Forms\Components\Checkbox::make('is_active')
                     ->label('Ativo'),
                 Forms\Components\TextInput::make('thumbnail_url')
-                    ->label('Thumbnail a partir de um link')
-                    ->helperText('Opcional: cole o link de uma imagem da internet (JPG, PNG, GIF ou WebP). Ela será baixada e preencherá o campo "Thumbnail" abaixo.')
+                    ->label('Miniatura a partir de um link')
+                    ->helperText('Opcional: cole o link de uma imagem da internet (JPG, PNG, GIF ou WebP). Ela será baixada e preencherá o campo "Miniatura" abaixo.')
                     ->url()
                     ->dehydrated(false)
                     ->live(onBlur: true)
@@ -86,7 +86,7 @@ Forms\Components\Textarea::make('description')
                         }
                     }),
                 Forms\Components\FileUpload::make('thumbnail')
-                    ->label('Thumbnail')
+                    ->label('Miniatura')
                     ->helperText('Formato recomendado: 1280 x 720 px (16:9), JPG ou PNG, até 10 MB.')
                     ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/gif', 'image/webp', 'image/bmp'])
                     ->disk(\App\Support\Uploads::disk())
@@ -96,7 +96,7 @@ Forms\Components\Textarea::make('description')
                     ->downloadable()
                     ->openable(),
                 Forms\Components\FileUpload::make('thumbnail_novo')
-                    ->label('Thumbnail Novo')
+                    ->label('Miniatura Nova')
                     ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/gif', 'image/webp', 'image/bmp'])
                     ->disk(\App\Support\Uploads::disk())
                     ->directory('resources')
@@ -213,7 +213,7 @@ Forms\Components\Textarea::make('description')
                 Infolists\Components\TextEntry::make('users.name')->label('Responsáveis')->badge(),
                 Infolists\Components\TextEntry::make('description')->label('Descrição')->columnSpanFull()->copyable(),
                 Infolists\Components\TextEntry::make('videos.video_id')->label('Vídeos (YouTube)')->badge()->copyable(),
-                Infolists\Components\ImageEntry::make('thumbnail')->label('Thumbnail')->disk(\App\Support\Uploads::disk()),
+                Infolists\Components\ImageEntry::make('thumbnail')->label('Miniatura')->disk(\App\Support\Uploads::disk()),
             ]),
         ]);
     }
