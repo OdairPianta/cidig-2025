@@ -189,7 +189,12 @@ Forms\Components\Textarea::make('description')
             ])
             ->actions([
 Tables\Actions\EditAction::make()->label('Editar'),
-Tables\Actions\ViewAction::make()->label('Visualizar'),
+Tables\Actions\ViewAction::make()->label('Visualizar')->url(null)->modalWidth('4xl'),
+                Tables\Actions\Action::make('openPage')
+                    ->label('Abrir página')
+                    ->icon('heroicon-o-arrow-top-right-on-square')
+                    ->color('gray')
+                    ->url(fn (Subject $record) => route('v2.searchBySubject', $record->id), true),
 
             ])
             ->bulkActions([

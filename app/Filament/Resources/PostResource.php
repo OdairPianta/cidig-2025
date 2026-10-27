@@ -146,7 +146,7 @@ Forms\Components\FileUpload::make('image_url')
                     ->searchable(),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()->label('Visualizar'),
+                Tables\Actions\ViewAction::make()->label('Visualizar')->url(null)->modalWidth('4xl'),
                 Tables\Actions\EditAction::make()->label('Editar'),
                 Tables\Actions\Action::make('publicView')
                     ->label('Ver no site')
