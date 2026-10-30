@@ -51,7 +51,7 @@ it('imports Portuguese and Spanish answers without the researcher phone or e-mai
     ]);
 
     $result = (new MapProjectImport)->import($path);
-    expect($result)->toBe(['created' => 2, 'existing' => 0, 'skipped' => 1, 'without_coordinates' => 0]);
+    expect($result)->toBe(['created' => 2, 'existing' => 0, 'skipped' => 1, 'without_coordinates' => 0, 'failed' => 0, 'failed_rows' => []]);
 
     $chile = MapProject::where('name', 'Ciudadanía Inteligente')->first();
     expect($chile->country)->toBe('Chile')
@@ -99,4 +99,15 @@ it('lets only admins manage the map projects and approve in bulk', function () {
         ->callTableBulkAction('approve', [$one, $two]);
 
     expect(MapProject::where('is_approved', true)->count())->toBe(2);
+});
+
+it('keeps long proponent and city answers and one bad row does not stop the import', function () {
+    $long = str_repeat('Instituto de Pesquisa em Cidadania Digital; ', 25);
+    $path = mapCsv([
+        ['24/06/2025 22:31:14', 'Português', '', '', '', '', '', '', 'Projeto longo', 'Brasil', $long, '-23.5', '-46.6'],
+        ['24/06/2025 22:32:14', 'Português', '', '', '', '', '', '', 'Outro', 'Brasil', 'São Paulo', '-23.5', '-46.6'],
+    ]);
+
+    expect((new MapProjectImport)->import($path)['created'])->toBe(2);
+    expect(MapProject::where('name', 'Projeto longo')->first()->city)->toBe(trim($long));
 });

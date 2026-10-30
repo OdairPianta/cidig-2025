@@ -46,10 +46,15 @@ class ListMapProjects extends ListRecords
                         Storage::disk('local')->delete($data['file']);
                     }
 
+                    $body = "{$result['existing']} já existiam, {$result['skipped']} linhas sem nome ignoradas, {$result['without_coordinates']} sem coordenadas utilizáveis. Revise e aprove para publicar no mapa.";
+                    if ($result['failed']) {
+                        $body .= " {$result['failed']} linhas não puderam ser salvas (linhas do CSV: ".implode(', ', array_slice($result['failed_rows'], 0, 10)).').';
+                    }
+
                     Notification::make()
                         ->title("{$result['created']} projetos importados")
-                        ->body("{$result['existing']} já existiam, {$result['skipped']} linhas sem nome ignoradas, {$result['without_coordinates']} sem coordenadas utilizáveis. Revise e aprove para publicar no mapa.")
-                        ->success()
+                        ->body($body)
+                        ->status($result['failed'] ? 'warning' : 'success')
                         ->send();
                 }),
         ];
