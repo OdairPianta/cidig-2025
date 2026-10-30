@@ -66,8 +66,17 @@ class Ticket extends Model
     const TYPE_SYSTEM_REPORT_BUG = 1;
     const TYPE_HELP = 2;
     const TYPE_REPORT_RESOURCE = 3;
+    const TYPE_REGISTRATION = 4;
 
     const TYPES_TEXTS = [
+        self::TYPE_SYSTEM_REPORT_BUG => 'Bug',
+        self::TYPE_HELP => 'Dúvida',
+        self::TYPE_REPORT_RESOURCE => 'Sugestão',
+        self::TYPE_REGISTRATION => 'Solicitação de cadastro',
+    ];
+
+    /** Types a person can pick when opening a ticket; registration requests are created by the sign-up page only. */
+    const TYPES_OPTIONS = [
         self::TYPE_SYSTEM_REPORT_BUG => 'Bug',
         self::TYPE_HELP => 'Dúvida',
         self::TYPE_REPORT_RESOURCE => 'Sugestão',
@@ -77,7 +86,7 @@ class Ticket extends Model
     protected $fillable = [
         'ticket_type', 'title', 'description',
         'status', 'created_by', 'responsible_id',
-        'updated_by', 'resource_id',
+        'updated_by', 'resource_id', 'subject_id',
     ];
 
     protected $casts = [

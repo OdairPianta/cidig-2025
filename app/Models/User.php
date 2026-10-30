@@ -85,6 +85,7 @@ class User extends Authenticatable implements FilamentUser
             'password' => 'hashed',
             'is_admin' => 'boolean',
             'is_active' => 'boolean',
+            'pending_approval' => 'boolean',
         ];
     }
 
@@ -347,6 +348,7 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return true;
+        // Someone who only asked for an account cannot enter before the request is authorised.
+        return ! $this->pending_approval;
     }
 }

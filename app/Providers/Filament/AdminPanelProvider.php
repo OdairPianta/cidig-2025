@@ -33,7 +33,7 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->brandName(fn () => auth()->user()?->researchLineName() ?? config('app.name'))
             ->homeUrl(fn () => url('/'))
-            ->registration()
+            ->registration(\App\Filament\Pages\Auth\RequestRegistration::class)
             ->passwordReset(\App\Filament\Pages\Auth\RequestPasswordReset::class)
             ->profile(\App\Filament\Pages\EditProfile::class)
             ->colors([
