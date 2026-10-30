@@ -223,7 +223,7 @@ it('saves the copyright field of a content', function () {
     Livewire::test(\App\Filament\Resources\ResourceResource\Pages\CreateResource::class)
         ->fillForm([
             'subject_id' => $subject->id, 'format_id' => 1, 'tag_names' => [$tag->name], 'title' => 'T', 'description' => 'D',
-            'source' => 'https://example.com', 'authors' => [$author->id], 'publisher' => 'P', 'language' => 'pt', 'copy_rights' => 'CC-BY',
+            'source' => 'https://example.com', 'author_names' => ['ana souza', 'Bruno Lima'], 'publisher' => 'P', 'language' => 'pt', 'copy_rights' => 'CC-BY',
         ])
         ->call('create')
         ->assertHasNoFormErrors();
@@ -231,8 +231,11 @@ it('saves the copyright field of a content', function () {
     $resource = \App\Models\Resource::first();
 
     expect($resource->copy_rights)->toBe('CC-BY')
-        ->and($resource->author)->toBe('Ana Souza')
-        ->and($resource->authors->pluck('id')->all())->toBe([$author->id]);
+        // "ana souza" reuses the existing author instead of creating a duplicate.
+        ->and($resource->author)->toBe('Ana Souza; Bruno Lima')
+        ->and($resource->authors->pluck('name')->sort()->values()->all())->toBe(['Ana Souza', 'Bruno Lima'])
+        ->and($resource->authors->pluck('id')->contains($author->id))->toBeTrue()
+        ->and(\App\Models\Author::count())->toBe(2);
 });
 
 it('only shows professors their own tickets', function () {
@@ -374,4 +377,27 @@ it('shows the current tags when editing', function () {
 
     Livewire::test(\App\Filament\Resources\SubjectResource\Pages\EditSubject::class, ['record' => $subject->getRouteKey()])
         ->assertFormSet(['tag_names' => ['Redes']]);
+});
+
+it('loads and updates the authors of a content as typed names', function () {
+    $subject = Subject::create(['name' => 'S', 'slug' => 's']);
+    $resource = \App\Models\Resource::create([
+        'title' => 'T', 'author' => '', 'description' => 'D', 'publisher' => 'P', 'source' => 'https://example.com',
+        'format_id' => 1, 'language' => 'pt', 'subject_id' => $subject->id, 'created_by' => $this->admin->id, 'copy_rights' => 'CC-BY',
+    ]);
+    $resource->syncAuthorNames(['Ana Souza']);
+
+    $component = Livewire::test(\App\Filament\Resources\ResourceResource\Pages\EditResource::class, ['record' => $resource->getRouteKey()]);
+    expect($component->get('data.author_names'))->toBe(['Ana Souza']);
+
+    $component->set('data.tag_names', ['Ética'])->set('data.author_names', ['Bruno Lima', 'ANA SOUZA'])->call('save')->assertHasNoFormErrors();
+
+    $resource->refresh();
+    expect($resource->author)->toBe('Ana Souza; Bruno Lima')
+        ->and(\App\Models\Author::count())->toBe(2);
+});
+
+it('links the tag list to the word cloud', function () {
+    Livewire::test(\App\Filament\Resources\TagResource\Pages\ListTags::class)
+        ->assertActionVisible('cloud');
 });

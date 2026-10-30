@@ -31,7 +31,9 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->registration()
+            ->brandName(fn () => auth()->user()?->researchLineName() ?? config('app.name'))
+            ->homeUrl(fn () => url('/'))
+            ->registration(\App\Filament\Pages\Auth\RequestRegistration::class)
             ->passwordReset(\App\Filament\Pages\Auth\RequestPasswordReset::class)
             ->profile(\App\Filament\Pages\EditProfile::class)
             ->colors([
@@ -64,6 +66,17 @@ class AdminPanelProvider extends PanelProvider
             PanelsRenderHook::USER_MENU_BEFORE,
             fn (): string => view('filament.pages.header-button')->render()
         )
+            ->userMenuItems([
+                'profile' => \Filament\Navigation\MenuItem::make()
+                    ->label('Perfil')
+                    // Opens the profile slide-over instead of leaving the page.
+                    ->url("javascript:window.dispatchEvent(new CustomEvent('open-profile'))")
+                    ->icon('heroicon-o-user-circle'),
+            ])
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn (): string => auth()->check() ? \Illuminate\Support\Facades\Blade::render('@livewire(\App\Livewire\ProfileSlideOver::class)') : ''
+            )
             ->authMiddleware([
                 Authenticate::class,
             ]);

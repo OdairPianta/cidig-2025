@@ -12,6 +12,8 @@ class EditResource extends EditRecord
 {
     use \App\Filament\Resources\Concerns\DeleteAtBottom;
 
+    use HandlesContentAuthors;
+
     protected static string $resource = ResourceResource::class;
 
     protected function getBottomDeleteActions(): array
@@ -29,7 +31,7 @@ class EditResource extends EditRecord
     protected function mutateFormDataBeforeSave(array $data): array
     {
         $data['updated_by'] = auth()->id();
-        $data['author'] = \App\Models\Resource::authorText($this->data['authors'] ?? []);
+        $data = $this->rememberAuthorNames($data);
 
         if ($data['published_at'] == 1) {
             $data['published_at'] = now();
@@ -42,6 +44,8 @@ class EditResource extends EditRecord
 
     public function afterSave(): void
     {
+        $this->persistAuthorNames();
+
         $uploadedFilePath = $this->form->getState()['uploaded_file'] ?? null;
         $resource = $this->record;
 

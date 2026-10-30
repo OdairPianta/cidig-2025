@@ -31,6 +31,10 @@ Route::prefix('/v0')->group(function() {
     Route::get('/special/{subjectSlug}', 'App\Http\Controllers\SubjectController@showSpecialPage')->name('showSpecialPage');
 });
 
+Route::post('/entrar', [\App\Http\Controllers\SiteLoginController::class, 'store'])
+    ->middleware(['guest', 'throttle:6,1'])
+    ->name('site.login');
+
 Route::group(['middleware' => ['auth', 'active_user']], function() {
     Route::get('/home', 'App\Http\Controllers\HomeController@home')->name('home');
 
@@ -63,6 +67,9 @@ Route::get('/about', 'App\Http\Controllers\HomeController@aboutV2')
     ->name('v2.about');
 Route::get('/team', 'App\Http\Controllers\HomeController@teamV2')
     ->name('v2.team');
+
+Route::get('/p/{slug}', [\App\Http\Controllers\PageController::class, 'show'])
+    ->name('v2.page');
 
 Route::get('/special/{subjectSlug}', 'App\Http\Controllers\SubjectController@showSpecialPageV2')
     ->name('v2.showSpecialPage');

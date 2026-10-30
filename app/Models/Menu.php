@@ -13,6 +13,7 @@ class Menu extends Model
 
     protected $fillable = [
         'link',
+        'page_id',
         'slug',
         'is_active',
         'order'
@@ -24,10 +25,23 @@ class Menu extends Model
         'updated_at' => 'datetime',
     ];
 
+    public function page()
+    {
+        return $this->belongsTo(Page::class);
+    }
+
+    /** Items pointing at a page follow the page's address, so renaming its slug never breaks the menu. */
+    public function getLinkAttribute($value)
+    {
+        return $this->page_id && $this->page ? $this->page->url : $value;
+    }
+
     // Scopes
     public function scopeActive($query)
     {
-        return $query->where('is_active', true);
+        // An item pointing at an unpublished page stays out of the public menu.
+        return $query->where('is_active', true)
+            ->where(fn ($q) => $q->whereNull('page_id')->orWhereHas('page', fn ($page) => $page->where('is_published', true)));
     }
 
     public function scopeOrdered($query)

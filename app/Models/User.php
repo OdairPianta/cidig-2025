@@ -58,6 +58,7 @@ class User extends Authenticatable implements FilamentUser
         'university' => $this->information->university->name ?? null,
         'picture_url' => $this->information->picture_url,
         'minibio' => $this->information->minibio,
+        'description' => $this->information->description,
         'roles' => $this->information->roles,
     ];
     }
@@ -85,6 +86,7 @@ class User extends Authenticatable implements FilamentUser
             'password' => 'hashed',
             'is_admin' => 'boolean',
             'is_active' => 'boolean',
+            'pending_approval' => 'boolean',
         ];
     }
 
@@ -115,6 +117,21 @@ class User extends Authenticatable implements FilamentUser
     public function subjects()
     {
         return $this->belongsToMany(Subject::class);
+    }
+
+    /**
+     * Name of the research line a non-admin works on, used in the admin panel headings.
+     * Null for admins and for users without a line, so the generic wording is kept.
+     */
+    public function researchLineName(): ?string
+    {
+        if ($this->isAdmin()) {
+            return null;
+        }
+
+        $names = $this->subjects()->orderBy('name')->pluck('name');
+
+        return $names->count() === 1 ? $names->first() : null;
     }
 
     /**
@@ -332,6 +349,7 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return true;
+        // Someone who only asked for an account cannot enter before the request is authorised.
+        return ! $this->pending_approval;
     }
 }

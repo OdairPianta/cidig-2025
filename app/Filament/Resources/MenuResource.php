@@ -40,13 +40,23 @@ Forms\Components\TextInput::make('slug')
         'unique' => 'Este slug já está sendo usado.',
     ]),
                         
+Forms\Components\Select::make('page_id')
+    ->label('Página do site')
+    ->placeholder('Nenhuma (usar um link)')
+    ->relationship('page', 'title')
+    ->searchable()
+    ->preload()
+    ->live()
+    ->helperText('Escolha uma página criada em "Páginas do site"; o link acompanha o endereço dela.'),
+
 Forms\Components\TextInput::make('link')
     ->label('Link')
-    ->required()
+    ->required(fn (Forms\Get $get) => blank($get('page_id')))
+    ->hidden(fn (Forms\Get $get) => filled($get('page_id')))
     ->url()
     ->helperText('URL do link')
     ->validationMessages([
-        'required' => 'O link é obrigatório.',
+        'required' => 'Informe um link ou escolha uma página do site.',
         'url' => 'O link deve ser uma URL válida.',
     ]),
                         Forms\Components\TextInput::make('order')

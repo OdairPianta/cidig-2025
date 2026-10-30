@@ -72,7 +72,7 @@
                             <i class="{{ $resource->getFormatIcon(true) }}"></i> {{ $resource->title }}
                         </h3>
 
-                        <p class="modal-description">
+                        <p class="modal-description" style="white-space: pre-line">
                             {{ $resource->description }}
                         </p>
 

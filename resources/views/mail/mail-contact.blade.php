@@ -11,6 +11,9 @@
             <b>{{ $ticket->title }}</b>
         </a>
     </p>
+    @if($ticket->page_url)
+    <p><b>Página: </b> <a href="{{ $ticket->page_url }}">{{ $ticket->page_url }}</a></p>
+    @endif
     <p><b>Mensagem: </b></p>
     <p>{{ $ticket->description }}</p>
 </div>

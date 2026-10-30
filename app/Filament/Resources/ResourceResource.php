@@ -26,6 +26,13 @@ class ResourceResource extends FilamentResourceBase
 
     protected static ?string $pluralModelLabel = 'Conteúdos de Linhas de Pesquisa';
 
+    public static function getPluralModelLabel(): string
+    {
+        $line = auth()->user()?->researchLineName();
+
+        return $line ? "Conteúdos de {$line}" : static::$pluralModelLabel;
+    }
+
     protected static ?string $navigationGroup = 'Conteúdos';
 
     protected static ?int $navigationSort = 1;
@@ -101,21 +108,13 @@ Forms\Components\TextInput::make('source')
                     ->columns()
                     ->collapsible()
                     ->schema([
-Forms\Components\Select::make('authors')
+Forms\Components\TagsInput::make('author_names')
     ->label('Autoria')
-    ->placeholder('Selecione ou crie os autores')
-    ->relationship('authors', 'name')
-    ->helperText('Digite para buscar ou criar um autor. Autores repetidos são reaproveitados automaticamente.')
-    ->multiple()
-    ->searchable()
-    ->preload()
-    ->createOptionForm([
-        Forms\Components\TextInput::make('name')
-            ->label('Novo autor')
-            ->required()
-            ->maxLength(255),
-    ])
-    ->createOptionUsing(fn (array $data) => Author::findOrCreateByName($data['name'])->getKey())
+    ->placeholder('Nome do autor')
+    ->helperText('Digite o nome e pressione Enter (ou ";") para confirmar cada autor. Nomes já cadastrados aparecem como sugestão e, mesmo escritos com outras maiúsculas ou sem acento, são reaproveitados.')
+    ->splitKeys([';'])
+    ->suggestions(fn () => Author::query()->orderBy('name')->limit(200)->pluck('name')->all())
+    ->dehydrated(false)
     ->required()
     ->validationMessages([
         'required' => 'Informe ao menos um autor.',

@@ -9,12 +9,14 @@ use Illuminate\Support\Facades\Storage;
 
 class CreateResource extends CreateRecord
 {
+    use HandlesContentAuthors;
+
     protected static string $resource = ResourceResource::class;
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $data['created_by'] = auth()->id();
-        $data['author'] = \App\Models\Resource::authorText($this->data['authors'] ?? []);
+        $data = $this->rememberAuthorNames($data);
         $data['published_at'] = $data['published_at'] !== null ? now() : null;
 
         return $data;
@@ -27,6 +29,8 @@ class CreateResource extends CreateRecord
 
     public function afterCreate(): void
     {
+        $this->persistAuthorNames();
+
         $uploadedFilePath = $this->form->getState()['uploaded_file'] ?? null;
         if (!$uploadedFilePath) {
             return;
