@@ -44,6 +44,7 @@ Forms\Components\TextInput::make('slug')
     ->label('Endereço (URL)')
     ->helperText('Parte final do link da série, ex.: "minha-serie" → /webseries/minha-serie. Use apenas letras minúsculas, números e hífens.')
     ->columnSpanFull()
+    ->live(debounce: 500)
     ->required()
     ->unique(ignoreRecord: true)
     ->alphaDash()
@@ -51,6 +52,10 @@ Forms\Components\TextInput::make('slug')
         'required' => 'O endereço (URL) é obrigatório.',
         'unique' => 'Já existe uma série com este endereço.',
     ]),
+Forms\Components\Placeholder::make('slug_preview')
+    ->label('Como o link vai ficar')
+    ->columnSpanFull()
+    ->content(fn (Forms\Get $get) => \App\Support\UrlPreview::html('/webseries/', $get('slug'), 'minha-serie')),
 Forms\Components\Textarea::make('description')
     ->label('Descrição')
     ->columnSpanFull()

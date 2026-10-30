@@ -38,6 +38,7 @@ class PostResource extends FilamentResourceBase
 Forms\Components\TextInput::make('title')
     ->label('Título')
     ->columnSpanFull()
+    ->live(onBlur: true)
     ->required()
     ->validationMessages([
         'required' => 'O título do post é obrigatório.',
@@ -45,12 +46,23 @@ Forms\Components\TextInput::make('title')
                         Forms\Components\TextInput::make('slug')
                             ->label('Endereço (URL)')
                             ->columnSpanFull()
+                            ->live(debounce: 500)
                             ->unique(ignoreRecord: true)
                             ->alphaDash()
                             ->helperText('Parte final do link da postagem (ex.: "meu-primeiro-post"). Deixe vazio para gerar automaticamente a partir do título.')
                             ->validationMessages([
                                 'unique' => 'Já existe uma postagem com este endereço.',
                             ]),
+                        Forms\Components\Placeholder::make('slug_preview')
+                            ->label('Como o link vai ficar')
+                            ->columnSpanFull()
+                            ->content(function (Forms\Get $get) {
+                                $author = User::find($get('user_id'));
+                                $prefix = '/' . (\Illuminate\Support\Str::slug($author?->name ?? '') ?: 'autor') . '/';
+                                $slug = \Illuminate\Support\Str::slug((string) ($get('slug') ?: $get('title')));
+
+                                return \App\Support\UrlPreview::html($prefix, $slug, 'gerado-a-partir-do-titulo');
+                            }),
 Forms\Components\Tabs::make('Conteúdo')
     ->columnSpanFull()
     ->tabs([
@@ -113,6 +125,7 @@ Forms\Components\FileUpload::make('image_url')
                             ->relationship('user', 'name')
                             ->options(User::query()->orderBy('name')->pluck('name', 'id'))
                             ->default(auth()->id())
+                            ->live()
                             ->required()
                                 ->validationMessages([
         'required' => 'O autor do post é obrigatório.',

@@ -132,3 +132,20 @@ it('keeps the login panel above the page background image', function () {
 
     $this->get('/')->assertSee('.site-login-panel { position: relative; z-index: 1030;', false);
 });
+
+it('previews the public link under the address field of series and posts', function () {
+    $this->professor->update(['name' => 'Maria Souza']);
+
+    \Livewire\Livewire::test(\App\Filament\Resources\SerieResource\Pages\CreateSerie::class)
+        ->assertSee('Como o link vai ficar')
+        ->assertSee('/webseries/', false)
+        ->fillForm(['slug' => 'minha-serie'])
+        ->assertSee('minha-serie');
+
+    \Livewire\Livewire::test(\App\Filament\Resources\PostResource\Pages\CreatePost::class)
+        ->fillForm(['user_id' => $this->professor->id, 'title' => 'Meu Primeiro Post', 'slug' => null])
+        ->assertSee('/maria-souza/', false)
+        ->assertSee('meu-primeiro-post')
+        ->fillForm(['user_id' => $this->professor->id, 'title' => 'Meu Primeiro Post', 'slug' => 'outro-endereco'])
+        ->assertSee('outro-endereco');
+});
