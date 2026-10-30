@@ -62,15 +62,32 @@ Forms\Components\TextInput::make('title')
     ->validationMessages([
         'required' => 'O título é obrigatório.',
     ]),
-Forms\Components\Textarea::make('description')
+Forms\Components\MarkdownEditor::make('description')
     ->label('Descrição')
-    ->rows(5)
-    ->autosize()
+    ->helperText('Descreva o que precisa ser corrigido. Dá para usar Markdown e anexar imagens (botão de clipe).')
+    ->toolbarButtons(['bold', 'italic', 'link', 'bulletList', 'orderedList', 'blockquote', 'attachFiles', 'undo', 'redo'])
+    ->fileAttachmentsDisk(\App\Support\Uploads::disk())
+    ->fileAttachmentsDirectory('tickets/body')
+    ->fileAttachmentsVisibility('public')
     ->columnSpanFull()
     ->required()
     ->validationMessages([
         'required' => 'A descrição é obrigatória.',
     ]),
+Forms\Components\TextInput::make('page_url')
+    ->label('Link da página com o problema')
+    ->helperText('Abra a página onde o problema acontece e cole o endereço do navegador aqui.')
+    ->url()
+    ->maxLength(2048)
+    ->columnSpanFull(),
+Forms\Components\FileUpload::make('attachment')
+    ->label('Captura de tela')
+    ->helperText('Opcional: uma imagem mostrando o problema.')
+    ->image()
+    ->disk(\App\Support\Uploads::disk())
+    ->directory('tickets')
+    ->visibility('public')
+    ->columnSpanFull(),
             ]);
     }
 
@@ -78,7 +95,7 @@ Forms\Components\Textarea::make('description')
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('title')->label('Título')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('title')->label('Título')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('createdBy.name')
                     ->label('Criado por')
                     ->searchable()
@@ -97,23 +114,47 @@ Forms\Components\Textarea::make('description')
                         default => 'gray',
                     })
                     ->tooltip(fn (int $state) => Ticket::STATUSES_TEXTS[$state])
-                    ->sortable(),
+                    ->sortable(query: fn ($query, string $direction) => $query->orderByRaw(Ticket::PRIORITY_SQL . ' ' . $direction)),
                 Tables\Columns\TextColumn::make('responsible.name')
                     ->label('Responsável')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Criado em')
-                    ->description(fn (Ticket $record) => 'por ' . $record->createdBy->name)
                     ->dateTime()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('Atualizado em')
                     ->description(fn (Ticket $record) => 'por ' . ($record->updatedBy?->name ?? 'N/A'))
                     ->dateTime()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
+            // Status priority, unless the "Ordenar por" filter already chose an order.
+            ->defaultSort(fn ($query) => filled($query->toBase()->orders)
+                ? $query
+                : $query->orderByRaw(Ticket::PRIORITY_SQL)->orderByDesc('created_at'))
             ->filters([
+                Tables\Filters\Filter::make('order')
+                    ->label('Ordenar por')
+                    ->form([
+                        Forms\Components\Select::make('order_by')
+                            ->label('Ordenar por')
+                            ->placeholder('Padrão (prioridade do status)')
+                            ->options([
+                                'created_desc' => 'Criados recentemente',
+                                'created_asc' => 'Criados há mais tempo',
+                                'updated_desc' => 'Atualizados recentemente',
+                            ]),
+                    ])
+                    // baseQuery: ordering set inside ->query() is lost, filters run in a nested where().
+                    ->baseQuery(fn ($query, array $data) => match ($data['order_by'] ?? null) {
+                        'created_desc' => $query->reorder('created_at', 'desc'),
+                        'created_asc' => $query->reorder('created_at'),
+                        'updated_desc' => $query->reorder('updated_at', 'desc'),
+                        default => $query,
+                    })
+                    ->indicateUsing(fn (array $data): ?string => ($data['order_by'] ?? null) ? 'Ordenação personalizada' : null),
                 Tables\Filters\SelectFilter::make('status')
                     ->label('Status')
                     ->options([
@@ -125,7 +166,13 @@ Forms\Components\Textarea::make('description')
             ])
             ->actions([
                 Tables\Actions\EditAction::make()->label('Editar')->hidden(fn (Ticket $record): bool => self::shouldHiddeAction($record)),
-                Tables\Actions\ViewAction::make()->label('Visualizar'),
+                Tables\Actions\ViewAction::make()->label('Visualizar')->url(null)->modalWidth('4xl')
+                    ->extraModalFooterActions(fn (Ticket $record): array => [
+                        Tables\Actions\Action::make('open')
+                            ->label('Abrir página do ticket')
+                            ->url(Pages\ViewTicket::getUrl(['record' => $record]))
+                            ->color('gray'),
+                    ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -134,9 +181,27 @@ Forms\Components\Textarea::make('description')
                     ->hidden(fn (): bool => !auth()->user()->isAdmin()),
                 ]),
             ])
-            ->recordUrl(
-                fn (Ticket $record): string => Pages\ViewTicket::getUrl(['record' => $record])
-            );
+            // Row clicks open the same pop-up as "Visualizar" instead of leaving the list.
+            ->recordUrl(null)
+            ->recordAction('view');
+    }
+
+    public static function infolist(\Filament\Infolists\Infolist $infolist): \Filament\Infolists\Infolist
+    {
+        return $infolist->schema([
+            \Filament\Infolists\Components\Section::make()->columns(2)->schema([
+                \Filament\Infolists\Components\TextEntry::make('title')->label('Título')->columnSpanFull()->copyable(),
+                \Filament\Infolists\Components\TextEntry::make('ticket_type')->label('Tipo')->formatStateUsing(fn (int $state) => Ticket::TYPES_TEXTS[$state] ?? '—'),
+                \Filament\Infolists\Components\TextEntry::make('status')->label('Status')->badge()->formatStateUsing(fn (int $state) => Ticket::STATUSES_TEXTS[$state] ?? '—'),
+                \Filament\Infolists\Components\TextEntry::make('createdBy.name')->label('Criado por'),
+                \Filament\Infolists\Components\TextEntry::make('responsible.name')->label('Responsável'),
+                \Filament\Infolists\Components\TextEntry::make('created_at')->label('Criado em')->dateTime(),
+                \Filament\Infolists\Components\TextEntry::make('updated_at')->label('Atualizado em')->dateTime(),
+                \Filament\Infolists\Components\TextEntry::make('page_url')->label('Página com o problema')->url(fn (Ticket $record) => $record->page_url, true)->placeholder('—')->columnSpanFull(),
+                \Filament\Infolists\Components\TextEntry::make('description')->label('Descrição')->markdown()->columnSpanFull(),
+                \Filament\Infolists\Components\ImageEntry::make('attachment')->label('Captura de tela')->disk(\App\Support\Uploads::disk())->columnSpanFull()->visible(fn (Ticket $record) => filled($record->attachment)),
+            ]),
+        ]);
     }
 
     public static function getRelations(): array

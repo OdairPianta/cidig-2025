@@ -81,9 +81,18 @@ class TicketController extends Controller
      * @param int     $ticketType
      * @return RedirectResponse
      */
+    /** The page the person was on, only kept when it is a plain http(s) address. */
+    private function pageUrlFrom(Request $request): ?string
+    {
+        $url = (string) $request->input('page_url');
+
+        return preg_match('#^https?://#i', $url) ? mb_substr($url, 0, 2048) : null;
+    }
+
     private function createTicketToAdmin(Request $request, int $ticketType) {
         $adminUser = User::getAdminUser();
         $storeData = $request->all(['description', 'title']);
+        $storeData['page_url'] = $this->pageUrlFrom($request);
         $storeData['ticket_type'] = $ticketType;
         $storeData['created_by'] = auth()->user()->id;
         $storeData['responsible_id'] = $adminUser->id;

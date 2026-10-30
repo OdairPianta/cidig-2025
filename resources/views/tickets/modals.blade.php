@@ -10,6 +10,7 @@
             </div>
             <form method="post" action="{{ route('helpRequest') }}" autocomplete="false">
                 @csrf
+                <input type="hidden" name="page_url" value="{{ url()->current() }}">
                 <div class="modal-body">
                     <label for="title">Título</label>
                     <input type="text" class="form-control" name="title" required autocomplete="false"/>
@@ -36,6 +37,7 @@
             </div>
             <form method="post" action="{{ route('bugReport') }}" autocomplete="false">
                 @csrf
+                <input type="hidden" name="page_url" value="{{ url()->current() }}">
                 <div class="modal-body">
                     <label for="title">Título</label>
                     <input type="text" class="form-control" name="title" required autocomplete="false"/>
