@@ -4,7 +4,7 @@
     <div id="series-index" class="container content-home pt-5 pb-5 p-0">
         <div class="row">
             <div class="col-12">
-                <h1 class="mb-4">Webséries</h1>
+                <h1 class="mb-4 text-white">Webséries</h1>
                 
                 <div class="row">
                     @foreach($series as $serie)
