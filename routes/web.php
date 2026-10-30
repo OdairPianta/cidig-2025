@@ -68,6 +68,9 @@ Route::get('/about', 'App\Http\Controllers\HomeController@aboutV2')
 Route::get('/team', 'App\Http\Controllers\HomeController@teamV2')
     ->name('v2.team');
 
+Route::get('/mapa', [\App\Http\Controllers\MapController::class, 'index'])
+    ->name('v2.map');
+
 Route::get('/p/{slug}', [\App\Http\Controllers\PageController::class, 'show'])
     ->name('v2.page');
 
