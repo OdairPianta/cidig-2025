@@ -59,3 +59,27 @@ it('shows the logged-in person name in the public menu instead of "Admin"', func
 
     $this->get('/')->assertOk()->assertSee('Maria Souza');
 });
+
+it('logs in from the public menu panel and goes back to the same page', function () {
+    $user = User::factory()->create(['email' => 'prof@example.com', 'password' => bcrypt('segredo123'), 'is_admin' => false]);
+    auth()->logout();
+
+    $this->get('/')->assertSee('site-login-panel');
+
+    $this->from('/')->post(route('site.login'), ['email' => 'prof@example.com', 'password' => 'segredo123'])
+        ->assertRedirect('/');
+    $this->assertAuthenticatedAs($user);
+});
+
+it('shows an error in the panel for wrong credentials and refuses pending sign-ups', function () {
+    $pending = User::factory()->create(['email' => 'p@example.com', 'password' => bcrypt('segredo123')]);
+    $pending->forceFill(['pending_approval' => true])->save();
+    auth()->logout();
+
+    $this->from('/')->post(route('site.login'), ['email' => 'p@example.com', 'password' => 'errada'])
+        ->assertRedirect('/')->assertSessionHasErrors('email', null, 'siteLogin');
+
+    $this->from('/')->post(route('site.login'), ['email' => 'p@example.com', 'password' => 'segredo123'])
+        ->assertSessionHasErrors('email', null, 'siteLogin');
+    $this->assertGuest();
+});
