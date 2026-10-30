@@ -126,3 +126,9 @@ it('edits the profile in a slide-over without leaving the page', function () {
 it('renders the slide-over and a profile menu item that opens it', function () {
     $this->get('/admin')->assertOk()->assertSee('open-profile', false);
 });
+
+it('keeps the login panel above the page background image', function () {
+    auth()->logout();
+
+    $this->get('/')->assertSee('.site-login-panel { position: relative; z-index: 1030;', false);
+});

@@ -107,8 +107,9 @@
         </div>
     </div>
     <style>
-        .site-login-panel { max-height: 0; overflow: hidden; background: #fff; border-bottom: 0 solid #e2e8f0; transition: max-height .3s ease; }
-        .site-login-panel.is-open { max-height: 220px; border-bottom-width: 1px; }
+        /* Positioned with a z-index so the page's absolutely positioned background image cannot cover it. */
+        .site-login-panel { position: relative; z-index: 1030; max-height: 0; overflow: hidden; background-color: #fff; color: #212529; border-bottom: 0 solid #e2e8f0; transition: max-height .3s ease; }
+        .site-login-panel.is-open { max-height: 220px; border-bottom-width: 1px; box-shadow: 0 8px 24px rgba(0, 0, 0, .35); }
         .site-login-panel .container { padding-top: 16px; padding-bottom: 12px; }
         .site-login-form { display: flex; flex-wrap: wrap; gap: 8px; }
         .site-login-form input { flex: 1 1 200px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; }
