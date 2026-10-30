@@ -61,7 +61,7 @@
                 @else
                     <li class="nav-item">
                         <a id="navbarDropdownHelp" class="nav-link" href="{{ route('filament.admin.auth.login') }}" role="button">
-                            {{ __('Admin') }}
+                            {{ auth()->user()->name }}
                         </a>
                     </li>
 
