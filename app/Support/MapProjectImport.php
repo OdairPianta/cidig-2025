@@ -44,10 +44,11 @@ class MapProjectImport
 
     private const LISTS = ['actants', 'tics', 'themes'];
 
-    /** @return array{created:int, existing:int, skipped:int, without_coordinates:int} */
+    /** @return array{created:int, existing:int, skipped:int, without_coordinates:int, failed:int, failed_rows:list<int>} */
     public function import(string $path): array
     {
-        $result = ['created' => 0, 'existing' => 0, 'skipped' => 0, 'without_coordinates' => 0];
+        $result = ['created' => 0, 'existing' => 0, 'skipped' => 0, 'without_coordinates' => 0, 'failed' => 0, 'failed_rows' => []];
+        $line = 1;
 
         $handle = fopen($path, 'r');
         if (! $handle) {
@@ -67,6 +68,7 @@ class MapProjectImport
         }
 
         while (($row = fgetcsv($handle, 0, ',', '"', '')) !== false) {
+            $line++;
             $data = $this->extract($row, $map);
 
             if (blank($data['name'] ?? null)) {
@@ -83,39 +85,49 @@ class MapProjectImport
             }
 
             [$lat, $lng, $source] = $this->coordinates($data['latitude'] ?? '', $data['longitude'] ?? '');
+
+            try {
+                MapProject::create([
+                    'external_key' => $key,
+                    'name' => $data['name'],
+                    'country' => $data['country'] ?? null,
+                    'city' => $data['city'] ?? null,
+                    'latitude' => $lat,
+                    'longitude' => $lng,
+                    'coordinates_source' => $source,
+                    'proposers' => $data['proposers'] ?? null,
+                    'proposer_nature' => $data['proposer_nature'] ?? null,
+                    'purpose' => $data['purpose'] ?? null,
+                    'mapping' => $data['mapping'] ?? null,
+                    'description' => $data['description'] ?? null,
+                    'nonhuman_influence' => $data['nonhuman_influence'] ?? null,
+                    'actants' => $data['actants'] ?? [],
+                    'tics' => $data['tics'] ?? [],
+                    'themes' => $data['themes'] ?? [],
+                    'website' => $data['website'] ?? null,
+                    'instagram' => $data['instagram'] ?? null,
+                    'facebook' => $data['facebook'] ?? null,
+                    'tiktok' => $data['tiktok'] ?? null,
+                    'has_own_app' => $this->isYes($data['has_own_app'] ?? ''),
+                    'app_url' => $data['app_url'] ?? null,
+                    'researcher_name' => $data['researcher_name'] ?? null,
+                    'source_language' => $this->language($data['language'] ?? null),
+                    'submitted_at' => $this->date($data['submitted_at'] ?? null),
+                    'is_approved' => false,
+                ]);
+            } catch (\Illuminate\Database\QueryException $e) {
+                // One bad row must not stop the others; the line number is reported so it can be fixed.
+                report($e);
+                $result['failed']++;
+                $result['failed_rows'][] = $line;
+
+                continue;
+            }
+
+            $result['created']++;
             if ($lat === null) {
                 $result['without_coordinates']++;
             }
-
-            MapProject::create([
-                'external_key' => $key,
-                'name' => $data['name'],
-                'country' => $data['country'] ?? null,
-                'city' => $data['city'] ?? null,
-                'latitude' => $lat,
-                'longitude' => $lng,
-                'coordinates_source' => $source,
-                'proposers' => $data['proposers'] ?? null,
-                'proposer_nature' => $data['proposer_nature'] ?? null,
-                'purpose' => $data['purpose'] ?? null,
-                'mapping' => $data['mapping'] ?? null,
-                'description' => $data['description'] ?? null,
-                'nonhuman_influence' => $data['nonhuman_influence'] ?? null,
-                'actants' => $data['actants'] ?? [],
-                'tics' => $data['tics'] ?? [],
-                'themes' => $data['themes'] ?? [],
-                'website' => $data['website'] ?? null,
-                'instagram' => $data['instagram'] ?? null,
-                'facebook' => $data['facebook'] ?? null,
-                'tiktok' => $data['tiktok'] ?? null,
-                'has_own_app' => $this->isYes($data['has_own_app'] ?? ''),
-                'app_url' => $data['app_url'] ?? null,
-                'researcher_name' => $data['researcher_name'] ?? null,
-                'source_language' => $this->language($data['language'] ?? null),
-                'submitted_at' => $this->date($data['submitted_at'] ?? null),
-                'is_approved' => false,
-            ]);
-            $result['created']++;
         }
 
         fclose($handle);
