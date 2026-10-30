@@ -149,3 +149,25 @@ it('previews the public link under the address field of series and posts', funct
         ->fillForm(['user_id' => $this->professor->id, 'title' => 'Meu Primeiro Post', 'slug' => 'outro-endereco'])
         ->assertSee('outro-endereco');
 });
+
+it('tells people the recommended size of every image upload', function () {
+    $hint = fn ($component, string $field) => $component->instance()->form->getFlatFields(true)[$field]->getHelperText();
+
+    $post = \Livewire\Livewire::test(\App\Filament\Resources\PostResource\Pages\CreatePost::class);
+    expect((string) $hint($post, 'image_url'))->toContain('1200 x 630')->toContain('reduzidas automaticamente');
+
+    $serie = \Livewire\Livewire::test(\App\Filament\Resources\SerieResource\Pages\CreateSerie::class);
+    expect((string) $hint($serie, 'thumbnail'))->toContain('1280 x 720')
+        ->and((string) $hint($serie, 'background_image'))->toContain('1920 x 1080');
+
+    // Partners and pages are admin-only. Their image fields live inside repeaters, so an item is added to render them.
+    $this->actingAs(User::factory()->create(['is_admin' => true, 'is_active' => true]));
+    \Livewire\Livewire::test(\App\Filament\Resources\SponsorResource\Pages\CreateSponsor::class)
+        ->fillForm(['logos' => [['is_active' => true]]])
+        ->assertSee('400 px de largura');
+
+    \Livewire\Livewire::test(\App\Filament\Resources\PageResource\Pages\CreatePage::class)
+        ->set('data.template', \App\Models\Page::TEMPLATE_PUBLICATIONS)
+        ->fillForm(['template' => \App\Models\Page::TEMPLATE_PUBLICATIONS, 'items' => [['title' => 'Livro']]])
+        ->assertSee('600 x 800');
+});

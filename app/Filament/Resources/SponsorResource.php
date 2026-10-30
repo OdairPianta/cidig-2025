@@ -105,8 +105,13 @@ class SponsorResource extends Resource
                                     }),
                                 Forms\Components\FileUpload::make('path')
                                     ->label('Arquivo')
+                                    ->helperText('Logo horizontal com fundo transparente (PNG ou SVG), com cerca de 400 px de largura: no site ele aparece com 172 px, e o dobro garante nitidez em telas de alta resolução. Evite margens grandes ao redor. Até 10 MB. Imagens maiores (exceto SVG) são reduzidas automaticamente.')
                                     ->required()
                                     ->image()
+                                    ->imageResizeMode('contain')
+                                    ->imageResizeTargetWidth('600')
+                                    ->imageResizeTargetHeight('600')
+                                    ->imageResizeUpscale(false)
                                     ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/gif', 'image/webp', 'image/bmp', 'image/svg+xml'])
                                     ->disk(\App\Support\Uploads::disk())
                                     ->directory('sponsors')

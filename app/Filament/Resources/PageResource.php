@@ -110,8 +110,17 @@ class PageResource extends Resource
                             Forms\Components\Textarea::make('description')->label('Descrição')->rows(3)->columnSpanFull(),
                             Forms\Components\FileUpload::make('image')
                                 ->label('Imagem')
-                                ->helperText('Capa ou ilustração (JPG ou PNG). Opcional.')
+                                ->helperText(fn (Get $get) => ($get('../../template') === Page::TEMPLATE_PUBLICATIONS
+                                    ? 'Capa vertical (3:4), por exemplo 600 x 800 px: aparece pequena, ao lado do título. '
+                                    : 'Imagem horizontal (3:2), por exemplo 1200 x 800 px: aparece no topo do cartão. ')
+                                    . 'JPG ou PNG, até 10 MB. Imagens maiores são reduzidas automaticamente. Opcional.')
                                 ->image()
+                                ->imageResizeMode('contain')
+                                ->imageResizeTargetWidth('1200')
+                                ->imageResizeTargetHeight('1200')
+                                ->imageResizeUpscale(false)
+                                ->imageEditor()
+                                ->imageEditorAspectRatios(['3:4', '3:2', '16:9', '1:1'])
                                 ->disk(\App\Support\Uploads::disk())
                                 ->directory('pages')
                                 ->visibility('public')
