@@ -86,13 +86,16 @@ class Ticket extends Model
     protected $fillable = [
         'ticket_type', 'title', 'description',
         'status', 'created_by', 'responsible_id',
-        'updated_by', 'resource_id', 'subject_id',
+        'updated_by', 'resource_id', 'subject_id', 'page_url', 'attachment',
     ];
 
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    /** Open first, then in progress, then closed without a fix, with the resolved ones last. */
+    const PRIORITY_SQL = 'CASE status WHEN 0 THEN 0 WHEN 1 THEN 1 WHEN 3 THEN 2 WHEN 2 THEN 3 ELSE 4 END';
 
     public function getStatusText(): string
     {

@@ -179,7 +179,8 @@ Forms\Components\Textarea::make('description')
                                 'posts_desc' => 'Últimas postagens dos responsáveis',
                             ]),
                     ])
-                    ->query(function ($query, array $data) {
+                    // baseQuery: ordering set inside ->query() is lost, filters run in a nested where().
+                    ->baseQuery(function ($query, array $data) {
                         return match ($data['order_by'] ?? null) {
                             'created_desc' => $query->reorder('created_at', 'desc'),
                             'updated_desc' => $query->reorder('updated_at', 'desc'),

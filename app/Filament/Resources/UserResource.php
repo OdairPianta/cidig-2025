@@ -248,7 +248,8 @@ Forms\Components\TextInput::make('website')
                                 'updated_desc' => 'Atualizados recentemente',
                             ]),
                     ])
-                    ->query(function ($query, array $data) {
+                    // baseQuery: ordering set inside ->query() is lost, filters run in a nested where().
+                    ->baseQuery(function ($query, array $data) {
                         return match ($data['order_by'] ?? null) {
                             'name_asc' => $query->reorder('name'),
                             'name_desc' => $query->reorder('name', 'desc'),
