@@ -13,6 +13,12 @@ class ListTags extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('cloud')
+                ->label('Nuvem de tags')
+                ->icon('heroicon-o-cloud')
+                ->color('gray')
+                ->url(\App\Filament\Pages\TagAnalytics::getUrl())
+                ->visible(fn () => \App\Filament\Pages\TagAnalytics::canAccess()),
             Actions\CreateAction::make(),
         ];
     }
