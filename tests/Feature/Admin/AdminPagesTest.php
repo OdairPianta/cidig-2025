@@ -396,3 +396,8 @@ it('loads and updates the authors of a content as typed names', function () {
     expect($resource->author)->toBe('Ana Souza; Bruno Lima')
         ->and(\App\Models\Author::count())->toBe(2);
 });
+
+it('links the tag list to the word cloud', function () {
+    Livewire::test(\App\Filament\Resources\TagResource\Pages\ListTags::class)
+        ->assertActionVisible('cloud');
+});
