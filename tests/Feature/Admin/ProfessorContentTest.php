@@ -53,3 +53,9 @@ it('names the panel and the contents menu after the professor research line', fu
     $this->actingAs(User::factory()->create(['is_admin' => true]));
     expect(Filament::getBrandName())->toBe(config('app.name'));
 });
+
+it('shows the logged-in person name in the public menu instead of "Admin"', function () {
+    $this->professor->update(['name' => 'Maria Souza']);
+
+    $this->get('/')->assertOk()->assertSee('Maria Souza');
+});
