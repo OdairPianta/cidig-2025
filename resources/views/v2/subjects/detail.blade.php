@@ -17,7 +17,7 @@
                             @endforeach
                         </div>
 
-                        <p class="description">{{ $subjectData['description'] }}</p>
+                        <p class="description" style="white-space: pre-line">{{ $subjectData['description'] }}</p>
                     </div>
 
                     @if ($subjectData['video'] && $subjectData['video']->is_active)
@@ -27,7 +27,7 @@
                                 <h4 class="mt-2 mb-3">{{ $subjectData['video']->title }}</h4>
                             @endif
                             @if($subjectData['video']->description)
-                                <p class="mb-3">{{ $subjectData['video']->description }}</p>
+                                <p class="mb-3" style="white-space: pre-line">{{ $subjectData['video']->description }}</p>
                             @endif
                             <div class="row m-3 align-content-center" style="justify-content: center;">
                                 <iframe 
