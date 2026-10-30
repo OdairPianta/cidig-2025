@@ -68,6 +68,9 @@ Route::get('/about', 'App\Http\Controllers\HomeController@aboutV2')
 Route::get('/team', 'App\Http\Controllers\HomeController@teamV2')
     ->name('v2.team');
 
+Route::get('/p/{slug}', [\App\Http\Controllers\PageController::class, 'show'])
+    ->name('v2.page');
+
 Route::get('/special/{subjectSlug}', 'App\Http\Controllers\SubjectController@showSpecialPageV2')
     ->name('v2.showSpecialPage');
 
