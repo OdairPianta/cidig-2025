@@ -118,6 +118,21 @@ class User extends Authenticatable implements FilamentUser
     }
 
     /**
+     * Name of the research line a non-admin works on, used in the admin panel headings.
+     * Null for admins and for users without a line, so the generic wording is kept.
+     */
+    public function researchLineName(): ?string
+    {
+        if ($this->isAdmin()) {
+            return null;
+        }
+
+        $names = $this->subjects()->orderBy('name')->pluck('name');
+
+        return $names->count() === 1 ? $names->first() : null;
+    }
+
+    /**
      * @return HasMany
      */
     public function createdTickets()

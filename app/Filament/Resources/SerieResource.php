@@ -63,7 +63,8 @@ Forms\Components\Textarea::make('description')
                     ->relationship('users', 'name')
                     ->multiple()
                     ->searchable()
-                    ->preload(),
+                    ->preload()
+                    ->default(fn () => [auth()->id()]),
                 Forms\Components\Checkbox::make('is_active')
                     ->label('Ativo'),
                 Forms\Components\FileUpload::make('thumbnail')
@@ -249,6 +250,20 @@ Forms\Components\Textarea::make('description')
         
     public static function canAccess(): bool
     {
-        return auth()->check() && auth()->user()->isAdmin();
+        return auth()->check();
+    }
+
+    /**
+     * Professors only see the series they are responsible for.
+     */
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        if (auth()->user()->isAdmin()) {
+            return $query;
+        }
+
+        return $query->whereHas('users', fn (Builder $users) => $users->whereKey(auth()->id()));
     }
 }
