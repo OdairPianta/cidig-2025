@@ -95,6 +95,21 @@ class Resource extends Model
     }
 
     /**
+     * Syncs the authors typed in the form (";" also separates names) and refreshes the plain-text column.
+     */
+    public function syncAuthorNames(array $names): void
+    {
+        $ids = collect($names)
+            ->flatMap(fn ($name) => Author::parseNames((string) $name))
+            ->map(fn (string $name) => Author::findOrCreateByName($name)->getKey())
+            ->unique()
+            ->all();
+
+        $this->authors()->sync($ids);
+        $this->forceFill(['author' => self::authorText($ids)])->saveQuietly();
+    }
+
+    /**
      * Plain-text author list, kept on the row because the public pages and search read it.
      */
     public static function authorText(array $authorIds): string
