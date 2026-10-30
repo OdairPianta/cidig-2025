@@ -101,3 +101,28 @@ it('shows the full résumé in "Sobre o pesquisador" and keeps the mini bio for 
 
     $this->get('/researcher/maria-souza')->assertSee('Resumo curto para o cartão');
 });
+
+it('edits the profile in a slide-over without leaving the page', function () {
+    $university = \App\Models\University::create(['name' => 'USP', 'is_active' => true]);
+
+    \Livewire\Livewire::test(\App\Livewire\ProfileSlideOver::class)
+        ->call('open')
+        ->assertActionMounted('edit')
+        ->callAction('edit', [
+            'name' => 'Nova Silva',
+            'university_id' => $university->id,
+            'roles' => ['professor'],
+            'minibio' => 'Resumo',
+            'description' => 'Currículo completo',
+        ])
+        ->assertHasNoActionErrors();
+
+    $this->professor->refresh();
+    expect($this->professor->name)->toBe('Nova Silva')
+        ->and($this->professor->information->description)->toBe('Currículo completo')
+        ->and($this->professor->information->university_id)->toBe($university->id);
+});
+
+it('renders the slide-over and a profile menu item that opens it', function () {
+    $this->get('/admin')->assertOk()->assertSee('open-profile', false);
+});

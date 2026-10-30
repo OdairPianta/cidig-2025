@@ -66,6 +66,17 @@ class AdminPanelProvider extends PanelProvider
             PanelsRenderHook::USER_MENU_BEFORE,
             fn (): string => view('filament.pages.header-button')->render()
         )
+            ->userMenuItems([
+                'profile' => \Filament\Navigation\MenuItem::make()
+                    ->label('Perfil')
+                    // Opens the profile slide-over instead of leaving the page.
+                    ->url("javascript:window.dispatchEvent(new CustomEvent('open-profile'))")
+                    ->icon('heroicon-o-user-circle'),
+            ])
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn (): string => auth()->check() ? \Illuminate\Support\Facades\Blade::render('@livewire(\App\Livewire\ProfileSlideOver::class)') : ''
+            )
             ->authMiddleware([
                 Authenticate::class,
             ]);
