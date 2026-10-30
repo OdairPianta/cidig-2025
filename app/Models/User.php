@@ -58,6 +58,7 @@ class User extends Authenticatable implements FilamentUser
         'university' => $this->information->university->name ?? null,
         'picture_url' => $this->information->picture_url,
         'minibio' => $this->information->minibio,
+        'description' => $this->information->description,
         'roles' => $this->information->roles,
     ];
     }

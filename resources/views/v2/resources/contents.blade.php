@@ -35,7 +35,8 @@
 
             <div class="col-12 mb-5">
                 <h2>Sobre o pesquisador</h2>
-                <p class="mt-0 description">{{ $userData['minibio'] }}</p>
+                {{-- The card shows the mini bio; this page shows the full résumé, falling back to the mini bio. --}}
+                <p class="mt-0 description">{!! nl2br(e(filled($userData['description'] ?? null) ? $userData['description'] : $userData['minibio'])) !!}</p>
                 
                 <a href="{{ route('user.posts', $userData['slug']) }}" class="btn btn-outline-primary">
                     <i class="fas fa-blog"></i> Ver Blog do Pesquisador
