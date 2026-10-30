@@ -28,7 +28,7 @@ class TicketResource extends Resource
             ->schema([
 Forms\Components\Radio::make('ticket_type')
     ->label('Tipo')
-    ->options(Ticket::TYPES_TEXTS)
+    ->options(Ticket::TYPES_OPTIONS)
     ->inline()
     ->inlineLabel(false)
     ->default(request()->query('ticket_type') ?? 2)
