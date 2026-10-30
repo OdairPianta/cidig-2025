@@ -35,7 +35,7 @@ it('lets the admin build a publications page with items', function () {
         ->call('create')
         ->assertHasNoFormErrors();
 
-    $page = Page::firstOrFail();
+    $page = Page::where('slug', 'livros-e-artigos')->firstOrFail();
     expect($page->items)->toHaveCount(2)->and($page->items->first()->title)->toBe('Cidadania digital');
 
     auth()->logout();
@@ -87,4 +87,17 @@ it('keeps page management to the admin', function () {
     $this->actingAs(User::factory()->create(['is_admin' => false, 'is_active' => true]));
 
     expect(PageResource::canAccess())->toBeFalse();
+});
+
+it('ships the Publicações, Observatório and Estudos de caso pages as unpublished drafts', function () {
+    $pages = Page::whereIn('slug', ['publicacoes', 'observatorio', 'estudos-de-caso'])->orderBy('slug')->get();
+
+    expect($pages->pluck('template', 'slug')->all())->toBe([
+        'estudos-de-caso' => Page::TEMPLATE_CASES,
+        'observatorio' => Page::TEMPLATE_OBSERVATORY,
+        'publicacoes' => Page::TEMPLATE_PUBLICATIONS,
+    ])->and($pages->every(fn (Page $page) => ! $page->is_published))->toBeTrue();
+
+    auth()->logout();
+    $this->get('/p/publicacoes')->assertNotFound();
 });
