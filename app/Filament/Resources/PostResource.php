@@ -19,6 +19,8 @@ class PostResource extends FilamentResourceBase
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
+    protected static string $ownerColumn = 'user_id';
+
     protected static ?string $modelLabel = 'Postagem';
 
     protected static ?string $pluralModelLabel = 'Postagens';
@@ -251,6 +253,6 @@ Forms\Components\FileUpload::make('image_url')
 
     public static function canAccess(): bool
     {
-        return auth()->check() && auth()->user()->isAdmin();
+        return auth()->check();
     }
 }

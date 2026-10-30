@@ -26,6 +26,13 @@ class ResourceResource extends FilamentResourceBase
 
     protected static ?string $pluralModelLabel = 'Conteúdos de Linhas de Pesquisa';
 
+    public static function getPluralModelLabel(): string
+    {
+        $line = auth()->user()?->researchLineName();
+
+        return $line ? "Conteúdos de {$line}" : static::$pluralModelLabel;
+    }
+
     protected static ?string $navigationGroup = 'Conteúdos';
 
     protected static ?int $navigationSort = 1;

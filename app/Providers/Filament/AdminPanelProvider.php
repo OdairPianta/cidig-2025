@@ -31,6 +31,8 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->brandName(fn () => auth()->user()?->researchLineName() ?? config('app.name'))
+            ->homeUrl(fn () => url('/'))
             ->registration()
             ->passwordReset(\App\Filament\Pages\Auth\RequestPasswordReset::class)
             ->profile(\App\Filament\Pages\EditProfile::class)
