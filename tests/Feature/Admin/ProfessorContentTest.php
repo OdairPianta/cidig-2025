@@ -83,3 +83,21 @@ it('shows an error in the panel for wrong credentials and refuses pending sign-u
         ->assertSessionHasErrors('email', null, 'siteLogin');
     $this->assertGuest();
 });
+
+it('shows the full résumé in "Sobre o pesquisador" and keeps the mini bio for the card', function () {
+    $researcher = User::factory()->create(['name' => 'Maria Souza']);
+    $researcher->information()->create([
+        'minibio' => 'Resumo curto para o cartão da equipe, com mais de noventa caracteres para passar na validação.',
+        'description' => "Currículo completo.\nSegunda linha.",
+    ]);
+
+    $this->get('/researcher/maria-souza')
+        ->assertOk()
+        ->assertSee('Currículo completo.', false)
+        ->assertSee('Segunda linha.', false)
+        ->assertDontSee('Resumo curto para o cartão');
+
+    $researcher->information->update(['description' => null]);
+
+    $this->get('/researcher/maria-souza')->assertSee('Resumo curto para o cartão');
+});
