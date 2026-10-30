@@ -37,7 +37,8 @@ class AdminPanelProvider extends PanelProvider
             ->passwordReset(\App\Filament\Pages\Auth\RequestPasswordReset::class)
             ->profile(\App\Filament\Pages\EditProfile::class)
             ->colors([
-                'primary' => Color::Rose,
+                // Shade 500 is the dark-mode button colour; Rose 500 with white text was 3.7:1, shade 600 is 4.7:1.
+                'primary' => array_replace(Color::Rose, [500 => Color::Rose[600]]),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')

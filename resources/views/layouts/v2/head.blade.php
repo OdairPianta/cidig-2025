@@ -14,6 +14,7 @@
 <link href="{{ mix('css/app.css') }}" rel="stylesheet">
 <link href="{{ mix('css/app-2023.css') }}" rel="stylesheet">
 <link href="{{ mix('css/footer.css') }}" rel="stylesheet">
+<link href="{{ asset('css/contrast.css', !app()->isLocal()) }}?v={{ filemtime(public_path('css/contrast.css')) }}" rel="stylesheet">
 <link href="{{ asset('css/fa/css/all.css', !app()->isLocal()) }}" rel="stylesheet">
 <link href="{{ asset('css/select2/select2.min.css', !app()->isLocal()) }}" rel="stylesheet" />
 <link href="{{ asset('css/select2/select2.min.css', !app()->isLocal()) }}" rel="stylesheet" />

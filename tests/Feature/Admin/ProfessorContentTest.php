@@ -171,3 +171,22 @@ it('tells people the recommended size of every image upload', function () {
         ->fillForm(['template' => \App\Models\Page::TEMPLATE_PUBLICATIONS, 'items' => [['title' => 'Livro']]])
         ->assertSee('600 x 800');
 });
+
+it('loads the contrast fixes and styles the public pagination for the dark theme', function () {
+    auth()->logout();
+
+    $this->get('/')->assertSee('css/contrast.css', false);
+    expect(file_get_contents(public_path('css/contrast.css')))->toContain('.pagination .page-link')->toContain('a.label');
+
+    $links = (string) (new \Illuminate\Pagination\LengthAwarePaginator([1], 30, 1, 1, ['path' => '/search']))->links();
+    expect($links)->toContain('page-link');
+});
+
+it('keeps white text readable on the admin primary button', function () {
+    $rgb = Filament::getPanel('admin')->getColors()['primary'];
+    [$r, $g, $b] = array_map('intval', explode(',', $rgb[500] ?? ''));
+    $lum = fn (int $v) => ($v /= 255) <= 0.03928 ? $v / 12.92 : (($v + 0.055) / 1.055) ** 2.4;
+    $luminance = 0.2126 * $lum($r) + 0.7152 * $lum($g) + 0.0722 * $lum($b);
+
+    expect(1.05 / ($luminance + 0.05))->toBeGreaterThanOrEqual(4.5);
+});

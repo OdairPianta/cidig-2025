@@ -22,6 +22,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // The public pages are Bootstrap 4; the default Tailwind pagination view had no styles there.
+        \Illuminate\Pagination\Paginator::useBootstrapFour();
+
         // Uploads: public disk, 10 MB max per image (server allows 50 MB) and clear messages.
         FileUpload::configureUsing(fn (FileUpload $component) => $component
             ->disk(\App\Support\Uploads::disk())

@@ -1,0 +1,54 @@
+/*
+ * Contrast fixes for the public site (dark #090E1F background, light cards).
+ * Found with a WCAG AA check (4.5:1 for normal text, 3:1 for large text); kept apart from the
+ * compiled app-2023.css so they survive a rebuild of the SASS.
+ */
+
+/* Tag labels sit on white cards: the dark-theme slate (#94A3B8) was only 2.6:1 there. */
+body#app-2023 .card a.label {
+    color: #475569;
+    border-color: #64748b;
+}
+
+/* Bootstrap's default blue (#3490dc) with white text was 3.4:1. */
+body#app-2023 .btn-primary {
+    background-color: #1f6fb2;
+    border-color: #1f6fb2;
+    color: #fff;
+}
+
+body#app-2023 .btn-primary:hover,
+body#app-2023 .btn-primary:focus {
+    background-color: #1a64a3;
+    border-color: #1a64a3;
+    color: #fff;
+}
+
+/* Pagination was unstyled (white boxes with white text); it follows the dark theme now. */
+body#app-2023 .pagination {
+    justify-content: center;
+    margin: 2rem 0;
+}
+
+body#app-2023 .pagination .page-link {
+    background-color: #161C32;
+    border-color: rgba(255, 255, 255, .15);
+    color: #F1F5F9;
+}
+
+body#app-2023 .pagination .page-link:hover,
+body#app-2023 .pagination .page-link:focus {
+    background-color: #1f2747;
+    color: #FFFFFF;
+}
+
+body#app-2023 .pagination .page-item.active .page-link {
+    background-color: #c2410c;
+    border-color: #c2410c;
+    color: #FFFFFF;
+}
+
+body#app-2023 .pagination .page-item.disabled .page-link {
+    background-color: #161C32;
+    color: #94A3B8;
+}
