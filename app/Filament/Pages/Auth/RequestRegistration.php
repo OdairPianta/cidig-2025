@@ -8,10 +8,12 @@ use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 use Filament\Forms\Components\Component;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Http\Responses\Auth\Contracts\RegistrationResponse;
 use Filament\Notifications\Notification;
 use Filament\Pages\Auth\Register;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Public sign-up becomes a request: nobody is logged in, and the ticket has to be authorised first.
@@ -29,6 +31,10 @@ class RequestRegistration extends Register
         }
 
         $data = $this->form->getState();
+
+        if (RegistrationRequests::hasOpenRequest($data['email'])) {
+            throw ValidationException::withMessages(['data.email' => 'Já existe uma solicitação em análise para este e-mail.']);
+        }
 
         RegistrationRequests::submit($data['name'], $data['email'], $data['subject_id'] ?? null, $data['message'] ?? null);
 
@@ -58,6 +64,17 @@ class RequestRegistration extends Register
                     ->statePath('data'),
             ),
         ];
+    }
+
+    /** Taken emails are refused, except those of rejected applicants, who may ask again. */
+    protected function getEmailFormComponent(): Component
+    {
+        return TextInput::make('email')
+            ->label('E-mail')
+            ->email()
+            ->required()
+            ->maxLength(255)
+            ->unique($this->getUserModel(), modifyRuleUsing: fn ($rule) => $rule->where('pending_approval', 0));
     }
 
     protected function getSubjectFormComponent(): Component

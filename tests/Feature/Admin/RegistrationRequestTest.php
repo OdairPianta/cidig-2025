@@ -15,6 +15,8 @@ use Livewire\Livewire;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    // The sign-up form is rate limited per IP, which the array cache would carry across tests.
+    \Illuminate\Support\Facades\Cache::flush();
     Filament::setCurrentPanel(Filament::getPanel('admin'));
     $this->admin = User::factory()->create(['is_admin' => true, 'is_active' => true]);
     $this->lead = User::factory()->create(['is_admin' => false, 'is_active' => true]);
@@ -94,4 +96,50 @@ it('rejects a request without activating the account', function () {
 
     expect($ticket->refresh()->status)->toBe(Ticket::STATUS_CLOSED_NOT_DONE)
         ->and(User::where('email', 'bia@example.com')->first()->pending_approval)->toBeTrue();
+});
+
+it('notifies every responsible of the line and lets each of them review', function () {
+    Notification::fake();
+    $second = User::factory()->create(['is_admin' => false, 'is_active' => true]);
+    $this->line->users()->attach($second);
+
+    Livewire::test(RequestRegistration::class)
+        ->fillForm(['name' => 'Ana Lima', 'email' => 'ana@example.com', 'subject_id' => $this->line->id])
+        ->call('register');
+    $ticket = Ticket::firstOrFail();
+
+    Notification::assertSentTo([$this->lead, $second], RegistrationRequested::class);
+    Notification::assertNotSentTo($this->admin, RegistrationRequested::class);
+
+    $this->actingAs($second);
+    expect(\App\Filament\Resources\TicketResource::getEloquentQuery()->pluck('id')->all())->toBe([$ticket->id])
+        ->and(\App\Support\RegistrationRequests::canReview($second, $ticket))->toBeTrue();
+
+    // Once one of them decides, the others can no longer act on it.
+    \App\Support\RegistrationRequests::reject($ticket, $second);
+    expect(\App\Support\RegistrationRequests::canReview($this->lead, $ticket->refresh()))->toBeFalse();
+});
+
+it('lets a rejected person apply again but blocks a duplicate while one is open', function () {
+    Notification::fake();
+    $apply = fn () => Livewire::test(RequestRegistration::class)
+        ->fillForm(['name' => 'Bia', 'email' => 'bia@example.com'])
+        ->call('register');
+
+    $apply()->assertHasNoFormErrors();
+    $apply()->assertHasErrors(['data.email']);
+
+    \App\Support\RegistrationRequests::reject(Ticket::firstOrFail(), $this->admin);
+
+    $apply()->assertHasNoFormErrors();
+    expect(Ticket::count())->toBe(2)->and(User::where('email', 'bia@example.com')->count())->toBe(1);
+});
+
+it('still refuses the email of an existing active user', function () {
+    User::factory()->create(['email' => 'taken@example.com', 'is_active' => true]);
+
+    Livewire::test(RequestRegistration::class)
+        ->fillForm(['name' => 'X', 'email' => 'taken@example.com'])
+        ->call('register')
+        ->assertHasFormErrors(['email']);
 });

@@ -177,9 +177,13 @@ Forms\Components\Textarea::make('description')
             return $query;
         }
 
+        $lines = auth()->user()->subjects()->wherePivot('is_active', true)->pluck('subjects.id');
+
         return $query->where(fn ($q) => $q
             ->where('created_by', auth()->id())
-            ->orWhere('responsible_id', auth()->id()));
+            ->orWhere('responsible_id', auth()->id())
+            // Every responsible of a research line sees that line's registration requests.
+            ->orWhere(fn ($q) => $q->where('ticket_type', Ticket::TYPE_REGISTRATION)->whereIn('subject_id', $lines)));
     }
 
     public static function shouldRegisterNavigation(): bool
