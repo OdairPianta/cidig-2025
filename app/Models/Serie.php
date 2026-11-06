@@ -39,7 +39,7 @@ class Serie extends Model
 
     public function addVideo(int $videoId)
     {
-        if (!$this->videos()->where('video_id', $videoId)->exists()) {
+        if (!$this->videos()->whereKey($videoId)->exists()) {
             $this->videos()->attach($videoId);
         }
     }

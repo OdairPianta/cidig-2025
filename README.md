@@ -1,6 +1,9 @@
 # cidadania-digital
 Uma iniciativa internacional para a promoção e educação para Cidadania Digital
 
+Para preparar um ambiente isolado com PHP 8.4, executar os testes e gerar
+relatórios de cobertura, consulte [TESTING.md](TESTING.md).
+
 ## Requirementos 
 - [Docker](https://www.docker.com/get-started)
 - [Composer](https://getcomposer.org/download/)
