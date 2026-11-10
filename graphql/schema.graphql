@@ -95,6 +95,8 @@ type Query {
     resource(
         "Search by primary key."
         id: ID! @eq
+        "Publication status based on published_at, as in the editorial panel."
+        is_published: Boolean @scope(name: "publicationStatus")
     ): Resource @find
 
     "List multiple resources."
@@ -104,8 +106,13 @@ type Query {
         "Filter by subject."
         subject_id: ID @eq
         "Filter by user."
-        user_id: ID @eq
+        user_id: ID @eq(key: "created_by")
+        "True selects published resources; false selects drafts; omitted returns both."
+        is_published: Boolean @scope(name: "publicationStatus")
     ): [Resource!]! @paginate(defaultCount: 10)
+
+    "Approved projects with coordinates, restricted to public map fields."
+    mapProjects: [MapProject!]! @paginate(defaultCount: 10, builder: "App\\GraphQL\\Queries\\IntegrationContent@mapProjects")
 
     # Series
     "Find a single serie by ID."
@@ -300,6 +307,9 @@ type Video {
     "Unique primary key."
     id: ID!
 
+    "Series-specific episode metadata; null when queried outside a series."
+    episode: SerieEpisode @rename(attribute: "pivot")
+
     "YouTube video ID."
     video_id: String!
 
@@ -308,6 +318,12 @@ type Video {
 
     "Video description."
     description: String
+
+    "Existing editorial source metadata."
+    source_author: String
+    source_title: String
+    source_channel: String
+    source_year: Int
 
     "Whether the video is featured."
     is_featured: Boolean!
@@ -345,6 +361,25 @@ type Resource {
 
     "Uploaded file path."
     uploaded_file: String
+
+    "Editorial publication date; null means draft."
+    published_at: DateTime
+    is_published: Boolean! @method(name: "isEditoriallyPublished")
+    "Legacy plain-text authors; distinct from the account that created the record."
+    author: String
+    authors: [Author!]! @belongsToMany
+    key_words: String
+    publisher: String
+    language: String
+    coverage: String
+    contributor: String
+    copy_rights: String
+    original_date: String
+    format_id: Int
+    format: String
+    identifier: String
+    "Resolved external URL or public uploaded-file URL."
+    source_url: String @method(name: "getSourceLink")
 
     "When the resource was created."
     created_at: DateTime!
@@ -388,6 +423,11 @@ type Serie {
 
     "When the serie was last updated."
     updated_at: DateTime!
+
+    background_image: String
+    background_credit: String
+    "Episodes ordered by their position in this series; inactive videos can be filtered out."
+    videos(is_active: Boolean @eq): [Video!]! @belongsToMany
 
     "Users responsible for this serie."
     users: [User!]! @belongsToMany
@@ -471,4 +511,42 @@ type Comment {
 
     "The user who wrote this comment."
     user: User! @belongsTo
+}
+"An author of editorial content, without account credentials or email."
+type Author {
+    id: ID!
+    name: String!
+}
+
+"Metadata belonging to the series/video relationship, not to the video globally."
+type SerieEpisode {
+    title: String
+    description: String
+    position: Int!
+    created_at: DateTime
+    updated_at: DateTime
+}
+
+"The same public projection used by the Observatório map."
+type MapProject {
+    id: ID!
+    name: String!
+    country: String
+    city: String
+    lat: Float!
+    lng: Float!
+    proposers: String
+    nature: String
+    purpose: String
+    description: String
+    themes: [String!]!
+    tics: [String!]!
+    website: String
+    instagram: String
+    facebook: String
+    tiktok: String
+    app: String
+    researcher: String
+    created_at: DateTime!
+    updated_at: DateTime!
 }

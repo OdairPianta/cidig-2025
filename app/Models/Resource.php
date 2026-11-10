@@ -190,10 +190,16 @@ class Resource extends Model
         return $this->source;
     }
 
-    /**
-     * @param Builder $query
-     * @return Builder
-     */
+    public function scopePublicationStatus(Builder $query, bool $published): Builder
+    {
+        return $published ? $query->whereNotNull('published_at') : $query->whereNull('published_at');
+    }
+
+    public function isEditoriallyPublished(): bool
+    {
+        return $this->published_at !== null;
+    }
+
     public function scopePublished(Builder $query)
     {
         return $query->whereNotNull('published_at');

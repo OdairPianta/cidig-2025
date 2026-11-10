@@ -12,7 +12,15 @@ return [
     |
     */
 
-    'route' => true,
+    'route' => [
+        'uri' => '/graphql',
+        'name' => 'graphql.legacy',
+        'middleware' => [
+            \Nuwave\Lighthouse\Http\Middleware\AcceptJson::class,
+            \App\Http\Middleware\AiTokenMiddleware::class,
+            \Nuwave\Lighthouse\Http\Middleware\AttemptAuthentication::class,
+        ],
+    ],
 
     /*
     |--------------------------------------------------------------------------
